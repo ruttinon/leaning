@@ -17,13 +17,8 @@ import { AdminModule } from './admin/admin.module'
     TeacherModule,
     AdminModule,
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '..', 'uploads'),
+      rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
-    }),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '..', 'frontend', 'dist'),
-      serveRoot: '/',
-      exclude: ['/api*', '/auth*', '/public*', '/student*', '/teacher*', '/admin*', '/uploads*'],
     }),
   ],
   controllers: [],

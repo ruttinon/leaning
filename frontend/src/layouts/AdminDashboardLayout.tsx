@@ -13,6 +13,7 @@ import {
   Ticket,
   User,
   Bell,
+  Megaphone,
 } from 'lucide-react'
 import { useAuthStore } from '@/store/auth-store'
 import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage'
@@ -42,7 +43,7 @@ export function AdminDashboardLayout() {
     { icon: FileText, label: 'จัดการวิชา', path: '/admin/subjects' },
     { icon: Ticket, label: 'จัดการคูปอง', path: '/admin/coupons' },
     { icon: Users, label: 'จัดการผู้ใช้', path: '/admin/users' },
-    { icon: Bell, label: 'จัดการประกาศ', path: '/admin/announcements' },
+    { icon: Megaphone, label: 'จัดการประกาศ', path: '/admin/announcements' },
     { icon: Bell, label: 'การแจ้งเตือน', path: '/admin/notifications' },
     { icon: User, label: 'โปรไฟล์', path: '/admin/profile' },
   ]

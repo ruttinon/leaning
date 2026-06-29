@@ -899,7 +899,15 @@ export class StudentService {
     return { clientSecret: paymentIntent.client_secret, payment }
   }
 
-  async confirmPayment(paymentId: string, transactionId: string) {
+  async confirmPayment(userId: string, paymentId: string, transactionId: string) {
+    const studentProfile = await this.prisma.studentProfile.findUnique({
+      where: { userId },
+    })
+
+    if (!studentProfile) {
+      throw new NotFoundException('Student profile not found')
+    }
+
     const payment = await this.prisma.payment.findUnique({
       where: { id: paymentId },
       include: { student: true, course: true },
@@ -907,6 +915,10 @@ export class StudentService {
 
     if (!payment) {
       throw new NotFoundException('Payment not found')
+    }
+
+    if (payment.studentId !== studentProfile.id) {
+      throw new ForbiddenException('Not authorized to confirm this payment')
     }
 
     if (payment.status === 'COMPLETED') {

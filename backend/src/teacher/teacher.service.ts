@@ -960,7 +960,8 @@ export class TeacherService {
     return this.prisma.assignmentSubmission.update({
       where: { id: submissionId },
       data: {
-        ...data,
+        grade: data.grade,
+        feedback: data.feedback,
         gradedAt: new Date(),
         status: 'GRADED',
       },

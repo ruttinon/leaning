@@ -95,7 +95,7 @@ export class StudentController {
   }
 
   @Post('payments/:id/confirm')
-  async confirmPayment(@Param('id') paymentId: string, @Body() body: { transactionId: string }) {
-    return this.studentService.confirmPayment(paymentId, body.transactionId)
+  async confirmPayment(@Request() req, @Param('id') paymentId: string, @Body() body: { transactionId: string }) {
+    return this.studentService.confirmPayment(req.user.id, paymentId, body.transactionId)
   }
 }

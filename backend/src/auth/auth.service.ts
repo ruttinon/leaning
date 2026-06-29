@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException, ConflictException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterStudentDto } from './dto/register-student.dto';
@@ -193,6 +194,10 @@ export class AuthService {
   }
 
   async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    if (!newPassword || newPassword.length < 6) {
+      throw new BadRequestException('New password must be at least 6 characters')
+    }
+
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -252,7 +257,7 @@ export class AuthService {
       return { message: 'If the email exists, a password reset link has been sent.' };
     }
     // Generate a simple reset token
-    const token = require('crypto').randomBytes(32).toString('hex');
+    const token = randomBytes(32).toString('hex');
     // Save the token with 1 hour expiry
     await this.prisma.user.update({
       where: { id: user.id },

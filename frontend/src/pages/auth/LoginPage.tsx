@@ -136,7 +136,7 @@ export function LoginPage() {
                       <Label htmlFor="password">รหัสผ่าน</Label>
                       <Link
                         to="/forgot-password"
-                        className="text-sm text-primary hover:underline"
+                        className="text-sm text-[var(--primary)] hover:underline"
                       >
                         ลืมรหัสผ่าน?
                       </Link>
@@ -160,7 +160,7 @@ export function LoginPage() {
               <div className="text-center">
                 <p className="text-gray-600 text-sm">
                   ยังไม่มีบัญชี?{' '}
-                  <Link to="/register" className="text-primary hover:underline font-medium">
+                  <Link to="/register" className="text-[var(--primary)] hover:underline font-medium">
                     สมัครสมาชิก
                   </Link>
                 </p>
