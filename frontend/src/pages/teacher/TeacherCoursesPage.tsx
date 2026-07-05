@@ -48,11 +48,14 @@ export function TeacherCoursesPage() {
               </div>
               <CardContent className="pt-6">
                 <h3 className="font-semibold mb-2">{course.title}</h3>
-                <p className="text-gray-500 text-sm mb-4">
-                  สถานะ: {course.status === 'PUBLISHED' ? 'เผยแพร่แล้ว' : course.status}
-                </p>
-                <div className="flex items-center justify-between">
+                <div className="mb-4 flex items-center justify-between">
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${course.status === 'PUBLISHED' ? 'bg-emerald-100 text-emerald-700' : course.status === 'PENDING_REVIEW' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'}`}>
+                    {course.status === 'PUBLISHED' ? 'เผยแพร่แล้ว' : course.status === 'PENDING_REVIEW' ? 'รออนุมัติ' : course.status === 'DRAFT' ? 'ฉบับร่าง' : course.status}
+                  </span>
                   <span className="text-sm text-gray-500">{course.subject?.name || '-'}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500">{course.price ? `${course.price} บาท` : 'ฟรี'}</span>
                   <Link to={`/teacher/courses/${course.id}`}>
                     <Button variant="outline" size="sm">จัดการ</Button>
                   </Link>

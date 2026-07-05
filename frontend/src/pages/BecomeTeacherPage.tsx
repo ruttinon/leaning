@@ -1,10 +1,12 @@
 import { Navbar } from '../components/layout/Navbar'
 import { Footer } from '../components/layout/Footer'
 import { Button } from '../components/ui/button'
-import { CheckCircle } from 'lucide-react'
+import { CheckCircle, Sparkles, ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useAppStore } from '@/store/theme-store'
 
 export function BecomeTeacherPage() {
+  const { theme } = useAppStore()
   const benefits = [
     'สร้างรายได้จากความเชี่ยวชาญของคุณ',
     'สอนได้ทุกที่ทุกเวลา',
@@ -21,83 +23,68 @@ export function BecomeTeacherPage() {
   ]
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       <Navbar />
       
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-br from-green-50 to-teal-100 py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              มาเป็นครูกับเรา!
-            </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-              แบ่งปันความรู้และสร้างรายได้ กับแพลตฟอร์มเรียนออนไลน์ชั้นนำ
-            </p>
+        <section className="bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 py-20 text-white">
+          <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur">
+              <Sparkles className="h-4 w-4" />
+              แบ่งปันความรู้ สร้างรายได้
+            </div>
+            <h1 className="mb-6 text-4xl font-bold md:text-5xl">มาเป็นครูกับเรา!</h1>
+            <p className="mx-auto mb-8 max-w-3xl text-xl text-emerald-50">สร้างคอร์สของคุณเองและเติบโตไปกับชุมชนผู้เรียนที่กำลังมองหาความรู้คุณภาพ</p>
             <Link to="/register/teacher">
-              <Button size="lg" className="text-lg px-8">
+              <Button size="lg" className="px-8 text-lg">
                 สมัครเป็นครูตอนนี้
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </div>
         </section>
 
-        {/* Benefits Section */}
         <section className="py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                สิทธิประโยชน์สำหรับครู
-              </h2>
-              <p className="text-lg text-gray-600">
-                สิ่งที่คุณจะได้รับเมื่อมาเป็นครูกับเรา
-              </p>
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mb-12 text-center">
+              <h2 className="mb-4 text-3xl font-bold">สิทธิประโยชน์สำหรับครู</h2>
+              <p className={`text-lg ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>สิ่งที่คุณจะได้รับเมื่อมาเป็นครูกับเรา</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {benefits.map((benefit, index) => (
-                <div key={index} className="flex items-start gap-4 p-6 bg-white rounded-xl shadow-md">
-                  <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                  <p className="text-gray-700">{benefit}</p>
+                <div key={index} className={`flex items-start gap-4 rounded-3xl p-6 shadow-sm ${theme === 'dark' ? 'bg-slate-800 border border-slate-700' : 'bg-white'}`}>
+                  <CheckCircle className="mt-1 h-6 w-6 flex-shrink-0 text-emerald-600" />
+                  <p className={`${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>{benefit}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Steps Section */}
-        <section className="py-20 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                ขั้นตอนการสมัคร
-              </h2>
-              <p className="text-lg text-gray-600">
-                ง่ายๆ เพียง 4 ขั้นตอน
-              </p>
+        <section className={`py-20 ${theme === 'dark' ? 'bg-slate-800/60' : 'bg-white'}`}>
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mb-12 text-center">
+              <h2 className="mb-4 text-3xl font-bold">ขั้นตอนการสมัคร</h2>
+              <p className={`text-lg ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>ง่าย ๆ เพียง 4 ขั้นตอน</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="grid gap-8 md:grid-cols-4">
               {steps.map((step, index) => (
-                <div key={index} className="text-center">
-                  <div className="w-16 h-16 bg-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+                <div key={index} className={`rounded-3xl p-6 text-center shadow-sm ${theme === 'dark' ? 'bg-slate-800 border border-slate-700' : 'bg-slate-50'}`}>
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-600 text-2xl font-bold text-white">
                     {step.step}
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{step.title}</h3>
-                  <p className="text-gray-600">{step.description}</p>
+                  <h3 className="mb-2 text-xl font-semibold">{step.title}</h3>
+                  <p className={`${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>{step.description}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="py-20 bg-green-600">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              พร้อมที่จะเริ่มการเดินทางในการสอนหรือยัง?
-            </h2>
-            <p className="text-lg text-green-100 mb-8">
-              สมัครเป็นครูวันนี้ แล้วแบ่งปันความรู้ของคุณกับผู้อื่น
-            </p>
+        <section className="py-20">
+          <div className="mx-auto max-w-4xl rounded-3xl bg-emerald-600 p-8 px-4 text-center text-white shadow-xl sm:px-6 lg:p-12">
+            <h2 className="mb-4 text-3xl font-bold md:text-4xl">พร้อมที่จะเริ่มการเดินทางในการสอนหรือยัง?</h2>
+            <p className="mb-8 text-lg text-emerald-100">สมัครเป็นครูวันนี้ แล้วแบ่งปันความรู้ของคุณกับผู้อื่น</p>
             <Link to="/register/teacher">
               <Button size="lg" variant="secondary" className="text-lg">
                 สมัครเป็นครู

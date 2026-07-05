@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { BookOpen, CheckCircle, XCircle } from 'lucide-react'
+import { BookOpen, CheckCircle, XCircle, Clock3, Sparkles } from 'lucide-react'
 import { api } from '@/lib/api'
 
 export function AdminCourseApprovalsPage() {
@@ -32,9 +32,16 @@ export function AdminCourseApprovalsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">อนุมัติคอร์ส</h1>
-        <p className="text-gray-600">ตรวจสอบและอนุมัติคอร์สใหม่</p>
+      <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-slate-900 to-slate-700 p-6 text-white">
+        <div className="flex items-center gap-3">
+          <div className="rounded-2xl bg-white/10 p-2">
+            <Sparkles className="h-5 w-5" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">อนุมัติคอร์ส</h1>
+            <p className="text-sm text-slate-300">ตรวจสอบและอนุมัติคอร์สใหม่ให้กับผู้เรียน</p>
+          </div>
+        </div>
       </div>
 
       {!courses || courses.length === 0 ? (
@@ -62,6 +69,10 @@ export function AdminCourseApprovalsPage() {
                       <p className="text-gray-500 text-xs mt-1">
                         วิชา: {course.subject?.name}
                       </p>
+                      <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
+                        <Clock3 className="h-3.5 w-3.5" />
+                        รอการตรวจสอบ
+                      </div>
                     </div>
                   </div>
                   <div className="flex space-x-2">

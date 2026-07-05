@@ -18,12 +18,14 @@ export function TeacherCourseDetailPage() {
   const [showAddChapter, setShowAddChapter] = useState(false)
   const [chapterTitle, setChapterTitle] = useState('')
   const [chapterDescription, setChapterDescription] = useState('')
+  const [statusMessage, setStatusMessage] = useState('')
   
   // States for adding lesson
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null)
   const [showAddLesson, setShowAddLesson] = useState(false)
   const [lessonTitle, setLessonTitle] = useState('')
   const [lessonDescription, setLessonDescription] = useState('')
+  const [selectedThumbnail, setSelectedThumbnail] = useState<File | null>(null)
 
   const { data: course, isLoading } = useQuery({
     queryKey: ['teacher-course', courseId],
@@ -57,6 +59,39 @@ export function TeacherCourseDetailPage() {
     },
   })
 
+  const submitForReviewMutation = useMutation({
+    mutationFn: async () => api.post(`/teacher/courses/${courseId}/submit-review`, {}),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teacher-course', courseId] })
+      queryClient.invalidateQueries({ queryKey: ['teacher-courses'] })
+      setStatusMessage('ส่งคอร์สเพื่ออนุมัติเรียบร้อยแล้ว')
+    },
+    onError: (err: any) => {
+      setStatusMessage(err?.message || 'ส่งคอร์สไม่สำเร็จ')
+    },
+  })
+
+  const uploadThumbnailMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedThumbnail) {
+        throw new Error('กรุณาเลือกไฟล์ภาพก่อนอัปโหลด')
+      }
+
+      const formData = new FormData()
+      formData.append('file', selectedThumbnail)
+      return api.post(`/teacher/courses/${courseId}/thumbnail`, formData)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teacher-course', courseId] })
+      queryClient.invalidateQueries({ queryKey: ['teacher-courses'] })
+      setSelectedThumbnail(null)
+      setStatusMessage('อัปโหลดภาพปกคอร์สสำเร็จแล้ว')
+    },
+    onError: (err: any) => {
+      setStatusMessage(err?.message || 'อัปโหลดภาพปกคอร์สไม่สำเร็จ')
+    },
+  })
+
   if (isLoading) return <div className="text-center py-12">กำลังโหลด...</div>
   if (!course) return <div className="text-center py-12">ไม่พบคอร์ส</div>
 
@@ -68,13 +103,43 @@ export function TeacherCourseDetailPage() {
           <h1 className="text-2xl font-bold mt-2">{course.title}</h1>
           <p className="text-gray-600">{course.description}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Link to={`/teacher/gradebook/${courseId}`}>
             <Button variant="outline"><Award className="h-4 w-4 mr-2" />ดูสมุดคะแนน</Button>
           </Link>
+          <Button variant="secondary" onClick={() => submitForReviewMutation.mutate()} disabled={submitForReviewMutation.isPending || course.status === 'PENDING_REVIEW' || course.status === 'PUBLISHED'}>
+            {submitForReviewMutation.isPending ? 'กำลังส่ง...' : 'ส่งให้ตรวจสอบ'}
+          </Button>
           <Button onClick={() => setShowAddChapter(true)}><Plus className="h-4 w-4 mr-2" />เพิ่มบทเรียน</Button>
         </div>
       </div>
+
+      {statusMessage && (
+        <div className={`rounded-xl border px-4 py-3 text-sm ${statusMessage.includes('สำเร็จ') || statusMessage.includes('เรียบร้อย') ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'}`}>
+          {statusMessage}
+        </div>
+      )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>ภาพปกคอร์ส</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {course.thumbnailUrl ? (
+            <img src={course.thumbnailUrl} alt={course.title} className="h-40 w-full rounded-xl object-cover" />
+          ) : (
+            <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">
+              ยังไม่มีภาพปกคอร์ส
+            </div>
+          )}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Input type="file" accept="image/*" onChange={(e) => setSelectedThumbnail(e.target.files?.[0] || null)} />
+            <Button onClick={() => uploadThumbnailMutation.mutate()} disabled={!selectedThumbnail || uploadThumbnailMutation.isPending}>
+              {uploadThumbnailMutation.isPending ? 'กำลังอัปโหลด...' : 'อัปโหลดภาพปก'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Add Chapter Modal */}
       {showAddChapter && (

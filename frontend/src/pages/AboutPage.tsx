@@ -1,8 +1,10 @@
 import { Navbar } from '../components/layout/Navbar'
 import { Footer } from '../components/layout/Footer'
-import { BookOpen, Users, Zap, Heart } from 'lucide-react'
+import { BookOpen, Users, Zap, Heart, Sparkles, ArrowRight } from 'lucide-react'
+import { useAppStore } from '@/store/theme-store'
 
 export function AboutPage() {
+  const { theme } = useAppStore()
   const team = [
     { name: 'ทีมพัฒนา', role: 'Web Developers', icon: Users },
     { name: 'ทีมออกแบบ', role: 'UI/UX Designers', icon: Heart },
@@ -10,71 +12,75 @@ export function AboutPage() {
   ]
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       <Navbar />
       
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              เกี่ยวกับเรา
-            </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              เราคือแพลตฟอร์มเรียนออนไลน์ที่มุ่งเน้นที่จะทำให้การเรียนรู้เข้าถึงได้ง่ายทุกคน
-            </p>
+        <section className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 py-20 text-white">
+          <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur">
+              <Sparkles className="h-4 w-4" />
+              ทำให้การเรียนรู้เข้าถึงได้ง่ายขึ้น
+            </div>
+            <h1 className="mb-6 text-4xl font-bold md:text-5xl">เกี่ยวกับเรา</h1>
+            <p className="mx-auto max-w-3xl text-xl text-indigo-50">เราคือแพลตฟอร์มเรียนออนไลน์ที่เชื่อมโยงผู้เรียนและครูผู้เชี่ยวชาญให้เข้าถึงเนื้อหาและประสบการณ์การเรียนรู้ที่มีคุณภาพ</p>
           </div>
         </section>
 
-        {/* Mission Section */}
         <section className="py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid items-center gap-12 lg:grid-cols-2">
               <div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-6">
-                  พันธกิจของเรา
-                </h2>
-                <p className="text-lg text-gray-600 mb-4">
-                  เรามุ่งมั่นที่จะสร้างแพลตฟอร์มที่เชื่อมโยงครูผู้เชี่ยวชาญกับผู้เรียนทุกคน
-                  โดยมุ่งเน้นที่คุณภาพของเนื้อหาและประสบการณ์การเรียนรู้ที่ดีที่สุด
+                <h2 className="mb-6 text-3xl font-bold">พันธกิจของเรา</h2>
+                <p className={`mb-4 text-lg leading-8 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+                  เรามุ่งมั่นสร้างแพลตฟอร์มที่ช่วยให้ทุกคนเข้าถึงความรู้ได้อย่างง่ายและมีประสิทธิภาพ โดยให้ความสำคัญกับคุณภาพของเนื้อหาและความสะดวกในการเรียนรู้
                 </p>
-                <p className="text-lg text-gray-600">
-                  เราเชื่อว่าทุกคนมีสิทธิ์ที่จะได้รับการศึกษาที่ดี และเราจะช่วยทำให้สิ่งนั้นเป็นจริง
+                <p className={`text-lg leading-8 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+                  เราเชื่อว่าทุกคนมีศักยภาพและมีสิทธิ์ในการพัฒนาอย่างต่อเนื่อง เราจึงสร้างสภาพแวดล้อมที่เอื้อต่อการเรียนรู้และการเติบโตอย่างยั่งยืน
                 </p>
               </div>
               <div className="flex justify-center">
-                <div className="bg-blue-100 rounded-2xl p-12">
-                  <Zap className="h-24 w-24 text-blue-600" />
+                <div className={`rounded-3xl p-12 shadow-lg ${theme === 'dark' ? 'bg-slate-800' : 'bg-white'}`}>
+                  <Zap className="mx-auto h-24 w-24 text-indigo-600" />
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Values Section */}
-        <section className="py-20 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                ค่านิยมของเรา
-              </h2>
-              <p className="text-lg text-gray-600">
-                สิ่งที่ขับเคลื่อนให้เราทุกวัน
-              </p>
+        <section className={`py-20 ${theme === 'dark' ? 'bg-slate-800/60' : 'bg-white'}`}>
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mb-12 text-center">
+              <h2 className="mb-4 text-3xl font-bold">ค่านิยมของเรา</h2>
+              <p className={`text-lg ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>สิ่งที่ขับเคลื่อนให้เราเติบโตและพัฒนาอย่างต่อเนื่อง</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid gap-8 md:grid-cols-3">
               {team.map((member, index) => {
                 const Icon = member.icon
                 return (
-                  <div key={index} className="bg-white p-8 rounded-xl shadow-md text-center">
-                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <Icon className="h-8 w-8 text-primary" />
+                  <div key={index} className={`rounded-3xl p-8 text-center shadow-sm ${theme === 'dark' ? 'bg-slate-800 border border-slate-700' : 'bg-slate-50'}`}>
+                    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-500/10">
+                      <Icon className="h-8 w-8 text-indigo-600" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">{member.name}</h3>
-                    <p className="text-gray-600">{member.role}</p>
+                    <h3 className="mb-2 text-xl font-semibold">{member.name}</h3>
+                    <p className={`${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>{member.role}</p>
                   </div>
                 )
               })}
+            </div>
+          </div>
+        </section>
+
+        <section className="py-20">
+          <div className="mx-auto max-w-6xl rounded-3xl border border-slate-200 bg-gradient-to-r from-indigo-600 to-purple-600 p-8 text-white shadow-xl sm:px-10 lg:p-12">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <h2 className="text-3xl font-bold">พร้อมเริ่มต้นการเรียนรู้แบบใหม่แล้วหรือยัง?</h2>
+                <p className="mt-3 text-indigo-50">เข้าร่วมกับเราเพื่อพัฒนาทักษะและสร้างอนาคตที่ดีกว่า</p>
+              </div>
+              <a href="/register" className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 font-semibold text-indigo-700">
+                เริ่มเลย <ArrowRight className="h-4 w-4" />
+              </a>
             </div>
           </div>
         </section>

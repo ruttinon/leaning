@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Put, UseGuards, Request, UseInterceptors, UploadedFile, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, Put, UseGuards, Request, UseInterceptors, UploadedFile, Param, BadRequestException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterStudentDto } from './dto/register-student.dto';
@@ -7,6 +7,7 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { buildUploadFilename, isAllowedUpload } from '../common/utils/file-upload';
 
 @Controller('auth')
 export class AuthController {
@@ -45,12 +46,23 @@ export class AuthController {
     storage: diskStorage({
       destination: './uploads',
       filename: (req, file, cb) => {
-        const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('')
-        cb(null, `${randomName}${extname(file.originalname)}`)
+        cb(null, buildUploadFilename(file.originalname))
       }
-    })
+    }),
+    limits: { fileSize: 2 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+      if (!isAllowedUpload(file as Express.Multer.File)) {
+        cb(new BadRequestException('Only image uploads are allowed'), false);
+        return;
+      }
+      cb(null, true);
+    },
   }))
   async uploadAvatar(@Request() req, @UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+
     return this.authService.updateProfile(req.user.id, {
       avatarUrl: file ? `/uploads/${file.filename}` : null
     });

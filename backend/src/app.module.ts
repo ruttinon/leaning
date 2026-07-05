@@ -7,6 +7,7 @@ import { PublicModule } from './public/public.module'
 import { StudentModule } from './student/student.module'
 import { TeacherModule } from './teacher/teacher.module'
 import { AdminModule } from './admin/admin.module'
+import { HealthController } from './health/health.controller'
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { AdminModule } from './admin/admin.module'
       serveRoot: '/uploads',
     }),
   ],
-  controllers: [],
+  controllers: [HealthController],
   providers: [],
 })
 export class AppModule {}

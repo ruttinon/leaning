@@ -20,6 +20,7 @@ export function CreateCoursePage() {
   })
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
 
   const { data: subjects } = useQuery({
     queryKey: ['subjects'],
@@ -30,16 +31,18 @@ export function CreateCoursePage() {
     mutationFn: async (data: any) => api.post('/teacher/courses', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teacher-courses'] })
-      navigate('/teacher/courses')
+      setSuccessMessage('คอร์สถูกสร้างเรียบร้อยแล้ว คุณสามารถจัดการเนื้อหาและส่งเพื่ออนุมัติได้ทันที')
+      setTimeout(() => navigate('/teacher/courses'), 800)
     },
     onError: (err: any) => {
-      setError(err.response?.data?.message || 'เกิดข้อผิดพลาด')
+      setError(err?.message || 'เกิดข้อผิดพลาด')
     },
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setSuccessMessage('')
     setIsLoading(true)
     try {
       await createCourseMutation.mutateAsync({
@@ -69,6 +72,11 @@ export function CreateCoursePage() {
           {error && (
             <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-md">
               {error}
+            </div>
+          )}
+          {successMessage && (
+            <div className="mb-6 rounded-md border border-emerald-200 bg-emerald-50 p-4 text-emerald-700">
+              {successMessage}
             </div>
           )}
 

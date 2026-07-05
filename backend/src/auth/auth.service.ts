@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { sendPasswordResetEmail } from '../common/utils/mailer';
 import { LoginDto } from './dto/login.dto';
 import { RegisterStudentDto } from './dto/register-student.dto';
 import { RegisterTeacherDto } from './dto/register-teacher.dto';
@@ -256,18 +257,18 @@ export class AuthService {
       // Don't reveal that the user doesn't exist for security
       return { message: 'If the email exists, a password reset link has been sent.' };
     }
-    // Generate a simple reset token
     const token = randomBytes(32).toString('hex');
-    // Save the token with 1 hour expiry
     await this.prisma.user.update({
       where: { id: user.id },
       data: {
         resetToken: token,
-        resetTokenExpiry: new Date(Date.now() + 3600000), // 1 hour
+        resetTokenExpiry: new Date(Date.now() + 3600000),
       },
     });
-    // In a real app, send an email here!
-    console.log(`Password reset token for ${email}: ${token}`);
+
+    const resetUrl = `${process.env.APP_URL || 'http://localhost:8080'}/reset-password?token=${token}`;
+    await sendPasswordResetEmail(user.email, resetUrl);
+
     return { message: 'If the email exists, a password reset link has been sent.' };
   }
 

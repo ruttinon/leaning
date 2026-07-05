@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 import Stripe from 'stripe'
+import { calculatePaymentAmount } from '../common/utils/payment'
 
 @Injectable()
 export class StudentService {
@@ -837,8 +838,7 @@ export class StudentService {
     }
 
     const price = Number(course.price)
-    const amount = Math.round(price * (100 - discount))
-    const amountInSmallestUnit = Math.round(amount * 100) // THB satang
+    const { amount, amountInSmallestUnit } = calculatePaymentAmount(price, discount)
 
     // Create payment record first
     const payment = await this.prisma.payment.create({
@@ -867,9 +867,15 @@ export class StudentService {
       return { clientSecret: null, payment, enrollment }
     }
 
-    // Otherwise create Stripe payment intent
     if (!this.stripe) {
-      // Mock payment for demo purposes
+      if (process.env.NODE_ENV === 'production') {
+        await this.prisma.payment.update({
+          where: { id: payment.id },
+          data: { status: 'FAILED' },
+        })
+        throw new BadRequestException('Stripe payment is not configured for this environment')
+      }
+
       await this.prisma.payment.update({
         where: { id: payment.id },
         data: { status: 'COMPLETED' },
@@ -933,15 +939,37 @@ export class StudentService {
       },
     })
 
-    // Enroll the student
-    const enrollment = await this.prisma.enrollment.create({
-      data: {
-        courseId: payment.courseId,
-        studentId: payment.studentId,
+    const existingEnrollment = await this.prisma.enrollment.findUnique({
+      where: {
+        courseId_studentId: {
+          courseId: payment.courseId,
+          studentId: payment.studentId,
+        },
       },
-      include: { course: true },
     })
 
-    return { payment: updatedPayment, enrollment }
+    if (!existingEnrollment) {
+      await this.prisma.enrollment.create({
+        data: {
+          courseId: payment.courseId,
+          studentId: payment.studentId,
+        },
+        include: { course: true },
+      })
+    }
+
+    return { payment: updatedPayment, enrollment: existingEnrollment }
+  }
+
+  async handlePaymentWebhook(body: { paymentId?: string; transactionId?: string; type?: string }) {
+    if (!body.paymentId) {
+      throw new BadRequestException('paymentId is required')
+    }
+
+    if (body.type && body.type !== 'payment.succeeded') {
+      return { received: true, status: 'ignored' }
+    }
+
+    return this.confirmPayment(body.paymentId, body.transactionId || `webhook-${body.paymentId}`)
   }
 }

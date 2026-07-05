@@ -22,6 +22,7 @@ import { useAuthStore } from './store/auth-store'
 import { api } from './lib/api'
 import { useEffect } from 'react'
 import { useAppStore } from './store/theme-store'
+import { ProtectedRoute } from './components/ProtectedRoute'
 
 function App() {
   const { token } = useAuthStore()
@@ -61,13 +62,34 @@ function App() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         {/* Student Dashboard Routes */}
-        <Route path="/student/*" element={<StudentDashboardLayout />} />
+        <Route
+          path="/student/*"
+          element={
+            <ProtectedRoute allowedRoles={['STUDENT']}>
+              <StudentDashboardLayout />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Teacher Dashboard Routes */}
-        <Route path="/teacher/*" element={<TeacherDashboardLayout />} />
+        <Route
+          path="/teacher/*"
+          element={
+            <ProtectedRoute allowedRoles={['TEACHER']}>
+              <TeacherDashboardLayout />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Admin Dashboard Routes */}
-        <Route path="/admin/*" element={<AdminDashboardLayout />} />
+        <Route
+          path="/admin/*"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminDashboardLayout />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </div>
   )

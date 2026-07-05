@@ -134,6 +134,30 @@ export class TeacherService {
     })
   }
 
+  async updateCourseThumbnail(userId: string, courseId: string, thumbnailUrl: string) {
+    const teacherProfile = await this.prisma.teacherProfile.findUnique({ where: { userId } })
+
+    if (!teacherProfile) {
+      throw new NotFoundException('Teacher profile not found')
+    }
+
+    const course = await this.prisma.course.findUnique({ where: { id: courseId } })
+
+    if (!course) {
+      throw new NotFoundException('Course not found')
+    }
+
+    if (course.teacherId !== teacherProfile.id) {
+      throw new ForbiddenException('Not authorized to update this course')
+    }
+
+    return this.prisma.course.update({
+      where: { id: courseId },
+      data: { thumbnailUrl },
+      include: { subject: true },
+    })
+  }
+
   async submitCourseForReview(userId: string, courseId: string) {
     const teacherProfile = await this.prisma.teacherProfile.findUnique({
       where: { userId },

@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Request, UseInterceptors, UploadedFile } from '@nestjs/common'
+import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Request, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { diskStorage } from 'multer'
-import { extname } from 'path'
 import { TeacherService } from './teacher.service'
+import { buildUploadFilename, isAllowedImageUpload } from '../common/utils/file-upload'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { RolesGuard } from '../common/guards/roles.guard'
 import { Roles } from '../common/decorators/roles.decorator'
@@ -31,6 +31,28 @@ export class TeacherController {
   @Post('courses')
   async createCourse(@Request() req, @Body() data: any) {
     return this.teacherService.createCourse(req.user.id, data)
+  }
+
+  @Post('courses/:id/thumbnail')
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: './uploads',
+      filename: (req, file, cb) => cb(null, buildUploadFilename(file.originalname)),
+    }),
+    limits: { fileSize: 2 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+      if (!isAllowedImageUpload(file as Express.Multer.File)) {
+        cb(new BadRequestException('Only image uploads are allowed for course thumbnails'), false)
+        return
+      }
+      cb(null, true)
+    },
+  }))
+  async uploadCourseThumbnail(@Request() req, @Param('id') courseId: string, @UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('File is required')
+    }
+    return this.teacherService.updateCourseThumbnail(req.user.id, courseId, `/uploads/${file.filename}`)
   }
 
   @Put('courses/:id')
@@ -83,12 +105,23 @@ export class TeacherController {
     storage: diskStorage({
       destination: './uploads',
       filename: (req, file, cb) => {
-        const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('')
-        cb(null, `${randomName}${extname(file.originalname)}`)
+        cb(null, buildUploadFilename(file.originalname))
       }
-    })
+    }),
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+      if (!isAllowedUpload(file as Express.Multer.File)) {
+        cb(new BadRequestException('Only document/image/video uploads are allowed'), false);
+        return;
+      }
+      cb(null, true);
+    },
   }))
   async createMaterial(@Request() req, @Param('id') lessonId: string, @UploadedFile() file: Express.Multer.File, @Body() body: any) {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+
     return this.teacherService.createMaterial(req.user.id, lessonId, {
       ...body,
       fileUrl: file ? `/uploads/${file.filename}` : body.fileUrl

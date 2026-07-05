@@ -9,12 +9,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Camera, Save, User, Lock, Mail, Phone, MapPin, GraduationCap, BookOpen, Award, Briefcase, Zap, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
+import { Camera, Save, User, Lock, Mail, Phone, MapPin, GraduationCap, BookOpen, Award, Briefcase, Zap, CheckCircle2, AlertCircle, Loader2, Sparkles } from 'lucide-react'
 import { api, API_BASE_URL } from '@/lib/api'
 import { useAuthStore } from '@/store/auth-store'
+import { useAppStore } from '@/store/theme-store'
 
 export function ProfilePage() {
   const { setUser } = useAuthStore()
+  const { theme } = useAppStore()
   const queryClient = useQueryClient()
   
   // Profile form state
@@ -187,28 +189,44 @@ export function ProfilePage() {
   const isTeacher = user?.role === 'TEACHER'
   
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto space-y-8">
-        {/* Header Section */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">โปรไฟล์ของฉัน</h1>
-          <p className="text-muted-foreground text-lg">จัดการข้อมูลส่วนตัวและการตั้งค่าบัญชีของคุณ</p>
+    <div className={`min-h-screen px-4 py-8 sm:px-6 lg:px-8 ${theme === 'dark' ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+      <div className="mx-auto max-w-5xl space-y-8">
+        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
+                <Sparkles className="h-4 w-4" />
+                จัดการบัญชีของคุณ
+              </div>
+              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">โปรไฟล์ของฉัน</h1>
+              <p className={`mt-2 text-lg ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>ดูและอัปเดตข้อมูลส่วนตัวของคุณให้พร้อมใช้งานตลอดเวลา</p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-700/60">
+                <p className="text-sm text-slate-500">สถานะบัญชี</p>
+                <p className="mt-1 font-semibold">{isStudent ? 'นักเรียน' : isTeacher ? 'ครู' : 'ผู้ดูแลระบบ'}</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-700/60">
+                <p className="text-sm text-slate-500">ความปลอดภัย</p>
+                <p className="mt-1 font-semibold">ปลอดภัยและพร้อมใช้งาน</p>
+              </div>
+            </div>
+          </div>
         </div>
         
-        {/* Profile Card */}
-        <Card className="overflow-hidden border-0 shadow-lg">
+        <Card className={`overflow-hidden border-0 shadow-lg ${theme === 'dark' ? 'bg-slate-800' : 'bg-white'}`}>
           <div className="h-32 bg-gradient-to-r from-primary via-purple-500 to-pink-500"></div>
           <CardHeader className="-mt-16 pb-4">
-            <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4">
-              <div className="relative group">
+            <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-end">
+              <div className="group relative">
                 <Avatar className="h-32 w-32 border-4 border-background shadow-xl">
                   <AvatarImage src={getAvatarUrl() || ''} alt="Profile" />
-                  <AvatarFallback className="text-3xl bg-gradient-to-br from-primary to-purple-600 text-white">
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-purple-600 text-3xl text-white">
                     {getInitials()}
                   </AvatarFallback>
                 </Avatar>
-                <label className="absolute bottom-2 right-2 bg-primary text-white p-2.5 rounded-full cursor-pointer hover:bg-primary/90 transition-all shadow-lg group-hover:scale-110">
-                  <Camera className="w-4 h-4" />
+                <label className="absolute bottom-2 right-2 cursor-pointer rounded-full bg-primary p-2.5 text-white shadow-lg transition-all hover:scale-110 hover:bg-primary/90">
+                  <Camera className="h-4 w-4" />
                   <input
                     type="file"
                     accept="image/*"
@@ -218,18 +236,18 @@ export function ProfilePage() {
                 </label>
               </div>
               <div className="flex-1 text-center sm:text-left">
-                <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                <div className="mb-1 flex items-center justify-center gap-2 sm:justify-start">
                   <h2 className="text-2xl font-bold">{user?.firstName} {user?.lastName}</h2>
                   <Badge variant="secondary" className="text-sm">
                     {isStudent ? 'นักเรียน' : isTeacher ? 'ครู' : 'ผู้ดูแลระบบ'}
                   </Badge>
                 </div>
-                <p className="text-muted-foreground flex items-center justify-center sm:justify-start gap-1">
-                  <Mail className="w-4 h-4" />
+                <p className={`flex items-center justify-center gap-1 sm:justify-start ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <Mail className="h-4 w-4" />
                   {user?.email}
                 </p>
                 {user?.username && (
-                  <p className="text-muted-foreground text-sm mt-1">
+                  <p className={`mt-1 text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
                     @{user.username}
                   </p>
                 )}
@@ -238,7 +256,6 @@ export function ProfilePage() {
           </CardHeader>
         </Card>
         
-        {/* Main Tabs */}
         <Tabs defaultValue="profile" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-8">
             <TabsTrigger value="profile" className="text-sm sm:text-base py-3">

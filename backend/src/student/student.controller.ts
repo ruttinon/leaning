@@ -98,4 +98,9 @@ export class StudentController {
   async confirmPayment(@Request() req, @Param('id') paymentId: string, @Body() body: { transactionId: string }) {
     return this.studentService.confirmPayment(req.user.id, paymentId, body.transactionId)
   }
+
+  @Post('payments/webhook')
+  async handlePaymentWebhook(@Body() body: { paymentId?: string; transactionId?: string; type?: string }) {
+    return this.studentService.handlePaymentWebhook(body)
+  }
 }
