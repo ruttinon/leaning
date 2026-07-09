@@ -7,6 +7,8 @@ import { api } from '@/lib/api'
 import { LoadingState } from '@/components/LoadingState'
 import { ErrorState } from '@/components/ErrorState'
 import { EmptyState } from '@/components/EmptyState'
+import { toast } from '@/store/toast-store'
+import { isApiError } from '@/lib/api-error'
 
 export function StudentBrowseCoursesPage() {
   const navigate = useNavigate()
@@ -23,6 +25,10 @@ export function StudentBrowseCoursesPage() {
       queryClient.invalidateQueries({ queryKey: ['public-courses'] })
       queryClient.invalidateQueries({ queryKey: ['student-dashboard'] })
       queryClient.invalidateQueries({ queryKey: ['my-courses'] })
+      toast.success('ลงทะเบียนคอร์สเรียบร้อยแล้ว')
+    },
+    onError: (err: unknown) => {
+      toast.error(isApiError(err) ? err.message : 'ลงทะเบียนไม่สำเร็จ')
     },
   })
 

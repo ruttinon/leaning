@@ -17,6 +17,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { RolesGuard } from '../common/guards/roles.guard'
 import { Roles } from '../common/decorators/roles.decorator'
 import { CreatePaymentIntentDto } from './dto/create-payment-intent.dto'
+import { ValidateCouponDto } from './dto/validate-coupon.dto'
 import { ConfirmPaymentDto } from './dto/confirm-payment.dto'
 import { PaymentWebhookDto } from './dto/payment-webhook.dto'
 import { SubmitAssignmentDto } from './dto/submit-assignment.dto'
@@ -176,6 +177,11 @@ export class StudentController {
   @Get('payments/:id')
   async getPayment(@Request() req, @Param('id') paymentId: string) {
     return this.studentService.getPayment(req.user.id, paymentId)
+  }
+
+  @Post('coupons/validate')
+  async validateCoupon(@Request() req, @Body() body: ValidateCouponDto) {
+    return this.studentService.validateCoupon(req.user.id, body.code, body.courseId)
   }
 
   @Post('courses/:id/payment-intent')

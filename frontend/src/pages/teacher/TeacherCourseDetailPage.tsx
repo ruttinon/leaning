@@ -8,6 +8,10 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Plus, BookOpen, Award } from 'lucide-react'
 import { api } from '@/lib/api'
+import { LoadingState } from '@/components/LoadingState'
+import { ErrorState } from '@/components/ErrorState'
+import { toast } from '@/store/toast-store'
+import { isApiError } from '@/lib/api-error'
 import { uploadCourseThumbnail } from '@/lib/storage'
 
 export function TeacherCourseDetailPage() {
@@ -29,7 +33,7 @@ export function TeacherCourseDetailPage() {
   const [lessonDescription, setLessonDescription] = useState('')
   const [selectedThumbnail, setSelectedThumbnail] = useState<File | null>(null)
 
-  const { data: course, isLoading } = useQuery({
+  const { data: course, isLoading, isError, refetch } = useQuery({
     queryKey: ['teacher-course', courseId],
     queryFn: async () => api.get<any>(`/teacher/courses/${courseId}`),
   })
@@ -118,7 +122,8 @@ export function TeacherCourseDetailPage() {
     },
   })
 
-  if (isLoading) return <div className="text-center py-12">กำลังโหลด...</div>
+  if (isLoading) return <LoadingState />
+  if (isError) return <ErrorState onRetry={() => refetch()} />
   if (!course) return <div className="text-center py-12">ไม่พบคอร์ส</div>
 
   return (

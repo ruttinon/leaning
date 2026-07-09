@@ -6,12 +6,14 @@ import { BookOpen, Users, Zap, CheckCircle, GraduationCap, Clock, Award, ArrowRi
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useAppStore } from '@/store/theme-store'
+import { useTranslation } from '@/lib/i18n'
 import { api } from '@/lib/api'
 import { LoadingState } from '@/components/LoadingState'
 import { EmptyState } from '@/components/EmptyState'
 
 export function HomePage() {
-  const { theme, language } = useAppStore()
+  const { theme } = useAppStore()
+  const { t } = useTranslation()
 
   const { data: featuredCourses, isLoading: coursesLoading, isError } = useQuery({
     queryKey: ['featured-courses'],
@@ -27,26 +29,26 @@ export function HomePage() {
 
   const features = [
     { 
-      title: language === 'th' ? 'คอร์สคุณภาพสูง' : 'High Quality Courses', 
-      description: language === 'th' ? 'คอร์สที่ออกแบบโดยครูผู้เชี่ยวชาญ' : 'Courses designed by expert teachers', 
+      title: t('home.features.highQuality.title'), 
+      description: t('home.features.highQuality.desc'), 
       icon: BookOpen,
       gradient: 'from-emerald-600 to-green-700'
     },
     { 
-      title: language === 'th' ? 'เรียนได้ทุกที่' : 'Learn Anywhere', 
-      description: language === 'th' ? 'เรียนได้ทุกเวลา ทุกที่ทุกเมื่อ' : 'Learn anytime, anywhere', 
+      title: t('home.features.anytimeAnywhere.title'), 
+      description: t('home.features.anytimeAnywhere.desc'), 
       icon: Zap,
       gradient: 'from-teal-600 to-emerald-600'
     },
     { 
-      title: language === 'th' ? 'ครูผู้สอนคุณภาพ' : 'Expert Teachers', 
-      description: language === 'th' ? 'ครูที่มีประสบการณ์และความเชี่ยวชาญ' : 'Experienced and specialized teachers', 
+      title: t('home.features.expertTeachers.title'), 
+      description: t('home.features.expertTeachers.desc'), 
       icon: Users,
       gradient: 'from-amber-600 to-orange-600'
     },
     { 
-      title: language === 'th' ? 'ติดตามความก้าวหน้า' : 'Track Your Progress', 
-      description: language === 'th' ? 'ดูความก้าวหน้าของตัวเองได้ง่ายๆ' : 'Easily track your learning progress', 
+      title: t('home.features.trackProgress.title'), 
+      description: t('home.features.trackProgress.desc'), 
       icon: CheckCircle,
       gradient: 'from-amber-500 to-orange-600'
     },
@@ -69,28 +71,25 @@ export function HomePage() {
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 backdrop-blur-sm shadow-premium">
                   <Sparkles className="h-4 w-4 text-emerald-500" />
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    {language === 'th' ? 'แพลตฟอร์มเรียนออนไลน์ #1' : '#1 Online Learning Platform'}
+                    {t('home.badge')}
                   </span>
                 </div>
                 
                 <h1 className={`text-4xl md:text-6xl lg:text-7xl font-bold leading-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                  {language === 'th' ? 'การเรียนรู้ที่' : 'Learning Without'}
+                  {t('home.heroLine1')}
                   <span className="bg-gradient-to-r from-emerald-800 via-green-700 to-amber-700 bg-clip-text text-transparent">
-                    {language === 'th' ? ' ไม่มีขีดจำกัด' : ' Limits'}
+                    {t('home.heroLine2')}
                   </span>
                 </h1>
                 
                 <p className={`text-xl ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>
-                  {language === 'th' 
-                    ? 'เลือกคอร์สที่คุณชื่นชอบ เรียนกับครูมืออาชีพ สร้างอนาคตที่ดีงามกับเรา'
-                    : 'Choose your favorite courses, learn with expert teachers, build your future with us'
-                  }
+                  {t('home.heroSubtitle')}
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link to="/register">
                     <Button size="lg" className="premium-btn text-white text-lg px-8 py-6 shadow-lg hover:shadow-emerald-700/40">
-                      {language === 'th' ? 'เริ่มเรียนตอนนี้' : 'Start Learning Now'}
+                      {t('home.startLearning')}
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
                   </Link>
@@ -98,7 +97,7 @@ export function HomePage() {
                     <Button size="lg" variant="outline" className={`text-lg px-8 py-6 ${
                       theme === 'dark' ? 'border-slate-700 hover:bg-slate-800' : 'border-slate-300'
                     }`}>
-                      {language === 'th' ? 'ดูคอร์สทั้งหมด' : 'Browse All Courses'}
+                      {t('home.viewAllCourses')}
                     </Button>
                   </Link>
                 </div>
@@ -106,10 +105,10 @@ export function HomePage() {
                 {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-4">
                   {[
-                    { label: language === 'th' ? 'คอร์ส' : 'Courses', value: '500+' },
-                    { label: language === 'th' ? 'นักเรียน' : 'Students', value: '10K+' },
-                    { label: language === 'th' ? 'ครู' : 'Teachers', value: '100+' },
-                    { label: language === 'th' ? 'คะแนน' : 'Rating', value: '4.9' }
+                    { label: t('home.statsCourses'), value: '500+' },
+                    { label: t('home.statsStudents'), value: '10K+' },
+                    { label: t('home.statsTeachers'), value: '100+' },
+                    { label: t('home.statsRating'), value: '4.9' }
                   ].map((stat, i) => (
                     <div key={i} className="text-center p-4 rounded-2xl glass">
                       <div className="text-3xl font-bold bg-gradient-to-r from-emerald-700 to-green-600 bg-clip-text text-transparent">
@@ -146,10 +145,10 @@ export function HomePage() {
                         <Clock className="h-16 w-16 text-emerald-500" />
                       </div>
                       <h3 className="text-2xl font-bold mb-2">
-                        {language === 'th' ? 'เรียนได้ทุกเวลา' : 'Learn Anytime'}
+                        {t('home.learnAnytimeTitle')}
                       </h3>
                       <p className={theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}>
-                        {language === 'th' ? '24 ชั่วโมง ตลอด 7 วัน' : '24 hours a day, 7 days a week'}
+                        {t('home.learnAnytimeDesc')}
                       </p>
                     </div>
                   </div>
@@ -164,13 +163,10 @@ export function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-5xl font-bold mb-4">
-                {language === 'th' ? 'เหตุผลที่เลือกเรา' : 'Why Choose Us'}
+                {t('home.whyChooseUs')}
               </h2>
               <p className={`text-xl max-w-2xl mx-auto ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
-                {language === 'th' 
-                  ? 'คุณสมบัติที่จะช่วยให้การเรียนของคุณประสบความสำเร็จ'
-                  : 'Features that will help your learning succeed'
-                }
+                {t('home.whyChooseUsSubtitle')}
               </p>
             </div>
 
@@ -203,13 +199,10 @@ export function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-5xl font-bold mb-4">
-                {language === 'th' ? 'คอร์สยอดนิยม' : 'Popular Courses'}
+                {t('home.popularCourses')}
               </h2>
               <p className={`text-xl max-w-2xl mx-auto ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
-                {language === 'th' 
-                  ? 'คอร์สที่ได้รับความนิยมจากนักเรียน'
-                  : 'Courses loved by students'
-                }
+                {t('home.popularCoursesDesc')}
               </p>
             </div>
 
@@ -218,9 +211,9 @@ export function HomePage() {
             ) : isError || !featuredCourses?.length ? (
               <EmptyState
                 icon={BookOpen}
-                title={language === 'th' ? 'ยังไม่มีคอร์ส' : 'No courses yet'}
-                description={language === 'th' ? 'คอร์สใหม่จะปรากฏที่นี่เร็วๆ นี้' : 'New courses will appear here soon'}
-                actionLabel={language === 'th' ? 'ดูคอร์สทั้งหมด' : 'Browse courses'}
+                title={t('home.featuredEmpty')}
+                description={t('home.featuredEmptyDesc')}
+                actionLabel={t('home.browseCourses')}
                 onAction={() => window.location.assign('/courses')}
               />
             ) : (
@@ -241,7 +234,7 @@ export function HomePage() {
                   <CardContent className="p-8">
                     <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
                     <p className={`mb-6 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
-                      {language === 'th' ? 'โดย ' : 'by '}
+                      {t('home.by')}{' '}
                       {course.teacher?.user ? `${course.teacher.user.firstName} ${course.teacher.user.lastName}` : '-'}
                     </p>
                     
@@ -249,17 +242,17 @@ export function HomePage() {
                       <div className="flex items-center space-x-1">
                         <Users className="h-4 w-4 text-emerald-600" />
                         <span className={`text-sm ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
-                          {course._count?.enrollments ?? 0} {language === 'th' ? 'นักเรียน' : 'students'}
+                          {course._count?.enrollments ?? 0} {t('home.statsStudents')}
                         </span>
                       </div>
                       <span className="font-bold text-emerald-700 dark:text-emerald-400 text-lg">
-                        {Number(course.price) === 0 ? (language === 'th' ? 'ฟรี' : 'Free') : `฿${course.price}`}
+                        {Number(course.price) === 0 ? t('coursesPage.free') : `฿${course.price}`}
                       </span>
                     </div>
 
                     <Link to={`/courses/${course.id}`}>
                       <Button className="w-full premium-btn text-white">
-                        {language === 'th' ? 'ดูรายละเอียด' : 'View Details'}
+                        {t('coursesPage.viewDetails')}
                       </Button>
                     </Link>
                   </CardContent>
@@ -273,7 +266,7 @@ export function HomePage() {
                 <Button size="lg" className={`${
                   theme === 'dark' ? 'border-slate-700 hover:bg-slate-800' : 'border-slate-300'
                 }`}>
-                  {language === 'th' ? 'ดูคอร์สทั้งหมด' : 'Browse All Courses'}
+                  {t('home.viewAllCourses')}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
@@ -295,23 +288,20 @@ export function HomePage() {
 
               <div className="relative z-10 text-center text-white">
                 <h2 className="text-3xl md:text-5xl font-bold mb-6">
-                  {language === 'th' ? 'พร้อมที่จะเริ่มการเรียนรู้หรือยัง?' : 'Ready to Start Learning?'}
+                  {t('home.ctaTitle')}
                 </h2>
                 <p className="text-xl mb-10 text-white/90 max-w-2xl mx-auto">
-                  {language === 'th' 
-                    ? 'สมัครสมาชิกวันนี้ แล้วเริ่มการเรียนรู้ที่จะเปลี่ยนชีวิตคุณ'
-                    : 'Sign up today and start your life-changing learning journey'
-                  }
+                  {t('home.ctaDesc')}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link to="/register/student">
                     <Button size="lg" className="text-lg px-8 py-6 bg-white text-emerald-700 hover:bg-white/90 shadow-xl">
-                      {language === 'th' ? 'สมัครเป็นนักเรียน' : 'Sign Up as Student'}
+                      {t('home.signUpStudent')}
                     </Button>
                   </Link>
                   <Link to="/register/teacher">
                     <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-white/50 text-white hover:bg-white/10">
-                      {language === 'th' ? 'สมัครเป็นครู' : 'Sign Up as Teacher'}
+                      {t('home.signUpTeacher')}
                     </Button>
                   </Link>
                 </div>

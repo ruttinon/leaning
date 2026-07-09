@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { BackButton } from '@/components/BackButton'
 import { RouteFallback } from '@/components/RouteFallback'
 import { DashboardThemeToggle } from '@/components/DashboardThemeToggle'
+import { DashboardLanguageToggle } from '@/components/DashboardLanguageToggle'
 import { useTranslation } from '@/lib/i18n'
 import { useAppStore } from '@/store/theme-store'
 import { 
@@ -189,6 +190,7 @@ export function StudentDashboardLayout() {
             {!isDashboardHome && <BackButton fallback="/student/dashboard" />}
           </div>
           <div className="flex items-center space-x-4">
+            <DashboardLanguageToggle />
             <DashboardThemeToggle />
             <span className={`text-sm ${theme === 'dark' ? 'text-slate-300' : 'text-gray-600'}`}>
               สวัสดี, {user?.firstName}

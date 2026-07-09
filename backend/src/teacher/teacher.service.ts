@@ -35,11 +35,71 @@ export class TeacherService {
       },
     })
 
+    const pendingSubmissions = await this.prisma.assignmentSubmission.count({
+      where: {
+        status: 'SUBMITTED',
+        assignment: {
+          lesson: {
+            chapter: {
+              course: { teacherId: teacherProfile.id },
+            },
+          },
+        },
+      },
+    })
+
+    const quizAttempts = await this.prisma.quizAttempt.findMany({
+      where: {
+        completedAt: { not: null },
+        quiz: {
+          lesson: {
+            chapter: {
+              course: { teacherId: teacherProfile.id },
+            },
+          },
+        },
+      },
+      select: { score: true, maxScore: true },
+    })
+
+    const gradedAssignments = await this.prisma.assignmentSubmission.findMany({
+      where: {
+        status: 'GRADED',
+        assignment: {
+          lesson: {
+            chapter: {
+              course: { teacherId: teacherProfile.id },
+            },
+          },
+        },
+      },
+      select: {
+        grade: true,
+        assignment: { select: { maxPoints: true } },
+      },
+    })
+
+    let totalEarned = 0
+    let totalMax = 0
+    for (const attempt of quizAttempts) {
+      totalEarned += Number(attempt.score || 0)
+      totalMax += Number(attempt.maxScore || 0)
+    }
+    for (const submission of gradedAssignments) {
+      totalEarned += Number(submission.grade || 0)
+      totalMax += Number(submission.assignment.maxPoints || 0)
+    }
+
+    const averageScorePercent =
+      totalMax > 0 ? Math.round((totalEarned / totalMax) * 100) : null
+
     return {
       teacherProfile,
       totalCourses,
       publishedCourses,
       totalEnrollments,
+      pendingSubmissions,
+      averageScorePercent,
     }
   }
 
@@ -89,7 +149,10 @@ export class TeacherService {
 
     return this.prisma.course.findMany({
       where: { teacherId: teacherProfile.id },
-      include: { subject: true },
+      include: {
+        subject: true,
+        _count: { select: { enrollments: true } },
+      },
       orderBy: { createdAt: 'desc' },
     })
   }
@@ -1075,6 +1138,10 @@ export class TeacherService {
         student: enrollment.student,
         quizAttempts,
         assignmentSubmissions,
+        totalQuizScore,
+        totalQuizMaxScore,
+        totalAssignmentScore,
+        totalAssignmentMaxScore,
         totalScore,
         totalMaxScore,
       }
@@ -1117,10 +1184,20 @@ export class TeacherService {
       throw new ForbiddenException('Not authorized to grade this submission')
     }
 
+    if (data.grade === undefined || data.grade === null || data.grade === '') {
+      throw new BadRequestException('Grade is required')
+    }
+
+    const grade = Number(data.grade)
+    const maxPoints = submission.assignment.maxPoints
+    if (Number.isNaN(grade) || grade < 0 || grade > maxPoints) {
+      throw new BadRequestException(`Grade must be between 0 and ${maxPoints}`)
+    }
+
     const updated = await this.prisma.assignmentSubmission.update({
       where: { id: submissionId },
       data: {
-        grade: data.grade,
+        grade,
         feedback: data.feedback,
         gradedAt: new Date(),
         status: 'GRADED',
@@ -1134,7 +1211,7 @@ export class TeacherService {
     await this.notificationService.notifyUser(
       updated.student.userId,
       'งานของคุณได้รับการตรวจแล้ว',
-      `งาน "${updated.assignment.title}" ได้คะแนน ${data.grade}`,
+      `งาน "${updated.assignment.title}" ได้คะแนน ${grade}`,
       'ASSIGNMENT_GRADED',
       '/student/scores',
     )
@@ -1157,6 +1234,15 @@ export class TeacherService {
           chapter: {
             course: {
               teacherId: teacherProfile.id,
+            },
+          },
+        },
+      },
+      include: {
+        lesson: {
+          include: {
+            chapter: {
+              include: { course: { select: { id: true, title: true } } },
             },
           },
         },
@@ -1185,6 +1271,16 @@ export class TeacherService {
           },
         },
       },
+      include: {
+        lesson: {
+          include: {
+            chapter: {
+              include: { course: { select: { id: true, title: true } } },
+            },
+          },
+        },
+        _count: { select: { questions: true } },
+      },
       orderBy: { createdAt: 'desc' },
     })
   }
@@ -1209,6 +1305,16 @@ export class TeacherService {
           },
         },
       },
+      include: {
+        lesson: {
+          include: {
+            chapter: {
+              include: { course: { select: { id: true, title: true } } },
+            },
+          },
+        },
+        _count: { select: { questions: true } },
+      },
       orderBy: { createdAt: 'desc' },
     })
   }
@@ -1228,6 +1334,15 @@ export class TeacherService {
           chapter: {
             course: {
               teacherId: teacherProfile.id,
+            },
+          },
+        },
+      },
+      include: {
+        lesson: {
+          include: {
+            chapter: {
+              include: { course: { select: { id: true, title: true } } },
             },
           },
         },

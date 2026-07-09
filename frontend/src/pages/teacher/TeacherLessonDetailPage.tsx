@@ -8,11 +8,20 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Plus, FileText, BookOpen, Video, ClipboardList, Eye, Pencil, Trash2, ExternalLink, Sparkles } from 'lucide-react'
 import { api } from '@/lib/api'
+import { confirm } from '@/store/confirm-store'
 import { resolveFileUrl, toAbsoluteFileUrl, uploadLessonMaterial } from '@/lib/storage'
 
 export function TeacherLessonDetailPage() {
   const { lessonId } = useParams<{ lessonId: string }>()
   const queryClient = useQueryClient()
+
+  const refreshLessonAndLists = () => {
+    queryClient.invalidateQueries({ queryKey: ['teacher-lesson', lessonId] })
+    queryClient.invalidateQueries({ queryKey: ['teacher-quizzes'] })
+    queryClient.invalidateQueries({ queryKey: ['teacher-exams'] })
+    queryClient.invalidateQueries({ queryKey: ['teacher-assignments'] })
+    queryClient.invalidateQueries({ queryKey: ['teacher-materials'] })
+  }
 
   const [viewingMaterialId, setViewingMaterialId] = useState<string | null>(null)
   const [editingMaterialId, setEditingMaterialId] = useState<string | null>(null)
@@ -86,7 +95,7 @@ export function TeacherLessonDetailPage() {
       })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teacher-lesson', lessonId] })
+      refreshLessonAndLists()
       setQuickMaterialTitle('')
       setQuickMaterialFile(null)
       setQuickMessage('อัปโหลดเอกสารเรียบร้อยแล้ว')
@@ -106,7 +115,7 @@ export function TeacherLessonDetailPage() {
       }],
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teacher-lesson', lessonId] })
+      refreshLessonAndLists()
       setQuickQuizQuestion('')
       setQuickOptionA('')
       setQuickOptionB('')
@@ -122,7 +131,7 @@ export function TeacherLessonDetailPage() {
       maxPoints: 10,
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teacher-lesson', lessonId] })
+      refreshLessonAndLists()
       setQuickHomeworkTitle('')
       setQuickMessage('สร้างการบ้านเรียบร้อยแล้ว')
     },
@@ -138,7 +147,7 @@ export function TeacherLessonDetailPage() {
       fileUrl: materialUrl || undefined,
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teacher-lesson', lessonId] })
+      refreshLessonAndLists()
       setShowAddMaterial(false)
       setMaterialTitle('')
       setMaterialType('pdf')
@@ -158,7 +167,7 @@ export function TeacherLessonDetailPage() {
       questions: quizQuestions
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teacher-lesson', lessonId] })
+      refreshLessonAndLists()
       setShowAddQuiz(false)
       setQuizTitle('')
       setQuizType('QUIZ')
@@ -183,7 +192,7 @@ export function TeacherLessonDetailPage() {
       dueDate: assignmentDueDate || null
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teacher-lesson', lessonId] })
+      refreshLessonAndLists()
       setShowAddAssignment(false)
       setAssignmentTitle('')
       setAssignmentDescription('')
@@ -198,7 +207,7 @@ export function TeacherLessonDetailPage() {
       type: editMaterialType,
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teacher-lesson', lessonId] })
+      refreshLessonAndLists()
       setEditingMaterialId(null)
     },
   })
@@ -206,7 +215,7 @@ export function TeacherLessonDetailPage() {
   const deleteMaterialMutation = useMutation({
     mutationFn: async (materialId: string) => api.delete(`/teacher/materials/${materialId}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teacher-lesson', lessonId] })
+      refreshLessonAndLists()
       setViewingMaterialId(null)
     },
   })
@@ -217,7 +226,7 @@ export function TeacherLessonDetailPage() {
       type: editQuizType,
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teacher-lesson', lessonId] })
+      refreshLessonAndLists()
       setEditingQuizId(null)
     },
   })
@@ -225,7 +234,7 @@ export function TeacherLessonDetailPage() {
   const deleteQuizMutation = useMutation({
     mutationFn: async (quizId: string) => api.delete(`/teacher/quizzes/${quizId}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teacher-lesson', lessonId] })
+      refreshLessonAndLists()
       setViewingQuizId(null)
     },
   })
@@ -238,7 +247,7 @@ export function TeacherLessonDetailPage() {
       dueDate: editAssignmentDueDate || null,
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teacher-lesson', lessonId] })
+      refreshLessonAndLists()
       setEditingAssignmentId(null)
     },
   })
@@ -246,7 +255,7 @@ export function TeacherLessonDetailPage() {
   const deleteAssignmentMutation = useMutation({
     mutationFn: async (assignmentId: string) => api.delete(`/teacher/assignments/${assignmentId}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teacher-lesson', lessonId] })
+      refreshLessonAndLists()
       setViewingAssignmentId(null)
     },
   })
@@ -425,9 +434,13 @@ export function TeacherLessonDetailPage() {
                     variant="outline"
                     className="text-red-600 hover:text-red-700"
                     onClick={() => {
-                      if (window.confirm(`ลบ "${material.title}" ?`)) {
-                        deleteMaterialMutation.mutate(material.id)
-                      }
+                      confirm({
+                        title: 'ลบวัสดุ',
+                        description: `ลบ "${material.title}" ถาวร?`,
+                        variant: 'danger',
+                        confirmLabel: 'ลบ',
+                        onConfirm: () => deleteMaterialMutation.mutate(material.id),
+                      })
                     }}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -569,9 +582,13 @@ export function TeacherLessonDetailPage() {
                     variant="outline"
                     className="text-red-600 hover:text-red-700"
                     onClick={() => {
-                      if (window.confirm(`ลบ "${quiz.title}" ?`)) {
-                        deleteQuizMutation.mutate(quiz.id)
-                      }
+                      confirm({
+                        title: 'ลบ Quiz/Exam',
+                        description: `ลบ "${quiz.title}" ถาวร?`,
+                        variant: 'danger',
+                        confirmLabel: 'ลบ',
+                        onConfirm: () => deleteQuizMutation.mutate(quiz.id),
+                      })
                     }}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -814,9 +831,13 @@ export function TeacherLessonDetailPage() {
                     variant="outline"
                     className="text-red-600 hover:text-red-700"
                     onClick={() => {
-                      if (window.confirm(`ลบ "${assignment.title}" ?`)) {
-                        deleteAssignmentMutation.mutate(assignment.id)
-                      }
+                      confirm({
+                        title: 'ลบ Assignment',
+                        description: `ลบ "${assignment.title}" ถาวร?`,
+                        variant: 'danger',
+                        confirmLabel: 'ลบ',
+                        onConfirm: () => deleteAssignmentMutation.mutate(assignment.id),
+                      })
                     }}
                   >
                     <Trash2 className="h-4 w-4" />

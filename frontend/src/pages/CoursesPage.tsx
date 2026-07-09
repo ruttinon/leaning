@@ -5,6 +5,9 @@ import { BookOpen, Star, Users, Sparkles, ArrowRight, Clock3 } from 'lucide-reac
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { useAppStore } from '@/store/theme-store';
+import { useTranslation } from '@/lib/i18n';
+import { LoadingState } from '@/components/LoadingState';
+import { ErrorState } from '@/components/ErrorState';
 
 interface Course {
   id: string;
@@ -24,7 +27,8 @@ interface Course {
 
 export function CoursesPage() {
   const { theme } = useAppStore();
-  const { data: courses, isLoading, error } = useQuery<Course[]>({
+  const { t } = useTranslation();
+  const { data: courses, isLoading, isError, error, refetch } = useQuery<Course[]>({
     queryKey: ['courses'],
     queryFn: async () => await api.get('/public/courses'),
   });
@@ -39,10 +43,10 @@ export function CoursesPage() {
             <div className="max-w-3xl">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-sm text-white/90 backdrop-blur">
                 <Sparkles className="h-4 w-4" />
-                คอร์สที่ถูกออกแบบมาเพื่อให้คุณเรียนได้ง่ายขึ้น
+                {t('coursesPage.badge')}
               </div>
-              <h1 className="text-4xl font-bold text-white md:text-5xl">เลือกคอร์สที่ใช่สำหรับคุณ</h1>
-              <p className="mt-4 text-lg text-emerald-50">เรียนจากครูมืออาชีพ คอร์สเน้นการปฏิบัติ และติดตามความก้าวหน้าได้จากที่เดียว</p>
+              <h1 className="text-4xl font-bold text-white md:text-5xl">{t('coursesPage.title')}</h1>
+              <p className="mt-4 text-lg text-emerald-50">{t('coursesPage.subtitle')}</p>
             </div>
           </div>
         </section>
@@ -50,24 +54,24 @@ export function CoursesPage() {
         <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="mb-8 flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between dark:border-slate-700 dark:bg-slate-800">
             <div>
-              <h2 className="text-xl font-semibold">คอร์สทั้งหมด</h2>
-              <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>เลือกตามความสนใจและระดับความพร้อมของคุณ</p>
+              <h2 className="text-xl font-semibold">{t('coursesPage.allCourses')}</h2>
+              <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>{t('coursesPage.allCoursesDesc')}</p>
             </div>
             <div className="flex items-center gap-3 text-sm text-slate-500">
               <div className="flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2 dark:bg-slate-700 dark:text-slate-300">
                 <Clock3 className="h-4 w-4" />
-                เรียนได้ทุกเมื่อ
+                {t('coursesPage.learnAnytime')}
               </div>
               <div className="flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2 dark:bg-slate-700 dark:text-slate-300">
                 <Users className="h-4 w-4" />
-                ครูผู้เชี่ยวชาญ
+                {t('coursesPage.expertTeachers')}
               </div>
             </div>
           </div>
 
-          {isLoading && <div className="py-12 text-center text-slate-600">กำลังโหลด...</div>}
-          {error && <div className="py-12 text-center text-red-600">เกิดข้อผิดพลาด: {String(error)}</div>}
-          {!isLoading && !error && (
+          {isLoading && <LoadingState />}
+          {isError && <ErrorState message={String(error)} onRetry={() => refetch()} />}
+          {!isLoading && !isError && (
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
               {courses?.map((course) => (
                 <Link key={course.id} to={`/courses/${course.id}`} className="group block">
@@ -90,8 +94,8 @@ export function CoursesPage() {
                     </div>
                     <div className="p-6">
                       <div className="mb-3 flex items-center justify-between">
-                        <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">{course.level || 'พื้นฐาน'}</span>
-                        <span className="text-sm font-semibold text-emerald-600">{course.price === 0 ? 'ฟรี' : `฿${course.price}`}</span>
+                        <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">{course.level || t('coursesPage.basic')}</span>
+                        <span className="text-sm font-semibold text-emerald-600">{course.price === 0 ? t('coursesPage.free') : `฿${course.price}`}</span>
                       </div>
                       <h3 className={`text-xl font-semibold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{course.title}</h3>
                       {course.description && (
@@ -100,7 +104,7 @@ export function CoursesPage() {
                       <div className="mt-5 flex items-center justify-between text-sm">
                         <div className={`flex items-center gap-2 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
                           <Users className="h-4 w-4" />
-                          <span>อาจารย์ {course.teacher?.user?.firstName || 'ทีมครู'}</span>
+                          <span>{t('coursesPage.teacherPrefix')} {course.teacher?.user?.firstName || '-'}</span>
                         </div>
                         <div className="flex items-center gap-1 text-amber-500">
                           <Star className="h-4 w-4 fill-current" />
@@ -108,7 +112,7 @@ export function CoursesPage() {
                         </div>
                       </div>
                       <div className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-emerald-700">
-                        ดูรายละเอียด <ArrowRight className="h-4 w-4" />
+                        {t('coursesPage.viewDetails')} <ArrowRight className="h-4 w-4" />
                       </div>
                     </div>
                   </div>

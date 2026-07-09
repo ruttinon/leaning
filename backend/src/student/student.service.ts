@@ -73,10 +73,107 @@ export class StudentService {
       where: { studentId: studentProfile.id, isCompleted: true },
     })
 
+    const allEnrollments = await this.prisma.enrollment.findMany({
+      where: { studentId: studentProfile.id },
+      select: { progress: true, courseId: true, course: { select: { title: true } } },
+    })
+
+    const averageProgress =
+      allEnrollments.length > 0
+        ? Math.round(
+            allEnrollments.reduce((sum, enrollment) => sum + enrollment.progress, 0) /
+              allEnrollments.length,
+          )
+        : 0
+
+    const quizAttempts = await this.prisma.quizAttempt.findMany({
+      where: { studentId: studentProfile.id, completedAt: { not: null } },
+      select: { score: true, maxScore: true },
+    })
+
+    const gradedSubmissions = await this.prisma.assignmentSubmission.findMany({
+      where: { studentId: studentProfile.id, grade: { not: null } },
+      include: { assignment: { select: { maxPoints: true } } },
+    })
+
+    let earnedScore = 0
+    let maxScore = 0
+    for (const attempt of quizAttempts) {
+      const max = Number(attempt.maxScore) || 0
+      if (max > 0) {
+        earnedScore += Number(attempt.score) || 0
+        maxScore += max
+      }
+    }
+    for (const submission of gradedSubmissions) {
+      const max = submission.assignment.maxPoints || 0
+      if (max > 0) {
+        earnedScore += Number(submission.grade) || 0
+        maxScore += max
+      }
+    }
+
+    const averageScorePercent = maxScore > 0 ? Math.round((earnedScore / maxScore) * 100) : null
+
+    const enrolledCourseIds = allEnrollments.map((enrollment) => enrollment.courseId)
+    const todos: Array<{
+      type: 'CONTINUE_COURSE' | 'ASSIGNMENT'
+      title: string
+      courseId: string
+      courseTitle: string
+      lessonId?: string
+      assignmentId?: string
+      progress?: number
+    }> = []
+
+    for (const enrollment of allEnrollments.filter((item) => item.progress < 100).slice(0, 3)) {
+      todos.push({
+        type: 'CONTINUE_COURSE',
+        title: enrollment.course.title,
+        courseId: enrollment.courseId,
+        courseTitle: enrollment.course.title,
+        progress: enrollment.progress,
+      })
+    }
+
+    if (enrolledCourseIds.length > 0) {
+      const pendingAssignments = await this.prisma.assignment.findMany({
+        where: {
+          lesson: { chapter: { courseId: { in: enrolledCourseIds } } },
+          submissions: { none: { studentId: studentProfile.id } },
+        },
+        include: {
+          lesson: {
+            include: {
+              chapter: {
+                include: { course: { select: { id: true, title: true } } },
+              },
+            },
+          },
+        },
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+      })
+
+      for (const assignment of pendingAssignments) {
+        todos.push({
+          type: 'ASSIGNMENT',
+          title: assignment.title,
+          courseId: assignment.lesson.chapter.course.id,
+          courseTitle: assignment.lesson.chapter.course.title,
+          lessonId: assignment.lessonId,
+          assignmentId: assignment.id,
+        })
+      }
+    }
+
     return {
       studentProfile,
       totalEnrollments,
       completedLessons,
+      averageProgress,
+      averageScorePercent,
+      todos: todos.slice(0, 8),
     }
   }
 
@@ -496,7 +593,37 @@ export class StudentService {
       throw new ForbiddenException('Not enrolled in this course')
     }
 
-    return prepareQuizForStudent(quiz)
+    const attemptCount = await this.prisma.quizAttempt.count({
+      where: { quizId, studentId: studentProfile.id },
+    })
+
+    const now = new Date()
+    const beforeStart = quiz.startDate && now < new Date(quiz.startDate)
+    const afterEnd = quiz.endDate && now > new Date(quiz.endDate)
+    const canAttempt =
+      !beforeStart &&
+      !afterEnd &&
+      (!quiz.maxAttempts || attemptCount < quiz.maxAttempts)
+
+    let availabilityMessage: string | null = null
+    if (beforeStart) {
+      availabilityMessage = 'ยังไม่ถึงเวลาเปิดทำแบบทดสอบ'
+    } else if (afterEnd) {
+      availabilityMessage = 'หมดเวลาทำแบบทดสอบแล้ว'
+    } else if (quiz.maxAttempts && attemptCount >= quiz.maxAttempts) {
+      availabilityMessage = 'ใช้สิทธิ์ทำครบแล้ว'
+    }
+
+    return {
+      ...prepareQuizForStudent(quiz),
+      attemptCount,
+      attemptsRemaining:
+        quiz.maxAttempts != null
+          ? Math.max(0, quiz.maxAttempts - attemptCount)
+          : null,
+      canAttempt,
+      availabilityMessage,
+    }
   }
 
   async startQuizAttempt(userId: string, quizId: string) {
@@ -634,6 +761,14 @@ export class StudentService {
 
     if (attempt.completedAt) {
       throw new BadRequestException('Attempt already submitted')
+    }
+
+    if (attempt.quiz.timeLimit) {
+      const elapsedMinutes =
+        (Date.now() - new Date(attempt.startedAt).getTime()) / 60000
+      if (elapsedMinutes > attempt.quiz.timeLimit) {
+        throw new BadRequestException('Time limit exceeded')
+      }
     }
 
     let totalScore = 0
@@ -926,6 +1061,42 @@ export class StudentService {
     }
 
     return coupon
+  }
+
+  async validateCoupon(userId: string, code: string, courseId: string) {
+    const studentProfile = await this.prisma.studentProfile.findUnique({
+      where: { userId },
+    })
+
+    if (!studentProfile) {
+      throw new NotFoundException('Student profile not found')
+    }
+
+    const course = await this.prisma.course.findUnique({
+      where: { id: courseId },
+    })
+
+    if (!course) {
+      throw new NotFoundException('Course not found')
+    }
+
+    if (course.status !== 'PUBLISHED') {
+      throw new BadRequestException('Course is not available for purchase')
+    }
+
+    const coupon = await this.applyCoupon(code)
+    const originalPrice = Number(course.price)
+    const { amount: finalAmount } = calculatePaymentAmount(
+      originalPrice,
+      Number(coupon.discount),
+    )
+
+    return {
+      code: coupon.code,
+      discountPercent: Number(coupon.discount),
+      originalPrice,
+      finalAmount,
+    }
   }
 
   async createPaymentIntent(userId: string, courseId: string, couponCode?: string) {

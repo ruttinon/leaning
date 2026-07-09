@@ -4,16 +4,19 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BookOpen, Sparkles } from 'lucide-react'
 import { api } from '@/lib/api'
+import { LoadingState } from '@/components/LoadingState'
+import { ErrorState } from '@/components/ErrorState'
+import { toast } from '@/store/toast-store'
+import { isApiError } from '@/lib/api-error'
 
 export function TeacherCoursesPage() {
-  const { data: courses, isLoading } = useQuery({
+  const { data: courses, isLoading, isError, refetch } = useQuery({
     queryKey: ['teacher-courses'],
     queryFn: async () => api.get<Array<any>>('/teacher/courses'),
   })
 
-  if (isLoading) {
-    return <div className="text-center py-12 text-gray-600">กำลังโหลด...</div>
-  }
+  if (isLoading) return <LoadingState />
+  if (isError) return <ErrorState onRetry={() => refetch()} />
 
   return (
     <div className="space-y-6">

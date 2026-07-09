@@ -1,53 +1,61 @@
-import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardTitle } from '@/components/ui/card';
-import { Users, Calendar } from 'lucide-react';
-import { api } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
+import { Card, CardContent, CardTitle } from '@/components/ui/card'
+import { Users, Calendar } from 'lucide-react'
+import { api } from '@/lib/api'
+import { LoadingState } from '@/components/LoadingState'
+import { ErrorState } from '@/components/ErrorState'
+import { EmptyState } from '@/components/EmptyState'
 
 interface Student {
-  id: string;
-  email: string;
-  username?: string | null;
-  firstName: string;
-  lastName: string;
-  role: string;
-  isActive: boolean;
-  createdAt: string;
-  enrollments: number;
+  id: string
+  email: string
+  username?: string | null
+  firstName: string
+  lastName: string
+  role: string
+  isActive: boolean
+  createdAt: string
+  enrollments: number
 }
 
 export function TeacherStudentsPage() {
-  const { data: students, isLoading } = useQuery({
+  const { data: students, isLoading, isError, refetch } = useQuery({
     queryKey: ['teacher-students'],
-    queryFn: async () => api.get<Student[]>('/teacher/students'),
-  });
+    queryFn: () => api.get<Student[]>('/teacher/students'),
+  })
 
-  if (isLoading) {
-    return (
-      <div className="text-center py-12 text-gray-600">กำลังโหลด...</div>
-    );
-  }
+  if (isLoading) return <LoadingState />
+  if (isError) return <ErrorState onRetry={() => refetch()} />
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">นักเรียนทั้งหมด</h1>
-        <p className="text-gray-600">ดูรายชื่อนักเรียนที่ลงทะเบียนเรียนกับคุณ</p>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">นักเรียนทั้งหมด</h1>
+          <p className="text-gray-600">ดูรายชื่อนักเรียนที่ลงทะเบียนเรียนกับคุณ</p>
+        </div>
+        <Link to="/teacher/gradebook" className="inline-flex items-center text-sm font-medium text-emerald-700 hover:underline">
+          <Users className="mr-2 h-4 w-4" />
+          ดูสมุดคะแนน
+        </Link>
       </div>
 
-      {!students || students.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6 text-center py-12">
-            <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500 mb-4">ยังไม่มีนักเรียน</p>
-          </CardContent>
-        </Card>
+      {!students?.length ? (
+        <EmptyState
+          icon={Users}
+          title="ยังไม่มีนักเรียน"
+          description="เมื่อนักเรียนลงทะเบียนคอร์สของคุณ รายชื่อจะแสดงที่นี่"
+          actionLabel="ไปที่คอร์ส"
+          onAction={() => { window.location.assign('/teacher/courses') }}
+        />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {students.map((student) => (
             <Card key={student.id} className="hover:shadow-lg transition-shadow">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-emerald-800 rounded-full flex items-center justify-center text-white font-semibold">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-800 font-semibold text-white">
                     {student.firstName.charAt(0)}
                     {student.lastName.charAt(0)}
                   </div>
@@ -61,12 +69,12 @@ export function TeacherStudentsPage() {
                     )}
                   </div>
                 </div>
-                <div className="flex items-center justify-between mt-4">
-                  <span className="text-xs text-gray-500 flex items-center gap-1">
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="flex items-center gap-1 text-xs text-gray-500">
                     <Calendar className="h-3 w-3" />
                     {new Date(student.createdAt).toLocaleDateString('th-TH')}
                   </span>
-                  <span className="text-xs bg-emerald-100 text-blue-700 px-2 py-1 rounded-full">
+                  <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs text-emerald-700">
                     {student.enrollments} คอร์ส
                   </span>
                 </div>
@@ -76,5 +84,5 @@ export function TeacherStudentsPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

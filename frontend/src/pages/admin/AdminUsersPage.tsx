@@ -7,6 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Users, User, GraduationCap, BookOpen } from 'lucide-react'
 import { api } from '@/lib/api'
 import { PaginationControls } from '@/components/PaginationControls'
+import { LoadingState } from '@/components/LoadingState'
+import { ErrorState } from '@/components/ErrorState'
 
 interface User {
   id: string
@@ -23,7 +25,7 @@ interface User {
 
 export function AdminUsersPage() {
   const [page, setPage] = useState(1)
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-users', page],
     queryFn: async () => api.get<{ data: User[]; meta: any }>(`/admin/users?page=${page}&limit=20`),
   })
@@ -66,11 +68,8 @@ export function AdminUsersPage() {
     return null
   }
 
-  if (isLoading) {
-    return (
-      <div className="text-center py-12 text-gray-600">กำลังโหลด...</div>
-    )
-  }
+  if (isLoading) return <LoadingState />
+  if (isError) return <ErrorState onRetry={() => refetch()} />
 
   return (
     <div className="space-y-6">

@@ -18,12 +18,14 @@ import {
   CheckSquare,
   Users,
   Video,
+  Inbox,
 } from 'lucide-react'
 import { useAuthStore } from '@/store/auth-store'
 import { API_BASE_URL } from '@/lib/api'
 import { lazyNamed } from '@/lib/lazy'
 import { useAppStore } from '@/store/theme-store'
 import { DashboardThemeToggle } from '@/components/DashboardThemeToggle'
+import { DashboardLanguageToggle } from '@/components/DashboardLanguageToggle'
 import { TeacherApprovalBanner } from '@/components/TeacherApprovalBanner'
 import { useTranslation } from '@/lib/i18n'
 
@@ -54,6 +56,10 @@ const TeacherLessonDetailPage = lazyNamed(
 const TeacherGradebookPage = lazyNamed(
   () => import('@/pages/teacher/TeacherGradebookPage'),
   'TeacherGradebookPage',
+)
+const TeacherGradebookIndexPage = lazyNamed(
+  () => import('@/pages/teacher/TeacherGradebookIndexPage'),
+  'TeacherGradebookIndexPage',
 )
 const ProfilePage = lazyNamed(() => import('@/pages/common/ProfilePage'), 'ProfilePage')
 const NotificationsPage = lazyNamed(
@@ -102,10 +108,11 @@ export function TeacherDashboardLayout() {
   const navItems = [
     { icon: LayoutDashboard, label: t('common.dashboard'), path: '/teacher/dashboard' },
     { icon: BookOpen, label: t('teacherDashboard.myCourses'), path: '/teacher/courses' },
-    { icon: File, label: t('teacherDashboard.materials'), path: '/teacher/materials' },
+    { icon: File, label: t('teacherDashboard.materialsShort'), path: '/teacher/materials' },
     { icon: HelpCircle, label: t('teacherDashboard.quizzes'), path: '/teacher/quizzes' },
     { icon: CheckSquare, label: t('teacherDashboard.exams'), path: '/teacher/exams' },
     { icon: FileText, label: t('teacherDashboard.assignments'), path: '/teacher/assignments' },
+    { icon: Inbox, label: t('teacherDashboard.submissions'), path: '/teacher/submissions' },
     { icon: Users, label: t('teacherDashboard.students'), path: '/teacher/students' },
     { icon: Video, label: t('teacherDashboard.liveClasses'), path: '/teacher/live-classes' },
     { icon: Award, label: t('teacherDashboard.gradebook'), path: '/teacher/gradebook' },
@@ -145,14 +152,14 @@ export function TeacherDashboardLayout() {
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsSidebarOpen(false)}
-                className={`flex items-center space-x-3 rounded-lg px-4 py-3 transition-colors ${
+                className={`flex min-w-0 items-center space-x-3 rounded-lg px-4 py-3 transition-colors ${
                   location.pathname === item.path || location.pathname.startsWith(item.path + '/')
                     ? 'bg-emerald-50 text-emerald-800 font-medium dark:bg-emerald-950/40 dark:text-emerald-300'
                     : theme === 'dark' ? 'hover:bg-slate-700' : 'hover:bg-gray-100'
                 }`}
               >
                 <Icon className="h-5 w-5 flex-shrink-0" />
-                <span className="truncate">{item.label}</span>
+                <span className="min-w-0 flex-1 truncate" title={item.label}>{item.label}</span>
               </Link>
             )
           })}
@@ -198,6 +205,7 @@ export function TeacherDashboardLayout() {
             {!isDashboardHome && <BackButton fallback="/teacher/dashboard" />}
           </div>
           <div className="flex items-center space-x-4">
+            <DashboardLanguageToggle />
             <DashboardThemeToggle />
             <span className={`text-sm ${theme === 'dark' ? 'text-slate-300' : 'text-gray-600'}`}>
               {t('teacherDashboard.welcome', { name: user?.firstName || '' })}
@@ -223,15 +231,7 @@ export function TeacherDashboardLayout() {
               <Route path="students" element={<TeacherStudentsPage />} />
               <Route path="live-classes" element={<TeacherLiveClassesPage />} />
               <Route path="gradebook/:courseId" element={<TeacherGradebookPage />} />
-              <Route
-                path="gradebook"
-                element={
-                  <div className="space-y-6">
-                    <h1 className="text-2xl font-bold">เกรด</h1>
-                    <p className="text-gray-600">เลือกคอร์สเพื่อดูสมุดคะแนน</p>
-                  </div>
-                }
-              />
+              <Route path="gradebook" element={<TeacherGradebookIndexPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="*" element={<TeacherDashboardPage />} />

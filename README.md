@@ -106,21 +106,19 @@
    npm install
    ```
 
-4. **Run backend**
+4. **Run app (single port)**
    ```powershell
-   cd backend
    npm run dev
    ```
+   Opens **http://localhost:5000** — API + website together. Frontend auto-rebuilds on save (refresh browser to see changes).
 
-5. **Run frontend** (new terminal)
-   ```powershell
-   cd frontend
-   npm run dev
-   ```
+   Optional HMR dev (two ports): `npm run dev:split` → UI on 5173, API on 5000.
 
-6. **API docs:** http://localhost:5000/api/docs
+5. **API docs:** http://localhost:5000/api/docs
 
 **Demo accounts** (after seed): `admin@example.com` / `admin1234`, `teacher@example.com` / `teacher1234`, `student@example.com` / `student1234`
+
+**Demo coupon:** `DEMO10` (10% off paid courses)
 
 New registrations require a strong password (8+ chars, upper, lower, number).
 
@@ -152,7 +150,17 @@ Signed URL APIs (teacher):
 cd backend
 npm test                  # unit tests
 npm run test:integration  # auth + health (requires PostgreSQL)
-npm run e2e:smoke         # API smoke tests (backend must be running)
+npm run e2e:smoke         # API smoke tests (backend must be running on :5000)
+
+# UI smoke (Playwright) — requires npm run dev or backend serving frontend/dist
+cd ..\frontend
+npm run test:e2e
+```
+
+From repo root:
+```powershell
+npm run e2e:smoke   # API smoke
+npm run e2e:ui      # Playwright UI smoke
 ```
 
 ### Production (Docker Compose)

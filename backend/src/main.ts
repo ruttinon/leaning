@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { existsSync } from 'fs';
 import { join } from 'path';
 import { randomUUID } from 'crypto';
 import { AppModule } from './app.module';
@@ -13,7 +14,7 @@ import { initErrorTracking, logStructured } from './common/observability/error-t
 
 async function bootstrap() {
   const isProduction = process.env.NODE_ENV === 'production';
-  const port = Number(process.env.PORT || 3000);
+  const port = Number(process.env.PORT || 5000);
   const rateLimitWindowMs = Number(process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000);
   const rateLimitMax = Number(process.env.RATE_LIMIT_MAX || 300);
 
@@ -29,7 +30,7 @@ async function bootstrap() {
   app.set('trust proxy', 1);
 
   app.enableCors({
-    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:5173', 'http://localhost:8080'],
+    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:5000', 'http://localhost:5173', 'http://localhost:8080'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
@@ -91,7 +92,13 @@ async function bootstrap() {
     next();
   });
 
-  const frontendDist = join(__dirname, '..', '..', 'frontend', 'dist');
+  const frontendDistCandidates = [
+    join(process.cwd(), '..', 'frontend', 'dist'),
+    join(__dirname, '..', '..', 'frontend', 'dist'),
+    join(__dirname, '..', '..', '..', 'frontend', 'dist'),
+  ];
+  const frontendDist = frontendDistCandidates.find((dir) => existsSync(join(dir, 'index.html')))
+    ?? frontendDistCandidates[0];
 
   app.useStaticAssets(frontendDist, {
     index: false,

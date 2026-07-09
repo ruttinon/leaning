@@ -14,7 +14,9 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Plus, Edit, Trash2, Bell, Calendar } from 'lucide-react';
-import { api } from '@/lib/api';
+import { api } from '@/lib/api'
+import { LoadingState } from '@/components/LoadingState'
+import { ErrorState } from '@/components/ErrorState'
 
 interface Announcement {
   id: string;
@@ -43,7 +45,7 @@ export function AdminAnnouncementsPage() {
   });
   const queryClient = useQueryClient();
 
-  const { data: announcements, isLoading } = useQuery({
+  const { data: announcements, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-announcements'],
     queryFn: async () => api.get<Announcement[]>('/admin/announcements'),
   });
@@ -100,11 +102,8 @@ export function AdminAnnouncementsPage() {
     });
   };
 
-  if (isLoading) {
-    return (
-      <div className="text-center py-12 text-gray-600">กำลังโหลด...</div>
-    );
-  }
+  if (isLoading) return <LoadingState />
+  if (isError) return <ErrorState onRetry={() => refetch()} />
 
   return (
     <div className="space-y-6">

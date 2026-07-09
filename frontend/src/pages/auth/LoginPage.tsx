@@ -61,7 +61,7 @@ export function LoginPage() {
         navigate('/admin/dashboard')
       }
     } catch (err) {
-      setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง')
+      setError(t('login.invalidCredentials'))
     } finally {
       setLoading(false)
     }
@@ -81,26 +81,26 @@ export function LoginPage() {
           <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-emerald-800 via-green-700 to-amber-700 p-8 text-white shadow-2xl">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-sm backdrop-blur">
               <Sparkles className="h-4 w-4" />
-              เข้าสู่ระบบอย่างปลอดภัย
+              {t('login.secureBadge')}
             </div>
-            <h1 className="text-3xl font-bold md:text-4xl">ยินดีต้อนรับกลับสู่แพลตฟอร์มการเรียนรู้</h1>
-            <p className="mt-4 text-lg text-emerald-50">เรียนต่อ สมัครคอร์สใหม่ และติดตามความก้าวหน้าตั้งแต่หน้าแรกเดียว</p>
+            <h1 className="text-3xl font-bold md:text-4xl">{t('login.welcomeBack')}</h1>
+            <p className="mt-4 text-lg text-emerald-50">{t('login.welcomeDesc')}</p>
             <div className="mt-8 flex items-center gap-2 rounded-2xl bg-white/15 p-4 text-sm backdrop-blur">
               <ShieldCheck className="h-5 w-5" />
-              ระบบรองรับการเข้าสู่ระบบที่ปลอดภัยและใช้งานง่าย
+              {t('login.secureNote')}
             </div>
           </div>
 
           <Card className={`rounded-3xl border shadow-xl ${theme === 'dark' ? 'border-slate-700 bg-slate-800' : 'border-slate-200 bg-white'}`}>
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl">เข้าสู่ระบบ</CardTitle>
+              <CardTitle className="text-2xl">{t('login.title')}</CardTitle>
               <CardDescription className={theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}>
-                เข้าสู่ระบบเพื่อเข้าใช้งานแพลตฟอร์ม
+                {t('login.subtitle')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label className={`text-sm font-semibold ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>🎮 สมัครทดสอบ (Demo Accounts)</Label>
+                <Label className={`text-sm font-semibold ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>🎮 {t('common.demoAccounts')}</Label>
                 <div className="grid grid-cols-1 gap-2">
                   {demoAccounts.map((account) => (
                     <Button
@@ -130,7 +130,7 @@ export function LoginPage() {
               <Separator />
 
               <div className="space-y-2">
-                <Label className={`text-sm font-semibold ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>🔑 เข้าสู่ระบบด้วยตัวเอง</Label>
+                <Label className={`text-sm font-semibold ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>🔑 {t('login.manualLogin')}</Label>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {sessionExpired && (
                     <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
@@ -144,7 +144,7 @@ export function LoginPage() {
                   )}
                   
                   <div className="space-y-2">
-                    <Label htmlFor="email">อีเมล</Label>
+                    <Label htmlFor="email">{t('common.email')}</Label>
                     <Input
                       id="email"
                       type="email"
@@ -158,9 +158,9 @@ export function LoginPage() {
                   
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="password">รหัสผ่าน</Label>
+                      <Label htmlFor="password">{t('common.password')}</Label>
                       <Link to="/forgot-password" className="text-sm text-primary hover:underline">
-                        ลืมรหัสผ่าน?
+                        {t('common.forgotPassword')}
                       </Link>
                     </div>
                     <Input
@@ -175,7 +175,7 @@ export function LoginPage() {
                   </div>
                   
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
+                    {loading ? t('login.loggingIn') : t('login.title')}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </form>

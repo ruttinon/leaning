@@ -7,6 +7,8 @@ import { api } from './lib/api'
 import { lazyNamed } from './lib/lazy'
 import { useAppStore } from './store/theme-store'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { Toaster } from './components/Toaster'
+import { ConfirmDialog } from './components/ConfirmDialog'
 
 const HomePage = lazyNamed(() => import('./pages/HomePage'), 'HomePage')
 const CoursesPage = lazyNamed(() => import('./pages/CoursesPage'), 'CoursesPage')
@@ -134,6 +136,8 @@ function App() {
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>
+        <Toaster />
+        <ConfirmDialog />
       </AppErrorBoundary>
     </div>
   )

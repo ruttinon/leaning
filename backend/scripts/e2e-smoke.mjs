@@ -257,6 +257,21 @@ async function main() {
     assert(Array.isArray(courses), 'teacher courses failed')
     assert(courses.some((c) => c.id === freeCourseId), 'created free course missing')
     assert(courses.some((c) => c.id === paidCourseId), 'created paid course missing')
+    assert(courses[0]._count?.enrollments !== undefined, 'course enrollment count missing')
+  })
+
+  await step('teacher aggregate lists', async () => {
+    const quizzes = await req('/teacher/quizzes', { token: teacherToken })
+    const exams = await req('/teacher/exams', { token: teacherToken })
+    const assignments = await req('/teacher/assignments', { token: teacherToken })
+    const materials = await req('/teacher/materials', { token: teacherToken })
+    assert(Array.isArray(quizzes), 'teacher quizzes failed')
+    assert(Array.isArray(exams), 'teacher exams failed')
+    assert(Array.isArray(assignments), 'teacher assignments failed')
+    assert(Array.isArray(materials), 'teacher materials failed')
+    assert(quizzes.some((q) => q.id === quizId), 'created quiz missing from aggregate list')
+    assert(assignments.length > 0, 'assignments aggregate empty')
+    assert(materials.length > 0, 'materials aggregate empty')
   })
 
   let studentToken
@@ -267,6 +282,13 @@ async function main() {
     })
     assert(login.access_token, 'no student token')
     studentToken = login.access_token
+  })
+
+  await step('student dashboard stats', async () => {
+    const dashboard = await req('/student/dashboard', { token: studentToken })
+    assert(typeof dashboard.totalEnrollments === 'number', 'enrollment count missing')
+    assert(typeof dashboard.averageProgress === 'number', 'average progress missing')
+    assert(Array.isArray(dashboard.todos), 'dashboard todos missing')
   })
 
   await step('student enroll free course', async () => {
@@ -296,6 +318,28 @@ async function main() {
       message.includes('Paid courses must be purchased before enrollment'),
       'expected paid course direct-enroll guard',
     )
+  })
+
+  let e2eCouponCode
+  await step('admin create coupon for checkout', async () => {
+    e2eCouponCode = `E2E${Date.now()}`
+    const coupon = await req('/admin/coupons', {
+      method: 'POST',
+      token: adminToken,
+      body: { code: e2eCouponCode, discount: 10, isActive: true, maxUses: 100 },
+    })
+    assert(coupon.code === e2eCouponCode, 'coupon create failed')
+  })
+
+  await step('student validate coupon', async () => {
+    const result = await req('/student/coupons/validate', {
+      method: 'POST',
+      token: studentToken,
+      body: { code: e2eCouponCode, courseId: paidCourseId },
+    })
+    assert(result.discountPercent === 10, 'coupon discount mismatch')
+    assert(result.originalPrice === 1290, 'coupon original price mismatch')
+    assert(result.finalAmount === 1161, `coupon final amount mismatch: ${result.finalAmount}`)
   })
 
   let paidCourseAutoEnrolled = false
@@ -381,6 +425,28 @@ async function main() {
         'paid course should be enrolled in mock payment mode',
       )
     }
+  })
+
+  await step('teacher students list', async () => {
+    const students = await req('/teacher/students', { token: teacherToken })
+    assert(Array.isArray(students), 'teacher students failed')
+    assert(students.length > 0, 'teacher should see enrolled student')
+  })
+
+  await step('teacher submissions list', async () => {
+    const submissions = await req('/teacher/submissions', { token: teacherToken })
+    assert(Array.isArray(submissions), 'teacher submissions failed')
+  })
+
+  await step('teacher gradebook', async () => {
+    const gradebook = await req(`/teacher/gradebook/${freeCourseId}`, { token: teacherToken })
+    assert(Array.isArray(gradebook), 'gradebook failed')
+    assert(gradebook.length > 0, 'gradebook should include enrolled student')
+    const entry = gradebook[0]
+    assert(entry.student?.user?.firstName, 'gradebook student missing')
+    assert(entry.totalQuizScore !== undefined, 'gradebook quiz score missing')
+    assert(entry.totalAssignmentScore !== undefined, 'gradebook assignment score missing')
+    assert(entry.totalScore !== undefined, 'gradebook total score missing')
   })
 
   await step('backup script still works after activity', async () => {

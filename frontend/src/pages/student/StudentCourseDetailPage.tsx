@@ -8,6 +8,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { api } from '@/lib/api'
+import { LoadingState } from '@/components/LoadingState'
+import { ErrorState } from '@/components/ErrorState'
+import { toast } from '@/store/toast-store'
+import { isApiError } from '@/lib/api-error'
 import { resolveStudentFileUrl, uploadStudentAssignment } from '@/lib/storage'
 
 export function StudentCourseDetailPage() {
@@ -18,7 +22,7 @@ export function StudentCourseDetailPage() {
   const [submissionText, setSubmissionText] = useState('')
   const [submissionFile, setSubmissionFile] = useState<File | null>(null)
 
-  const { data: course, isLoading } = useQuery({
+  const { data: course, isLoading, isError, refetch } = useQuery({
     queryKey: ['student-course', courseId],
     queryFn: async () => api.get<any>(`/student/courses/${courseId}`),
   })
@@ -55,6 +59,10 @@ export function StudentCourseDetailPage() {
       setShowSubmitAssignment(null)
       setSubmissionText('')
       setSubmissionFile(null)
+      toast.success('ส่งการบ้านเรียบร้อยแล้ว')
+    },
+    onError: (err: unknown) => {
+      toast.error(isApiError(err) ? err.message : 'ส่งการบ้านไม่สำเร็จ')
     },
   })
 
@@ -67,9 +75,8 @@ export function StudentCourseDetailPage() {
 
   const canSubmitAssignment = submissionText.trim().length > 0 || !!submissionFile
 
-  if (isLoading) {
-    return <div className="py-12 text-center text-gray-600">กำลังโหลด...</div>
-  }
+  if (isLoading) return <LoadingState />
+  if (isError) return <ErrorState onRetry={() => refetch()} />
 
   return (
     <div className="space-y-6">

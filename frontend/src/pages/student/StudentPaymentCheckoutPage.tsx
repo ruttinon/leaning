@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { api } from '@/lib/api'
 import { isStripeClientConfigured, stripePromise } from '@/lib/stripe'
+import { useTranslation } from '@/lib/i18n'
 
 interface PaymentDetailResponse {
   clientSecret: string | null
@@ -29,6 +30,7 @@ interface PaymentDetailResponse {
     paymentMethod?: string | null
     transactionId?: string | null
     status: string
+    couponCode?: string | null
     createdAt: string
     updatedAt: string
     course?: {
@@ -155,6 +157,7 @@ export function StudentPaymentCheckoutPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const queryClient = useQueryClient()
+  const { t } = useTranslation()
   const state = (location.state || {}) as CheckoutNoticeState
 
   const paymentQuery = useQuery({
@@ -232,13 +235,11 @@ export function StudentPaymentCheckoutPage() {
     <div className="mx-auto max-w-5xl space-y-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">ชำระเงินคอร์ส</h1>
-          <p className="text-gray-600">
-            ตรวจสอบรายการ ชำระเงินอย่างปลอดภัย และกลับมาเรียนต่อได้ทันทีเมื่อระบบยืนยันสำเร็จ
-          </p>
+          <h1 className="text-2xl font-bold">{t('checkout.title')}</h1>
+          <p className="text-gray-600">{t('checkout.subtitle')}</p>
         </div>
         <Button variant="outline" onClick={() => navigate('/student/payments')}>
-          กลับไปรายการชำระเงิน
+          {t('checkout.backToPayments')}
         </Button>
       </div>
 
@@ -267,11 +268,17 @@ export function StudentPaymentCheckoutPage() {
               </div>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-xl bg-white px-4 py-3">
-                  <p className="text-sm text-slate-500">ยอดชำระ</p>
+                  <p className="text-sm text-slate-500">{t('checkout.amount')}</p>
                   <p className="text-xl font-bold text-emerald-700">
                     {formatCurrency(payment.amount, payment.currency)}
                   </p>
                 </div>
+                {payment.couponCode && (
+                  <div className="rounded-xl bg-white px-4 py-3">
+                    <p className="text-sm text-slate-500">{t('checkout.coupon')}</p>
+                    <p className="font-medium">{payment.couponCode}</p>
+                  </div>
+                )}
                 <div className="rounded-xl bg-white px-4 py-3">
                   <p className="text-sm text-slate-500">วิธีชำระ</p>
                   <p className="font-medium">{payment.paymentMethod || '-'}</p>

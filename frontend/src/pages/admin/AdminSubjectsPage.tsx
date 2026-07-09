@@ -15,6 +15,8 @@ import {
 } from '@/components/ui/dialog'
 import { BookOpen, Plus, Edit, Trash2 } from 'lucide-react'
 import { api } from '@/lib/api'
+import { LoadingState } from '@/components/LoadingState'
+import { ErrorState } from '@/components/ErrorState'
 
 interface Subject {
   id: string
@@ -47,7 +49,7 @@ export function AdminSubjectsPage() {
   })
   const queryClient = useQueryClient()
 
-  const { data: subjects, isLoading } = useQuery({
+  const { data: subjects, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-subjects'],
     queryFn: async () => api.get<Subject[]>('/admin/subjects'),
   })
@@ -112,11 +114,8 @@ export function AdminSubjectsPage() {
     })
   }
 
-  if (isLoading) {
-    return (
-      <div className="text-center py-12 text-gray-600">กำลังโหลด...</div>
-    )
-  }
+  if (isLoading) return <LoadingState />
+  if (isError) return <ErrorState onRetry={() => refetch()} />
 
   return (
     <div className="space-y-6">

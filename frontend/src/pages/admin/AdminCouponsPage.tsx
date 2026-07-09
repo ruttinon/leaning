@@ -14,6 +14,10 @@ import {
 } from '@/components/ui/dialog'
 import { Plus, Edit, Trash2, Ticket } from 'lucide-react'
 import { api } from '@/lib/api'
+import { confirm } from '@/store/confirm-store'
+import { toast } from '@/store/toast-store'
+import { LoadingState } from '@/components/LoadingState'
+import { ErrorState } from '@/components/ErrorState'
 
 interface Coupon {
   id: string
@@ -45,7 +49,7 @@ export function AdminCouponsPage() {
   })
   const queryClient = useQueryClient()
 
-  const { data: coupons, isLoading } = useQuery({
+  const { data: coupons, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin-coupons'],
     queryFn: async () => api.get<Coupon[]>('/admin/coupons'),
   })
@@ -72,6 +76,7 @@ export function AdminCouponsPage() {
     mutationFn: async (id: string) => api.delete(`/admin/coupons/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-coupons'] })
+      toast.success('ลบคูปองแล้ว')
     },
   })
 
@@ -110,11 +115,8 @@ export function AdminCouponsPage() {
     })
   }
 
-  if (isLoading) {
-    return (
-      <div className="text-center py-12 text-gray-600">กำลังโหลด...</div>
-    )
-  }
+  if (isLoading) return <LoadingState />
+  if (isError) return <ErrorState onRetry={() => refetch()} />
 
   return (
     <div className="space-y-6">
@@ -186,7 +188,15 @@ export function AdminCouponsPage() {
                     variant="outline"
                     size="sm"
                     className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => deleteMutation.mutate(coupon.id)}
+                    onClick={() =>
+                      confirm({
+                        title: 'ลบคูปอง',
+                        description: `ลบคูปอง "${coupon.code}" ถาวร?`,
+                        variant: 'danger',
+                        confirmLabel: 'ลบ',
+                        onConfirm: () => deleteMutation.mutate(coupon.id),
+                      })
+                    }
                     disabled={deleteMutation.isPending}
                   >
                     <Trash2 className="h-4 w-4 mr-1" />

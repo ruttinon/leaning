@@ -33,5 +33,5 @@ backend/tmp-upload-test/
 backend/dist-test/
 backend/prisma/*.db
 backend/backups/
-frontend/dist/
-frontend.zip
+frontend/test-results/
+frontend/playwright-report/

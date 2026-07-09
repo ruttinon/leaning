@@ -22,6 +22,7 @@ import { useAuthStore } from '@/store/auth-store'
 import { lazyNamed } from '@/lib/lazy'
 import { useAppStore } from '@/store/theme-store'
 import { DashboardThemeToggle } from '@/components/DashboardThemeToggle'
+import { DashboardLanguageToggle } from '@/components/DashboardLanguageToggle'
 import { useTranslation } from '@/lib/i18n'
 
 const AdminDashboardPage = lazyNamed(
@@ -166,6 +167,7 @@ export function AdminDashboardLayout() {
             {!isDashboardHome && <BackButton fallback="/admin/dashboard" />}
           </div>
           <div className="flex items-center space-x-4">
+            <DashboardLanguageToggle />
             <DashboardThemeToggle />
             <span className={`text-sm ${theme === 'dark' ? 'text-slate-300' : 'text-gray-600'}`}>
               {t('adminDashboard.welcome', { name: user?.firstName || '' })}

@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowRight,
@@ -8,14 +9,20 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
+  Tag,
   Users,
+  X,
 } from 'lucide-react'
 import { Navbar } from '../components/layout/Navbar'
 import { Footer } from '../components/layout/Footer'
 import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
 import { useAuthStore } from '../store/auth-store'
 import { useAppStore } from '../store/theme-store'
+import { useTranslation } from '../lib/i18n'
 import { api } from '../lib/api'
+import { toast } from '../store/toast-store'
+import { isApiError } from '../lib/api-error'
 
 interface Course {
   id: string
@@ -51,12 +58,22 @@ interface PaymentIntentResponse {
   } | null
 }
 
+interface CouponPreview {
+  code: string
+  discountPercent: number
+  originalPrice: number
+  finalAmount: number
+}
+
 export function CourseDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { isAuthenticated, user } = useAuthStore()
   const { theme } = useAppStore()
+  const { t } = useTranslation()
+  const [couponInput, setCouponInput] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState<CouponPreview | null>(null)
 
   const { data: course, isLoading, error } = useQuery<Course>({
     queryKey: ['course', id],
@@ -92,7 +109,9 @@ export function CourseDetailPage() {
         throw new Error('Course ID not found')
       }
 
-      return api.post<PaymentIntentResponse>(`/student/courses/${id}/payment-intent`, {})
+      return api.post<PaymentIntentResponse>(`/student/courses/${id}/payment-intent`, {
+        couponCode: appliedCoupon?.code,
+      })
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['public-courses'] })
@@ -126,9 +145,29 @@ export function CourseDetailPage() {
     },
   })
 
+  const validateCouponMutation = useMutation({
+    mutationFn: async (code: string) => {
+      if (!id) {
+        throw new Error('Course ID not found')
+      }
+
+      return api.post<CouponPreview>('/student/coupons/validate', { code, courseId: id })
+    },
+    onSuccess: (data) => {
+      setAppliedCoupon(data)
+      toast.success(`${t('course.couponApplied')}: ${data.code} (-${data.discountPercent}%)`)
+    },
+    onError: (error) => {
+      setAppliedCoupon(null)
+      toast.error(isApiError(error) ? error.message : 'คูปองไม่ถูกต้อง')
+    },
+  })
+
   const isStudent = user?.role === 'STUDENT'
   const isPaidCourse = Number(course?.price ?? 0) > 0
-  const isActionPending = enrollMutation.isPending || purchaseMutation.isPending
+  const isActionPending =
+    enrollMutation.isPending || purchaseMutation.isPending || validateCouponMutation.isPending
+  const displayPrice = appliedCoupon?.finalAmount ?? Number(course?.price ?? 0)
   const totalLessons =
     course?.chapters?.reduce((acc, chapter) => acc + (chapter.lessons?.length || 0), 0) || 0
 
@@ -179,6 +218,20 @@ export function CourseDetailPage() {
     }
 
     enrollMutation.mutate()
+  }
+
+  const handleApplyCoupon = () => {
+    const code = couponInput.trim()
+    if (!code) {
+      return
+    }
+
+    validateCouponMutation.mutate(code.toUpperCase())
+  }
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null)
+    setCouponInput('')
   }
 
   return (
@@ -314,11 +367,58 @@ export function CourseDetailPage() {
                     <h3 className="mb-4 text-xl font-semibold">รายละเอียดคอร์ส</h3>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-700/60">
-                        <span className="text-slate-500">ราคา</span>
-                        <span className="text-xl font-bold text-emerald-700">
-                          {course.price === 0 ? 'ฟรี' : `฿${course.price}`}
-                        </span>
+                        <span className="text-slate-500">{t('course.price')}</span>
+                        <div className="text-right">
+                          {appliedCoupon && (
+                            <p className="text-sm text-slate-400 line-through">
+                              ฿{appliedCoupon.originalPrice}
+                            </p>
+                          )}
+                          <span className="text-xl font-bold text-emerald-700">
+                            {displayPrice === 0 ? 'ฟรี' : `฿${displayPrice}`}
+                          </span>
+                        </div>
                       </div>
+                      {isPaidCourse && isAuthenticated && isStudent && (
+                        <div className="rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/50 p-4 dark:border-emerald-800 dark:bg-emerald-950/20">
+                          <div className="mb-2 flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-300">
+                            <Tag className="h-4 w-4" />
+                            {t('course.couponCode')}
+                          </div>
+                          {appliedCoupon ? (
+                            <div className="flex items-center justify-between rounded-xl bg-white px-3 py-2 text-sm dark:bg-slate-800">
+                              <span>
+                                {appliedCoupon.code} (-{appliedCoupon.discountPercent}%)
+                              </span>
+                              <button
+                                type="button"
+                                onClick={handleRemoveCoupon}
+                                className="text-slate-500 hover:text-red-600"
+                                aria-label={t('course.removeCoupon')}
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex gap-2">
+                              <Input
+                                value={couponInput}
+                                onChange={(event) => setCouponInput(event.target.value.toUpperCase())}
+                                placeholder="DEMO10"
+                                className="bg-white dark:bg-slate-800"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleApplyCoupon}
+                                disabled={!couponInput.trim() || validateCouponMutation.isPending}
+                              >
+                                {t('course.applyCoupon')}
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                       <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-700/60">
                         <span className="text-slate-500">ระดับ</span>
                         <span className="font-medium">{course.level || 'ทั่วไป'}</span>
