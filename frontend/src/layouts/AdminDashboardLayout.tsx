@@ -1,6 +1,8 @@
-import { useState } from 'react'
-import { Routes, Route, Link, useNavigate } from 'react-router-dom'
+import { Suspense, useState } from 'react'
+import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { BackButton } from '@/components/BackButton'
+import { RouteFallback } from '@/components/RouteFallback'
 import {
   LayoutDashboard,
   Users,
@@ -16,20 +18,48 @@ import {
   Megaphone,
 } from 'lucide-react'
 import { useAuthStore } from '@/store/auth-store'
-import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage'
-import { AdminTeacherApprovalsPage } from '@/pages/admin/AdminTeacherApprovalsPage'
-import { AdminCourseApprovalsPage } from '@/pages/admin/AdminCourseApprovalsPage'
-import { AdminSubjectsPage } from '@/pages/admin/AdminSubjectsPage'
-import { AdminUsersPage } from '@/pages/admin/AdminUsersPage'
-import { AdminCouponsPage } from '@/pages/admin/AdminCouponsPage'
-import { AdminAnnouncementsPage } from '@/pages/admin/AdminAnnouncementsPage'
-import { ProfilePage } from '@/pages/common/ProfilePage'
-import { NotificationsPage } from '@/pages/common/NotificationsPage'
+import { lazyNamed } from '@/lib/lazy'
+
+const AdminDashboardPage = lazyNamed(
+  () => import('@/pages/admin/AdminDashboardPage'),
+  'AdminDashboardPage',
+)
+const AdminTeacherApprovalsPage = lazyNamed(
+  () => import('@/pages/admin/AdminTeacherApprovalsPage'),
+  'AdminTeacherApprovalsPage',
+)
+const AdminCourseApprovalsPage = lazyNamed(
+  () => import('@/pages/admin/AdminCourseApprovalsPage'),
+  'AdminCourseApprovalsPage',
+)
+const AdminSubjectsPage = lazyNamed(
+  () => import('@/pages/admin/AdminSubjectsPage'),
+  'AdminSubjectsPage',
+)
+const AdminUsersPage = lazyNamed(
+  () => import('@/pages/admin/AdminUsersPage'),
+  'AdminUsersPage',
+)
+const AdminCouponsPage = lazyNamed(
+  () => import('@/pages/admin/AdminCouponsPage'),
+  'AdminCouponsPage',
+)
+const AdminAnnouncementsPage = lazyNamed(
+  () => import('@/pages/admin/AdminAnnouncementsPage'),
+  'AdminAnnouncementsPage',
+)
+const ProfilePage = lazyNamed(() => import('@/pages/common/ProfilePage'), 'ProfilePage')
+const NotificationsPage = lazyNamed(
+  () => import('@/pages/common/NotificationsPage'),
+  'NotificationsPage',
+)
 
 export function AdminDashboardLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, logout } = useAuthStore()
+  const isDashboardHome = location.pathname === '/admin/dashboard'
 
   const handleLogout = () => {
     logout()
@@ -60,19 +90,19 @@ export function AdminDashboardLayout() {
         </Button>
       </div>
 
-      <aside 
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-white border-r transform transition-transform duration-300 ease-in-out ${
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r bg-white transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
-        <div className="p-6">
+        <div className="flex-shrink-0 border-b p-6">
           <Link to="/" className="flex items-center space-x-2">
             <BookOpen className="h-8 w-8 text-primary" />
             <span className="text-xl font-bold text-primary">EduPlatform</span>
           </Link>
         </div>
-        
-        <nav className="px-4 space-y-2">
+
+        <nav className="flex-1 space-y-2 overflow-y-auto px-4 py-4">
           {navItems.map((item) => {
             const Icon = item.icon
             return (
@@ -80,33 +110,33 @@ export function AdminDashboardLayout() {
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsSidebarOpen(false)}
-                className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-100 transition-colors"
+                className="flex items-center space-x-3 rounded-lg px-4 py-3 transition-colors hover:bg-gray-100"
               >
-                <Icon className="h-5 w-5" />
-                <span>{item.label}</span>
+                <Icon className="h-5 w-5 flex-shrink-0" />
+                <span className="truncate">{item.label}</span>
               </Link>
             )
           })}
-          
-          <div className="pt-4 mt-4 border-t">
+
+          <div className="mt-4 border-t pt-4">
             <Button
               variant="ghost"
               className="w-full justify-start text-red-600 hover:bg-red-50 hover:text-red-700"
               onClick={handleLogout}
             >
-              <LogOut className="h-5 w-5 mr-3" />
+              <LogOut className="mr-3 h-5 w-5" />
               ออกจากระบบ
             </Button>
           </div>
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+        <div className="flex-shrink-0 border-t p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-purple-600 font-semibold text-white">
               {user?.firstName?.charAt(0) || 'A'}
             </div>
-            <div>
-              <p className="font-medium text-sm">{user?.firstName} {user?.lastName}</p>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{user?.firstName} {user?.lastName}</p>
               <p className="text-xs text-gray-500">ผู้ดูแลระบบ</p>
             </div>
           </div>
@@ -114,7 +144,10 @@ export function AdminDashboardLayout() {
       </aside>
 
       <main className="lg:ml-64 min-h-screen">
-        <header className="bg-white border-b h-16 sticky top-0 z-30 flex items-center justify-end px-6">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-white px-6">
+          <div>
+            {!isDashboardHome && <BackButton fallback="/admin/dashboard" />}
+          </div>
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-600">
               สวัสดี, {user?.firstName}
@@ -123,18 +156,20 @@ export function AdminDashboardLayout() {
         </header>
 
         <div className="p-6">
-          <Routes>
-            <Route path="dashboard" element={<AdminDashboardPage />} />
-            <Route path="teacher-approvals" element={<AdminTeacherApprovalsPage />} />
-            <Route path="course-approvals" element={<AdminCourseApprovalsPage />} />
-            <Route path="subjects" element={<AdminSubjectsPage />} />
-            <Route path="coupons" element={<AdminCouponsPage />} />
-            <Route path="users" element={<AdminUsersPage />} />
-            <Route path="announcements" element={<AdminAnnouncementsPage />} />
-            <Route path="notifications" element={<NotificationsPage />} />
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="*" element={<AdminDashboardPage />} />
-          </Routes>
+          <Suspense fallback={<RouteFallback label="Loading admin area..." />}>
+            <Routes>
+              <Route path="dashboard" element={<AdminDashboardPage />} />
+              <Route path="teacher-approvals" element={<AdminTeacherApprovalsPage />} />
+              <Route path="course-approvals" element={<AdminCourseApprovalsPage />} />
+              <Route path="subjects" element={<AdminSubjectsPage />} />
+              <Route path="coupons" element={<AdminCouponsPage />} />
+              <Route path="users" element={<AdminUsersPage />} />
+              <Route path="announcements" element={<AdminAnnouncementsPage />} />
+              <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="*" element={<AdminDashboardPage />} />
+            </Routes>
+          </Suspense>
         </div>
       </main>
     </div>
