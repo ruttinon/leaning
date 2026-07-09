@@ -37,11 +37,11 @@ export function StudentProgressPage() {
                   <span className="text-gray-600">
                     บทเรียนที่เสร็จ: {item.completedLessons}/{item.totalLessons}
                   </span>
-                  <span className="text-2xl font-bold text-blue-600">{item.progress}%</span>
+                  <span className="text-2xl font-bold text-emerald-700">{item.progress}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-4">
                   <div
-                    className="bg-blue-600 h-4 rounded-full transition-all duration-500"
+                    className="bg-emerald-700 h-4 rounded-full transition-all duration-500"
                     style={{ width: `${item.progress}%` }}
                   />
                 </div>

@@ -23,9 +23,13 @@ RUN npm ci --omit=dev
 COPY prisma ./prisma
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 COPY --from=builder /app/uploads ./uploads
 
 EXPOSE 5000
 
-CMD ["node", "dist/main.js"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD wget -qO- http://localhost:5000/health/live || exit 1
+
+CMD ["sh", "-c", "npx prisma db push && node dist/src/main.js"]

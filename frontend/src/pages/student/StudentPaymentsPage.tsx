@@ -88,7 +88,7 @@ export function StudentPaymentsPage() {
       </div>
 
       {state.notice && (
-        <div className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+        <div className="rounded-2xl border border-blue-200 bg-emerald-50 px-4 py-3 text-sm text-blue-700">
           {state.notice}
         </div>
       )}
@@ -115,11 +115,11 @@ export function StudentPaymentsPage() {
                 <CardContent className="pt-6">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="rounded-lg bg-blue-100 p-3">
+                      <div className="rounded-lg bg-emerald-100 p-3">
                         {payment.status === 'COMPLETED' ? (
                           <CheckCircle2 className="h-6 w-6 text-green-600" />
                         ) : (
-                          <CreditCard className="h-6 w-6 text-blue-600" />
+                          <CreditCard className="h-6 w-6 text-emerald-700" />
                         )}
                       </div>
                       <div>

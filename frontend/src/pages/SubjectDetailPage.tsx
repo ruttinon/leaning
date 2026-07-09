@@ -39,8 +39,8 @@ export function SubjectDetailPage() {
               {subject.courses?.map((course) => (
                 <Link key={course.id} to={`/courses/${course.id}`} className="block">
                   <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                    <div className="h-48 bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
-                      <BookOpen className="h-16 w-16 text-blue-600" />
+                    <div className="h-48 bg-gradient-to-br from-emerald-100 to-green-100 flex items-center justify-center">
+                      <BookOpen className="h-16 w-16 text-emerald-700" />
                     </div>
                     <div className="p-6">
                       <h3 className="text-xl font-semibold text-gray-900 mb-2">{course.title}</h3>
@@ -50,7 +50,7 @@ export function SubjectDetailPage() {
                           <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
                           <span>4.8</span>
                         </div>
-                        <span className="text-lg font-bold text-blue-600">
+                        <span className="text-lg font-bold text-emerald-700">
                           {course.price === 0 ? 'ฟรี' : `฿${course.price}`}
                         </span>
                       </div>

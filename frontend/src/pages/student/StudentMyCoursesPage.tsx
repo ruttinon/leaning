@@ -36,8 +36,8 @@ export function StudentMyCoursesPage() {
           {courses.map((enrollment: any) => (
             <Link key={enrollment.id} to={`/student/courses/${enrollment.courseId}`} className="block">
               <Card className="hover:shadow-lg transition-shadow">
-                <div className="h-40 bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
-                  <BookOpen className="h-12 w-12 text-blue-600" />
+                <div className="h-40 bg-gradient-to-br from-emerald-100 to-green-100 flex items-center justify-center">
+                  <BookOpen className="h-12 w-12 text-emerald-700" />
                 </div>
                 <CardContent className="pt-6">
                   <h3 className="font-semibold mb-2">{enrollment.course.title}</h3>
@@ -48,7 +48,7 @@ export function StudentMyCoursesPage() {
                     <span className="text-gray-500">ความก้าวหน้า: {enrollment.progress}%</span>
                     <div className="w-24 bg-gray-200 rounded-full h-2">
                       <div
-                        className="bg-blue-600 h-2 rounded-full"
+                        className="bg-emerald-700 h-2 rounded-full"
                         style={{ width: `${enrollment.progress}%` }}
                       />
                     </div>

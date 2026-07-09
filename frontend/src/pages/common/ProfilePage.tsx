@@ -187,7 +187,7 @@ export function ProfilePage() {
         <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-800">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300">
                 <Sparkles className="h-4 w-4" />
                 จัดการบัญชีของคุณ
               </div>
@@ -208,13 +208,13 @@ export function ProfilePage() {
         </div>
         
         <Card className={`overflow-hidden border-0 shadow-lg ${theme === 'dark' ? 'bg-slate-800' : 'bg-white'}`}>
-          <div className="h-32 bg-gradient-to-r from-primary via-purple-500 to-pink-500"></div>
+          <div className="h-32 bg-gradient-to-r from-primary via-green-600 to-amber-600"></div>
           <CardHeader className="-mt-16 pb-4">
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-end">
               <div className="group relative">
                 <Avatar className="h-32 w-32 border-4 border-background shadow-xl">
                   <AvatarImage src={getAvatarUrl() || ''} alt="Profile" />
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-purple-600 text-3xl text-white">
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-green-600 text-3xl text-white">
                     {getInitials()}
                   </AvatarFallback>
                 </Avatar>
@@ -420,7 +420,7 @@ export function ProfilePage() {
                   {isTeacher && (
                     <div className="space-y-6">
                       <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <Award className="w-4 h-4 text-purple-500" />
+                        <Award className="w-4 h-4 text-amber-700" />
                         ข้อมูลวิชาชีพ
                       </h3>
                       <Separator />

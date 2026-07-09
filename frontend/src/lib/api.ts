@@ -1,17 +1,71 @@
 import { reportError } from '@/lib/observability'
+import { useAuthStore } from '@/store/auth-store'
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
+const AUTH_SKIP_REFRESH = [
+  '/auth/login',
+  '/auth/register/student',
+  '/auth/register/teacher',
+  '/auth/refresh',
+  '/auth/logout',
+];
+
 class ApiService {
   private token: string | null = null;
+  private refreshPromise: Promise<boolean> | null = null;
 
   setToken(token: string | null) {
     this.token = token;
   }
 
+  private shouldAttemptRefresh(endpoint: string): boolean {
+    return !AUTH_SKIP_REFRESH.some((path) => endpoint.startsWith(path));
+  }
+
+  private async refreshAccessToken(): Promise<boolean> {
+    if (this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    this.refreshPromise = (async () => {
+      const { refreshToken, setTokens, logout } = useAuthStore.getState();
+      if (!refreshToken) {
+        await logout();
+        return false;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh_token: refreshToken }),
+        });
+
+        if (!response.ok) {
+          await logout();
+          return false;
+        }
+
+        const data = await response.json();
+        setTokens(data.access_token, data.refresh_token);
+        this.token = data.access_token;
+        return true;
+      } catch {
+        await logout();
+        return false;
+      } finally {
+        this.refreshPromise = null;
+      }
+    })();
+
+    return this.refreshPromise;
+  }
+
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    retryOnUnauthorized = true,
   ): Promise<T> {
     const headers = new Headers(options.headers);
     const requestId = crypto.randomUUID();
@@ -31,6 +85,17 @@ class ApiService {
         ...options,
         headers,
       });
+
+      if (
+        response.status === 401 &&
+        retryOnUnauthorized &&
+        this.shouldAttemptRefresh(endpoint)
+      ) {
+        const refreshed = await this.refreshAccessToken();
+        if (refreshed) {
+          return this.request<T>(endpoint, options, false);
+        }
+      }
 
       if (!response.ok) {
         let message = 'Something went wrong';

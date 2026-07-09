@@ -7,10 +7,12 @@ import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
 import { useAuthStore } from '../../store/auth-store'
 import { api } from '../../lib/api'
+import { useTranslation } from '../../lib/i18n'
 
 export function RegisterStudentPage() {
   const navigate = useNavigate()
   const { login: authLogin } = useAuthStore()
+  const { t } = useTranslation()
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -34,7 +36,7 @@ export function RegisterStudentPage() {
 
     setIsLoading(true)
     try {
-      const response = await api.post<{ access_token: string; user: any }>('/auth/register/student', {
+      const response = await api.post<{ access_token: string; refresh_token?: string; user: any }>('/auth/register/student', {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
@@ -43,10 +45,10 @@ export function RegisterStudentPage() {
         grade: formData.grade,
       })
       
-      authLogin(response.user, response.access_token)
+      authLogin(response.user, response.access_token, response.refresh_token)
       navigate('/student/dashboard')
     } catch (err: any) {
-      setError(err.response?.data?.message || 'เกิดข้อผิดพลาด')
+      setError(err?.message || 'เกิดข้อผิดพลาด')
     } finally {
       setIsLoading(false)
     }
@@ -113,6 +115,7 @@ export function RegisterStudentPage() {
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   required
                 />
+                <p className="mt-1 text-xs text-gray-500">{t('register.passwordHint')}</p>
               </div>
               
               <div>

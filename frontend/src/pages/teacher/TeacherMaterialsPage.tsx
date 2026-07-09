@@ -27,7 +27,7 @@ export function TeacherMaterialsPage() {
       case 'image':
         return <Image className="h-8 w-8 text-blue-500" />;
       case 'video':
-        return <Video className="h-8 w-8 text-purple-500" />;
+        return <Video className="h-8 w-8 text-amber-700" />;
       default:
         return <File className="h-8 w-8 text-gray-500" />;
     }

@@ -100,6 +100,7 @@ export const translationsEn = {
     student: "Register as Student",
     teacher: "Register as Teacher",
     alreadyHaveAccount: "Already have an account?",
+    passwordHint: "Password must be at least 8 characters with uppercase, lowercase, and a number",
   },
   studentDashboard: {
     title: "Student Dashboard",
@@ -131,6 +132,18 @@ export const translationsEn = {
     coupons: "Coupon Management",
     users: "User Management",
     announcements: "Announcement Management",
+    contacts: "Contact Messages",
+  },
+  liveClasses: {
+    title: "Live Classes",
+    teacherSubtitle: "Schedule classes and share Zoom / Google Meet links",
+    studentSubtitle: "Live sessions from your enrolled courses",
+    create: "Create live class",
+    edit: "Edit live class",
+    join: "Join class",
+    empty: "No live classes yet",
+    emptyDesc: "Create a live class and students will be notified automatically",
+    studentEmpty: "No upcoming live classes in your courses",
   },
   course: {
     title: "Course Title",

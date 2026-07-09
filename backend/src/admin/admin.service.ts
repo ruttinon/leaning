@@ -1,9 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
+import { NotificationService } from '../common/services/notification.service'
+import { AdminLogService } from '../common/services/admin-log.service'
+import { paginate, paginationArgs } from '../common/dto/pagination.dto'
 
 @Injectable()
 export class AdminService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationService: NotificationService,
+    private adminLogService: AdminLogService,
+  ) {}
 
   async getDashboard() {
     const totalUsers = await this.prisma.user.count()
@@ -23,6 +30,9 @@ export class AdminService {
       where: { status: 'PENDING_REVIEW' },
     })
     const totalEnrollments = await this.prisma.enrollment.count()
+    const newContacts = await this.prisma.contactInquiry.count({
+      where: { status: 'NEW' },
+    })
 
     return {
       totalUsers,
@@ -34,31 +44,50 @@ export class AdminService {
       publishedCourses,
       pendingCourses,
       totalEnrollments,
+      newContacts,
     }
   }
 
-  async getUsers() {
-    return this.prisma.user.findMany({
-      include: {
-        studentProfile: true,
-        teacherProfile: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+  async getUsers(page = 1, limit = 20) {
+    const { skip, take, page: p, limit: l } = paginationArgs(page, limit)
+    const [data, total] = await Promise.all([
+      this.prisma.user.findMany({
+        include: { studentProfile: true, teacherProfile: true },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      }),
+      this.prisma.user.count(),
+    ])
+    return paginate(data, total, p, l)
   }
 
-  async getStudents() {
-    return this.prisma.studentProfile.findMany({
-      include: { user: true },
-      orderBy: { createdAt: 'desc' },
-    })
+  async getStudents(page = 1, limit = 20) {
+    const { skip, take, page: p, limit: l } = paginationArgs(page, limit)
+    const [data, total] = await Promise.all([
+      this.prisma.studentProfile.findMany({
+        include: { user: true },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      }),
+      this.prisma.studentProfile.count(),
+    ])
+    return paginate(data, total, p, l)
   }
 
-  async getTeachers() {
-    return this.prisma.teacherProfile.findMany({
-      include: { user: true },
-      orderBy: { createdAt: 'desc' },
-    })
+  async getTeachers(page = 1, limit = 20) {
+    const { skip, take, page: p, limit: l } = paginationArgs(page, limit)
+    const [data, total] = await Promise.all([
+      this.prisma.teacherProfile.findMany({
+        include: { user: true },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      }),
+      this.prisma.teacherProfile.count(),
+    ])
+    return paginate(data, total, p, l)
   }
 
   async getPendingTeachers() {
@@ -69,32 +98,52 @@ export class AdminService {
     })
   }
 
-  async approveTeacher(teacherId: string) {
+  async approveTeacher(teacherId: string, adminId: string) {
     const teacher = await this.prisma.teacherProfile.findUnique({
       where: { id: teacherId },
+      include: { user: true },
     })
 
     if (!teacher) {
       throw new NotFoundException('Teacher not found')
     }
 
-    return this.prisma.teacherProfile.update({
+    const updated = await this.prisma.teacherProfile.update({
       where: { id: teacherId },
       data: { status: 'APPROVED' },
       include: { user: true },
     })
+
+    await this.notificationService.notifyUser(
+      teacher.userId,
+      'บัญชีครูได้รับการอนุมัติ',
+      'ยินดีด้วย! คุณสามารถสร้างและจัดการคอร์สได้แล้ว',
+      'TEACHER_APPROVED',
+      '/teacher/dashboard',
+    )
+
+    await this.adminLogService.log(
+      adminId,
+      'APPROVE_TEACHER',
+      'TeacherProfile',
+      teacherId,
+      teacher.user.email,
+    )
+
+    return updated
   }
 
-  async rejectTeacher(teacherId: string, rejectionReason: string) {
+  async rejectTeacher(teacherId: string, rejectionReason: string, adminId: string) {
     const teacher = await this.prisma.teacherProfile.findUnique({
       where: { id: teacherId },
+      include: { user: true },
     })
 
     if (!teacher) {
       throw new NotFoundException('Teacher not found')
     }
 
-    return this.prisma.teacherProfile.update({
+    const updated = await this.prisma.teacherProfile.update({
       where: { id: teacherId },
       data: {
         status: 'REJECTED',
@@ -102,6 +151,24 @@ export class AdminService {
       },
       include: { user: true },
     })
+
+    await this.notificationService.notifyUser(
+      teacher.userId,
+      'บัญชีครูไม่ได้รับการอนุมัติ',
+      rejectionReason || 'กรุณาติดต่อผู้ดูแลระบบเพื่อสอบถามรายละเอียด',
+      'TEACHER_REJECTED',
+      '/teacher/profile',
+    )
+
+    await this.adminLogService.log(
+      adminId,
+      'REJECT_TEACHER',
+      'TeacherProfile',
+      teacherId,
+      rejectionReason,
+    )
+
+    return updated
   }
 
   async getPendingCourses() {
@@ -117,16 +184,17 @@ export class AdminService {
     })
   }
 
-  async approveCourse(courseId: string) {
+  async approveCourse(courseId: string, adminId: string) {
     const course = await this.prisma.course.findUnique({
       where: { id: courseId },
+      include: { teacher: { include: { user: true } } },
     })
 
     if (!course) {
       throw new NotFoundException('Course not found')
     }
 
-    return this.prisma.course.update({
+    const updated = await this.prisma.course.update({
       where: { id: courseId },
       data: {
         status: 'PUBLISHED',
@@ -139,18 +207,37 @@ export class AdminService {
         subject: true,
       },
     })
+
+    await this.notificationService.notifyUser(
+      course.teacher.userId,
+      'คอร์สได้รับการอนุมัติ',
+      `คอร์ส "${course.title}" ถูกเผยแพร่แล้ว`,
+      'COURSE_APPROVED',
+      `/teacher/courses/${courseId}`,
+    )
+
+    await this.adminLogService.log(
+      adminId,
+      'APPROVE_COURSE',
+      'Course',
+      courseId,
+      course.title,
+    )
+
+    return updated
   }
 
-  async rejectCourse(courseId: string, rejectionReason: string) {
+  async rejectCourse(courseId: string, rejectionReason: string, adminId: string) {
     const course = await this.prisma.course.findUnique({
       where: { id: courseId },
+      include: { teacher: { include: { user: true } } },
     })
 
     if (!course) {
       throw new NotFoundException('Course not found')
     }
 
-    return this.prisma.course.update({
+    const updated = await this.prisma.course.update({
       where: { id: courseId },
       data: {
         status: 'REJECTED',
@@ -163,6 +250,24 @@ export class AdminService {
         subject: true,
       },
     })
+
+    await this.notificationService.notifyUser(
+      course.teacher.userId,
+      'คอร์สไม่ได้รับการอนุมัติ',
+      rejectionReason || `คอร์ส "${course.title}" ต้องแก้ไขก่อนส่งอนุมัติอีกครั้ง`,
+      'COURSE_REJECTED',
+      `/teacher/courses/${courseId}`,
+    )
+
+    await this.adminLogService.log(
+      adminId,
+      'REJECT_COURSE',
+      'Course',
+      courseId,
+      rejectionReason,
+    )
+
+    return updated
   }
 
   async getSubjects() {
@@ -250,5 +355,18 @@ export class AdminService {
     return this.prisma.announcement.delete({
       where: { id: announcementId },
     })
+  }
+
+  async getContactInquiries(page = 1, limit = 20) {
+    const { skip, take, page: p, limit: l } = paginationArgs(page, limit)
+    const [data, total] = await Promise.all([
+      this.prisma.contactInquiry.findMany({
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      }),
+      this.prisma.contactInquiry.count(),
+    ])
+    return paginate(data, total, p, l)
   }
 }

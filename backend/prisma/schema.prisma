@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -25,6 +25,7 @@ model User {
   teacherProfile TeacherProfile?
   notifications Notification[]
   adminLogs AdminLog[]
+  refreshTokens RefreshToken[]
   
   @@map("users")
 }
@@ -68,6 +69,7 @@ model TeacherProfile {
   
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   courses Course[]
+  liveClasses LiveClass[]
   
   @@map("teacher_profiles")
 }
@@ -109,6 +111,7 @@ model Course {
   chapters Chapter[]
   enrollments Enrollment[]
   payments Payment[]
+  liveClasses LiveClass[]
   
   @@map("courses")
 }
@@ -371,6 +374,7 @@ model Payment {
   currency      String   @default("THB")
   paymentMethod String?
   transactionId String?
+  couponCode    String?
   status        String   @default("PENDING") // "PENDING", "COMPLETED", "FAILED", "REFUNDED"
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -393,4 +397,48 @@ model Coupon {
   updatedAt   DateTime @updatedAt
   
   @@map("coupons")
+}
+
+model ContactInquiry {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String
+  status    String   @default("NEW") // "NEW", "READ", "REPLIED"
+  createdAt DateTime @default(now())
+
+  @@map("contact_inquiries")
+}
+
+model LiveClass {
+  id              String   @id @default(cuid())
+  courseId        String
+  teacherId       String
+  title           String
+  description     String?
+  meetingUrl      String
+  meetingProvider String   @default("MANUAL") // ZOOM, GOOGLE_MEET, MANUAL
+  scheduledAt     DateTime
+  durationMinutes Int      @default(60)
+  status          String   @default("SCHEDULED") // SCHEDULED, LIVE, ENDED, CANCELLED
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  course  Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  teacher TeacherProfile @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@map("live_classes")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
 }

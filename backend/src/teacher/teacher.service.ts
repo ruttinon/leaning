@@ -1,12 +1,14 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 import { StorageService } from '../storage/storage.service'
+import { NotificationService } from '../common/services/notification.service'
 
 @Injectable()
 export class TeacherService {
   constructor(
     private prisma: PrismaService,
     private storageService: StorageService,
+    private notificationService: NotificationService,
   ) {}
 
   async getDashboard(userId: string) {
@@ -183,11 +185,20 @@ export class TeacherService {
       throw new ForbiddenException('Not authorized to submit this course')
     }
 
-    return this.prisma.course.update({
+    const updated = await this.prisma.course.update({
       where: { id: courseId },
       data: { status: 'PENDING_REVIEW' },
       include: { subject: true },
     })
+
+    await this.notificationService.notifyAdmins(
+      'คอร์สรอการอนุมัติ',
+      `คอร์ส "${course.title}" ถูกส่งเพื่อตรวจสอบ`,
+      'COURSE_REVIEW',
+      '/admin/course-approvals',
+    )
+
+    return updated
   }
 
   async createChapter(userId: string, courseId: string, data: any) {
@@ -1106,7 +1117,7 @@ export class TeacherService {
       throw new ForbiddenException('Not authorized to grade this submission')
     }
 
-    return this.prisma.assignmentSubmission.update({
+    const updated = await this.prisma.assignmentSubmission.update({
       where: { id: submissionId },
       data: {
         grade: data.grade,
@@ -1114,7 +1125,21 @@ export class TeacherService {
         gradedAt: new Date(),
         status: 'GRADED',
       },
+      include: {
+        student: { include: { user: true } },
+        assignment: true,
+      },
     })
+
+    await this.notificationService.notifyUser(
+      updated.student.userId,
+      'งานของคุณได้รับการตรวจแล้ว',
+      `งาน "${updated.assignment.title}" ได้คะแนน ${data.grade}`,
+      'ASSIGNMENT_GRADED',
+      '/student/scores',
+    )
+
+    return updated
   }
 
   async getMaterials(userId: string) {
@@ -1238,5 +1263,93 @@ export class TeacherService {
       ...e.student.user,
       enrollments: enrollments.filter((enr) => enr.studentId === e.studentId).length,
     }))
+  }
+
+  async getLiveClasses(userId: string) {
+    const teacherProfile = await this.prisma.teacherProfile.findUnique({ where: { userId } })
+    if (!teacherProfile) throw new NotFoundException('Teacher profile not found')
+
+    return this.prisma.liveClass.findMany({
+      where: { teacherId: teacherProfile.id },
+      include: { course: { include: { subject: true } } },
+      orderBy: { scheduledAt: 'asc' },
+    })
+  }
+
+  async createLiveClass(userId: string, data: any) {
+    const teacherProfile = await this.prisma.teacherProfile.findUnique({ where: { userId } })
+    if (!teacherProfile) throw new NotFoundException('Teacher profile not found')
+
+    const course = await this.prisma.course.findUnique({ where: { id: data.courseId } })
+    if (!course || course.teacherId !== teacherProfile.id) {
+      throw new ForbiddenException('Not authorized for this course')
+    }
+
+    const liveClass = await this.prisma.liveClass.create({
+      data: {
+        courseId: data.courseId,
+        teacherId: teacherProfile.id,
+        title: data.title,
+        description: data.description,
+        meetingUrl: data.meetingUrl,
+        meetingProvider: data.meetingProvider || 'MANUAL',
+        scheduledAt: new Date(data.scheduledAt),
+        durationMinutes: data.durationMinutes || 60,
+      },
+      include: { course: true },
+    })
+
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: { courseId: data.courseId },
+      include: { student: { include: { user: true } } },
+    })
+
+    for (const enrollment of enrollments) {
+      await this.notificationService.notifyUser(
+        enrollment.student.userId,
+        'คลาสเรียนสดใหม่',
+        `คอร์ส "${course.title}" มีคลาสเรียนสด: ${data.title}`,
+        'LIVE_CLASS',
+        '/student/live-classes',
+      )
+    }
+
+    return liveClass
+  }
+
+  async updateLiveClass(userId: string, liveClassId: string, data: any) {
+    const teacherProfile = await this.prisma.teacherProfile.findUnique({ where: { userId } })
+    if (!teacherProfile) throw new NotFoundException('Teacher profile not found')
+
+    const liveClass = await this.prisma.liveClass.findUnique({ where: { id: liveClassId } })
+    if (!liveClass || liveClass.teacherId !== teacherProfile.id) {
+      throw new ForbiddenException('Not authorized to update this live class')
+    }
+
+    return this.prisma.liveClass.update({
+      where: { id: liveClassId },
+      data: {
+        ...(data.title && { title: data.title }),
+        ...(data.description !== undefined && { description: data.description }),
+        ...(data.meetingUrl && { meetingUrl: data.meetingUrl }),
+        ...(data.meetingProvider && { meetingProvider: data.meetingProvider }),
+        ...(data.scheduledAt && { scheduledAt: new Date(data.scheduledAt) }),
+        ...(data.durationMinutes && { durationMinutes: data.durationMinutes }),
+        ...(data.status && { status: data.status }),
+      },
+      include: { course: true },
+    })
+  }
+
+  async deleteLiveClass(userId: string, liveClassId: string) {
+    const teacherProfile = await this.prisma.teacherProfile.findUnique({ where: { userId } })
+    if (!teacherProfile) throw new NotFoundException('Teacher profile not found')
+
+    const liveClass = await this.prisma.liveClass.findUnique({ where: { id: liveClassId } })
+    if (!liveClass || liveClass.teacherId !== teacherProfile.id) {
+      throw new ForbiddenException('Not authorized to delete this live class')
+    }
+
+    return this.prisma.liveClass.delete({ where: { id: liveClassId } })
   }
 }

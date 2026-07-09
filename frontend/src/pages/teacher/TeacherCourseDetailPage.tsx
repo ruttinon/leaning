@@ -145,7 +145,7 @@ export function TeacherCourseDetailPage() {
         </div>
       )}
 
-      <Card className="border-indigo-200 bg-indigo-50/50">
+      <Card className="border-indigo-200 bg-emerald-50/50">
         <CardHeader>
           <CardTitle className="text-lg">เพิ่มบทเรียนด่วน</CardTitle>
         </CardHeader>

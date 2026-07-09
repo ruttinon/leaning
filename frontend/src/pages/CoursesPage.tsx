@@ -33,7 +33,7 @@ export function CoursesPage() {
     <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
       <Navbar />
       <main className="flex-1">
-        <section className="relative overflow-hidden border-b border-slate-200/70 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 py-20">
+        <section className="relative overflow-hidden border-b border-slate-200/70 bg-gradient-to-br from-emerald-800 via-green-700 to-amber-700 py-20">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.26),_transparent_40%)]" />
           <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl">
@@ -42,7 +42,7 @@ export function CoursesPage() {
                 คอร์สที่ถูกออกแบบมาเพื่อให้คุณเรียนได้ง่ายขึ้น
               </div>
               <h1 className="text-4xl font-bold text-white md:text-5xl">เลือกคอร์สที่ใช่สำหรับคุณ</h1>
-              <p className="mt-4 text-lg text-indigo-50">เรียนจากครูมืออาชีพ คอร์สเน้นการปฏิบัติ และติดตามความก้าวหน้าได้จากที่เดียว</p>
+              <p className="mt-4 text-lg text-emerald-50">เรียนจากครูมืออาชีพ คอร์สเน้นการปฏิบัติ และติดตามความก้าวหน้าได้จากที่เดียว</p>
             </div>
           </div>
         </section>
@@ -72,7 +72,7 @@ export function CoursesPage() {
               {courses?.map((course) => (
                 <Link key={course.id} to={`/courses/${course.id}`} className="group block">
                   <div className={`overflow-hidden rounded-3xl border shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${theme === 'dark' ? 'border-slate-700 bg-slate-800' : 'border-slate-200 bg-white'}`}>
-                    <div className="flex h-48 items-center justify-center bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100">
+                    <div className="flex h-48 items-center justify-center bg-gradient-to-br from-emerald-100 via-green-100 to-amber-100">
                       {course.thumbnailUrl ? (
                         <img
                           src={course.thumbnailUrl}
@@ -85,12 +85,12 @@ export function CoursesPage() {
                           }}
                         />
                       ) : (
-                        <BookOpen className="h-16 w-16 text-indigo-600" />
+                        <BookOpen className="h-16 w-16 text-emerald-700" />
                       )}
                     </div>
                     <div className="p-6">
                       <div className="mb-3 flex items-center justify-between">
-                        <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700">{course.level || 'พื้นฐาน'}</span>
+                        <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">{course.level || 'พื้นฐาน'}</span>
                         <span className="text-sm font-semibold text-emerald-600">{course.price === 0 ? 'ฟรี' : `฿${course.price}`}</span>
                       </div>
                       <h3 className={`text-xl font-semibold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{course.title}</h3>
@@ -107,7 +107,7 @@ export function CoursesPage() {
                           <span className="font-medium text-slate-700 dark:text-slate-200">4.8</span>
                         </div>
                       </div>
-                      <div className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-indigo-600">
+                      <div className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-emerald-700">
                         ดูรายละเอียด <ArrowRight className="h-4 w-4" />
                       </div>
                     </div>

@@ -57,8 +57,8 @@ export function AdminCourseApprovalsPage() {
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-4">
-                    <div className="p-3 bg-blue-100 rounded-lg">
-                      <BookOpen className="h-6 w-6 text-blue-600" />
+                    <div className="p-3 bg-emerald-100 rounded-lg">
+                      <BookOpen className="h-6 w-6 text-emerald-700" />
                     </div>
                     <div>
                       <h3 className="font-semibold">{course.title}</h3>

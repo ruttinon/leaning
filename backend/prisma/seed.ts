@@ -3,8 +3,19 @@ import * as bcrypt from 'bcrypt'
 
 const prisma = new PrismaClient()
 
+const isProduction = process.env.NODE_ENV === 'production'
+const seedDemo = process.env.SEED_DEMO_ACCOUNTS !== 'false'
+
 async function main() {
-  // Delete existing demo users if exist
+  if (isProduction && !seedDemo) {
+    console.log('Skipping demo seed in production (set SEED_DEMO_ACCOUNTS=true to override)')
+    return
+  }
+
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD || (isProduction ? 'ChangeMe!Admin2026' : 'admin1234')
+  const teacherPassword = process.env.SEED_TEACHER_PASSWORD || (isProduction ? 'ChangeMe!Teacher2026' : 'teacher1234')
+  const studentPassword = process.env.SEED_STUDENT_PASSWORD || (isProduction ? 'ChangeMe!Student2026' : 'student1234')
+
   await prisma.user.deleteMany({
     where: {
       email: {
@@ -13,8 +24,7 @@ async function main() {
     },
   })
 
-  // Create admin user
-  const hashedAdminPassword = await bcrypt.hash('admin1234', 10)
+  const hashedAdminPassword = await bcrypt.hash(adminPassword, 10)
   const admin = await prisma.user.create({
     data: {
       email: 'admin@example.com',
@@ -25,8 +35,7 @@ async function main() {
     },
   })
 
-  // Create teacher user
-  const hashedTeacherPassword = await bcrypt.hash('teacher1234', 10)
+  const hashedTeacherPassword = await bcrypt.hash(teacherPassword, 10)
   const teacherUser = await prisma.user.create({
     data: {
       email: 'teacher@example.com',
@@ -46,8 +55,7 @@ async function main() {
     },
   })
 
-  // Create student user
-  const hashedStudentPassword = await bcrypt.hash('student1234', 10)
+  const hashedStudentPassword = await bcrypt.hash(studentPassword, 10)
   const studentUser = await prisma.user.create({
     data: {
       email: 'student@example.com',
@@ -65,7 +73,6 @@ async function main() {
     },
   })
 
-  // Create some sample subjects
   const existingSubjects = await prisma.subject.findMany()
   if (existingSubjects.length === 0) {
     await prisma.subject.createMany({
@@ -80,25 +87,35 @@ async function main() {
 
   const subjects = await prisma.subject.findMany()
 
-  // Create sample course for teacher
-  await prisma.course.create({
-    data: {
-      title: 'คณิตศาสตร์ ม.5 เทอม 1',
-      description: 'คอร์สเรียนคณิตศาสตร์สำหรับนักเรียนชั้นมัธยมศึกษาปีที่ 5 เทอมที่ 1',
-      subjectId: subjects[0].id,
-      teacherId: teacher.id,
-      price: 0,
-      status: 'PUBLISHED',
-    },
+  const existingCourse = await prisma.course.findFirst({
+    where: { teacherId: teacher.id, title: 'คณิตศาสตร์ ม.5 เทอม 1' },
   })
+
+  if (!existingCourse) {
+    await prisma.course.create({
+      data: {
+        title: 'คณิตศาสตร์ ม.5 เทอม 1',
+        description:
+          'คอร์สเรียนคณิตศาสตร์สำหรับนักเรียนชั้นมัธยมศึกษาปีที่ 5 เทอมที่ 1',
+        subjectId: subjects[0].id,
+        teacherId: teacher.id,
+        price: 0,
+        status: 'PUBLISHED',
+        publishedAt: new Date(),
+      },
+    })
+  }
 
   console.log({ admin, teacher, student })
   console.log('✅ Seed data created successfully!')
-  console.log('')
-  console.log('📝 Demo Accounts:')
-  console.log('  Admin   : admin@example.com / admin1234')
-  console.log('  Teacher : teacher@example.com / teacher1234')
-  console.log('  Student : student@example.com / student1234')
+  if (!isProduction) {
+    console.log('')
+    console.log('📝 Demo Accounts (development only):')
+    console.log('  Admin   : admin@example.com')
+    console.log('  Teacher : teacher@example.com')
+    console.log('  Student : student@example.com')
+    console.log('  Passwords are set via SEED_*_PASSWORD env vars or defaults in seed.ts')
+  }
 }
 
 main()

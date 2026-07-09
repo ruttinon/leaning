@@ -24,6 +24,7 @@
 - 📝 Quiz/Exam
 - 📊 Scores & Progress
 - 💳 Payments
+- 🎥 Live Classes
 - 🔔 Notifications
 - 👤 Profile
 
@@ -38,7 +39,7 @@
 - 📥 Submissions
 - 📊 Gradebook
 - 👥 Students
-- 🎥 Live Classes (Coming Soon)
+- 🎥 Live Classes
 - 🔔 Notifications
 - 👤 Profile
 
@@ -50,6 +51,7 @@
 - 🎫 Coupon Management
 - 👥 User Management
 - 📢 Announcement Management
+- 📧 Contact Messages
 - 🔔 Notifications
 - 👤 Profile
 
@@ -58,8 +60,8 @@
 ### Backend
 - NestJS (TypeScript)
 - Prisma ORM
-- SQLite (dev) / PostgreSQL (prod)
-- JWT Authentication
+- PostgreSQL
+- JWT Authentication + Refresh Tokens
 - BCrypt
 - Multer (file upload)
 - Pluggable Storage (Local / S3-compatible)
@@ -78,21 +80,49 @@
 
 ### Development (Local) - Windows PowerShell
 
-1. **Install dependencies**
+**Prerequisites:** Node.js 20+, PostgreSQL 16 (or Docker)
+
+1. **Start PostgreSQL** (choose one)
    ```powershell
-   cd backend ; npm install ; npm run prisma:generate
-   cd ..\frontend ; npm install
+   # Docker
+   docker compose up -d postgres
+
+   # Or install PostgreSQL locally and create database `study_platform`
    ```
 
-2. **Run backend**
+2. **Configure backend**
    ```powershell
-   cd backend ; npm run dev
+   cd backend
+   copy .env.example .env
+   # Edit DATABASE_URL if needed (default: postgresql://postgres:password@localhost:5432/study_platform)
+   npm install
+   npx prisma db push
+   npm run prisma:seed
    ```
 
-3. **Run frontend** (in a new terminal)
+3. **Install frontend**
    ```powershell
-   cd frontend ; npm run dev
+   cd ..\frontend
+   npm install
    ```
+
+4. **Run backend**
+   ```powershell
+   cd backend
+   npm run dev
+   ```
+
+5. **Run frontend** (new terminal)
+   ```powershell
+   cd frontend
+   npm run dev
+   ```
+
+6. **API docs:** http://localhost:5000/api/docs
+
+**Demo accounts** (after seed): `admin@example.com` / `admin1234`, `teacher@example.com` / `teacher1234`, `student@example.com` / `student1234`
+
+New registrations require a strong password (8+ chars, upper, lower, number).
 
 ### File Storage Configuration
 
@@ -116,6 +146,14 @@ Signed URL APIs (teacher):
 ### Backup / Restore
 - See `docs/BACKUP_RESTORE.md`
 - Local shortcut: `cd backend ; npm run db:backup`
+
+### Tests
+```powershell
+cd backend
+npm test                  # unit tests
+npm run test:integration  # auth + health (requires PostgreSQL)
+npm run e2e:smoke         # API smoke tests (backend must be running)
+```
 
 ### Production (Docker Compose)
 

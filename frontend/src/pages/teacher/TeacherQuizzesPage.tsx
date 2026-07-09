@@ -71,7 +71,7 @@ export function TeacherQuizzesPage() {
                     </span>
                   )}
                   {quiz.timeLimit && (
-                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                    <span className="text-xs bg-emerald-100 text-blue-700 px-2 py-1 rounded-full">
                       {quiz.timeLimit} นาที
                     </span>
                   )}

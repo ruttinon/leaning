@@ -4,6 +4,7 @@ import { join } from 'path';
 import { randomUUID } from 'crypto';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -50,6 +51,16 @@ async function bootstrap() {
     transformOptions: { enableImplicitConversion: true },
   }));
   app.useGlobalFilters(new AllExceptionsFilter());
+
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('EduPro API')
+    .setDescription('Online Learning & Tutor Platform API')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api/docs', app, document);
+
   app.use((req, res, next) => {
     const startedAt = Date.now();
     const incomingRequestId = req.headers['x-request-id'];
@@ -95,6 +106,7 @@ async function bootstrap() {
       !req.path.startsWith('/admin') &&
       !req.path.startsWith('/uploads') &&
       !req.path.startsWith('/health') &&
+      !req.path.startsWith('/api/docs') &&
       req.path.includes('.') === false
     ) {
       res.sendFile(join(frontendDist, 'index.html'));

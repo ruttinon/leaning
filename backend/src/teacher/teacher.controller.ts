@@ -1,15 +1,17 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Request, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common'
+import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Request, UseInterceptors, UploadedFile, BadRequestException, Query } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { memoryStorage } from 'multer'
 import { TeacherService } from './teacher.service'
 import { isAllowedImageUpload, isAllowedUpload } from '../common/utils/file-upload'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { RolesGuard } from '../common/guards/roles.guard'
+import { TeacherApprovedGuard } from '../common/guards/teacher-approved.guard'
 import { Roles } from '../common/decorators/roles.decorator'
 import { StorageService } from '../storage/storage.service'
+import { CreateLiveClassDto, UpdateLiveClassDto } from './dto/live-class.dto'
 
 @Controller('teacher')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, TeacherApprovedGuard)
 @Roles('TEACHER')
 export class TeacherController {
   constructor(
@@ -271,5 +273,25 @@ export class TeacherController {
   @Get('students')
   async getStudents(@Request() req) {
     return this.teacherService.getStudents(req.user.id)
+  }
+
+  @Get('live-classes')
+  async getLiveClasses(@Request() req) {
+    return this.teacherService.getLiveClasses(req.user.id)
+  }
+
+  @Post('live-classes')
+  async createLiveClass(@Request() req, @Body() dto: CreateLiveClassDto) {
+    return this.teacherService.createLiveClass(req.user.id, dto)
+  }
+
+  @Put('live-classes/:id')
+  async updateLiveClass(@Request() req, @Param('id') id: string, @Body() dto: UpdateLiveClassDto) {
+    return this.teacherService.updateLiveClass(req.user.id, id, dto)
+  }
+
+  @Delete('live-classes/:id')
+  async deleteLiveClass(@Request() req, @Param('id') id: string) {
+    return this.teacherService.deleteLiveClass(req.user.id, id)
   }
 }

@@ -125,7 +125,7 @@ export function QuickCreateCoursePage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 to-purple-50 p-6">
-        <div className="mb-2 flex items-center gap-2 text-indigo-700">
+        <div className="mb-2 flex items-center gap-2 text-emerald-800">
           <Sparkles className="h-5 w-5" />
           <span className="font-semibold">สร้างคอร์สแบบง่าย</span>
         </div>
@@ -136,7 +136,7 @@ export function QuickCreateCoursePage() {
           {[1, 2, 3].map((n) => (
             <span
               key={n}
-              className={`rounded-full px-3 py-1 ${step === n ? 'bg-indigo-600 text-white' : step > n ? 'bg-emerald-100 text-emerald-700' : 'bg-white text-slate-500'}`}
+              className={`rounded-full px-3 py-1 ${step === n ? 'bg-emerald-700 text-white' : step > n ? 'bg-emerald-100 text-emerald-700' : 'bg-white text-slate-500'}`}
             >
               {n}. {n === 1 ? 'ข้อมูลคอร์ส' : n === 2 ? 'บทเรียน' : 'ยืนยัน'}
             </span>
@@ -220,7 +220,7 @@ export function QuickCreateCoursePage() {
                   <Input type="file" accept=".pdf,.mp4,.jpg,.jpeg,.png" onChange={(e) => updateLesson(lesson.key, { file: e.target.files?.[0] || null })} />
                 </div>
                 <details className="rounded-lg border bg-white p-3">
-                  <summary className="cursor-pointer text-sm font-medium text-indigo-600">+ เพิ่มแบบฝึกหัดง่ายๆ (ไม่บังคับ)</summary>
+                  <summary className="cursor-pointer text-sm font-medium text-emerald-700">+ เพิ่มแบบฝึกหัดง่ายๆ (ไม่บังคับ)</summary>
                   <div className="mt-3 space-y-2">
                     <Input
                       value={lesson.quizQuestion}

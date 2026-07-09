@@ -16,7 +16,7 @@ export function RegisterPage() {
       <main className="flex-1 py-16 md:py-24">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mb-10 rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-700 dark:bg-slate-800">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300">
               <Sparkles className="h-4 w-4" />
               เริ่มต้นใช้งานได้ทันที
             </div>
@@ -28,8 +28,8 @@ export function RegisterPage() {
             <Link to="/register/student" className="block">
               <Card className={`h-full rounded-3xl border shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${theme === 'dark' ? 'border-slate-700 bg-slate-800' : 'border-slate-200 bg-white'}`}>
                 <CardHeader className="text-center">
-                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
-                    <GraduationCap className="h-8 w-8 text-blue-600" />
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
+                    <GraduationCap className="h-8 w-8 text-emerald-700" />
                   </div>
                   <CardTitle>สมัครเป็นนักเรียน</CardTitle>
                   <CardDescription className={theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}>

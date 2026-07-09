@@ -85,7 +85,7 @@ export function TeacherSubmissionsPage() {
                        submission.status === 'SUBMITTED' ? 'ส่งแล้ว' : 'รอส่ง'}
                     </span>
                     {submission.grade !== null && (
-                      <p className="text-xl font-bold text-blue-600 mt-2">
+                      <p className="text-xl font-bold text-emerald-700 mt-2">
                         {submission.grade}/{submission.assignment?.maxPoints}
                       </p>
                     )}

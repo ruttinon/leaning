@@ -3,50 +3,57 @@
 @tailwind utilities;
 
 /* ================================
-   PREMIUM DESIGN SYSTEM - 3D EFFECTS
+   EARTH & GREEN DESIGN SYSTEM
    ================================ */
 
 :root {
-  /* PRIMARY THEME COLORS - PREMIUM */
-  --primary: #6366f1;
-  --primary-light: #818cf8;
-  --primary-dark: #4f46e5;
-  --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  
-  /* SECONDARY */
-  --secondary: #f59e0b;
-  --accent: #10b981;
-  --danger: #ef4444;
+  /* PRIMARY — Forest Green */
+  --primary: #2d6a4f;
+  --primary-light: #40916c;
+  --primary-dark: #1b4332;
+  --primary-gradient: linear-gradient(135deg, #1b4332 0%, #2d6a4f 45%, #52b788 100%);
 
-  /* LIGHT MODE */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f9fafb;
-  --bg-tertiary: #f3f4f6;
+  /* SECONDARY — Warm Earth */
+  --secondary: #b08968;
+  --accent: #74c69d;
+  --danger: #c44536;
+
+  /* LIGHT MODE — Warm neutrals */
+  --bg-primary: #faf8f5;
+  --bg-secondary: #f3efe8;
+  --bg-tertiary: #e8e2d8;
   --bg-card: #ffffff;
-  --text-primary: #111827;
-  --text-secondary: #4b5563;
-  --text-muted: #9ca3af;
-  --border: #e5e7eb;
-  --shadow: rgba(0,0,0,0.08);
-  --shadow-lg: rgba(0,0,0,0.12);
+  --text-primary: #1a2e1a;
+  --text-secondary: #4a5d4a;
+  --text-muted: #7a8a7a;
+  --border: #d4cfc4;
+  --shadow: rgba(27, 67, 50, 0.08);
+  --shadow-lg: rgba(27, 67, 50, 0.14);
 }
 
 .dark {
-  --primary: #818cf8;
-  --primary-light: #a5b4fc;
-  --primary-dark: #6366f1;
-  --primary-gradient: linear-gradient(135deg, #818cf8 0%, #c4b5fd 100%);
-  
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-tertiary: #334155;
-  --bg-card: #1e293b;
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --border: #334155;
-  --shadow: rgba(0,0,0,0.3);
-  --shadow-lg: rgba(0,0,0,0.4);
+  --primary: #52b788;
+  --primary-light: #74c69d;
+  --primary-dark: #2d6a4f;
+  --primary-gradient: linear-gradient(135deg, #1b4332 0%, #2d6a4f 50%, #40916c 100%);
+
+  --bg-primary: #141a14;
+  --bg-secondary: #1e2a1e;
+  --bg-tertiary: #2a382a;
+  --bg-card: #1e2a1e;
+  --text-primary: #f0f4f0;
+  --text-secondary: #b8c8b8;
+  --text-muted: #7a907a;
+  --border: #3a4a3a;
+  --shadow: rgba(0, 0, 0, 0.35);
+  --shadow-lg: rgba(0, 0, 0, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 
 * {
@@ -57,7 +64,6 @@
    3D & PREMIUM EFFECTS
    ================================ */
 
-/* 3D Card Hover Effect */
 .card-3d {
   transform-style: preserve-3d;
   perspective: 1000px;
@@ -70,7 +76,6 @@
   box-shadow: 0 20px 60px var(--shadow-lg);
 }
 
-/* Floating Animation */
 @keyframes float {
   0%, 100% { transform: translateY(0px) rotateX(0deg); }
   50% { transform: translateY(-15px) rotateX(3deg); }
@@ -85,7 +90,6 @@
   animation-delay: -2s;
 }
 
-/* Gradient Border */
 .gradient-border {
   position: relative;
   background: var(--bg-card);
@@ -102,53 +106,46 @@
   filter: blur(4px);
 }
 
-/* Premium Card Shadow */
 .shadow-premium {
-  box-shadow: 
+  box-shadow:
     0 10px 40px var(--shadow),
     0 2px 10px var(--shadow);
 }
 
-/* Glassmorphism */
 .glass {
-  background: rgba(255,255,255,0.7);
+  background: rgba(250, 248, 245, 0.75);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 1px solid rgba(212, 207, 196, 0.5);
 }
 
 .dark .glass {
-  background: rgba(30, 41, 59, 0.7);
-  border: 1px solid rgba(148, 163, 184, 0.15);
+  background: rgba(30, 42, 30, 0.75);
+  border: 1px solid rgba(82, 183, 136, 0.15);
 }
 
-/* Neon Glow Text */
 .text-glow {
-  text-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+  text-shadow: 0 0 20px rgba(45, 106, 79, 0.35);
 }
 
 .dark .text-glow {
-  text-shadow: 0 0 30px rgba(129, 140, 248, 0.5);
+  text-shadow: 0 0 30px rgba(82, 183, 136, 0.45);
 }
 
-/* ================================
-   PARALLAX SCROLLING
-   ================================ */
 .parallax-bg {
   will-change: transform;
 }
 
-/* ================================
-   TYPOGRAPHY
-   ================================ */
 @layer base {
   html {
     font-family: 'Inter', 'Sarabun', system-ui, sans-serif;
   }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+  }
 }
 
-/* ================================
-   CUSTOM COMPONENTS
-   ================================ */
 .premium-btn {
   background: var(--primary-gradient);
   transition: all 0.3s ease;
@@ -169,7 +166,6 @@
   transform: translateX(100%);
 }
 
-/* Smooth scroll */
 html {
   scroll-behavior: smooth;
 }

@@ -100,6 +100,7 @@ export const translationsTh = {
     student: "สมัครเป็นนักเรียน",
     teacher: "สมัครเป็นครู",
     alreadyHaveAccount: "มีบัญชีอยู่แล้ว?",
+    passwordHint: "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร รวมตัวพิมพ์ใหญ่ ตัวพิมพ์เล็ก และตัวเลข",
   },
   studentDashboard: {
     title: "แดชบอร์ดนักเรียน",
@@ -131,6 +132,18 @@ export const translationsTh = {
     coupons: "จัดการคูปอง",
     users: "จัดการผู้ใช้",
     announcements: "จัดการประกาศ",
+    contacts: "ข้อความติดต่อ",
+  },
+  liveClasses: {
+    title: "คลาสเรียนสด",
+    teacherSubtitle: "จัดตารางและแชร์ลิงก์ Zoom / Google Meet ให้นักเรียน",
+    studentSubtitle: "คลาสเรียนสดจากคอร์สที่คุณลงทะเบียน",
+    create: "สร้างคลาสเรียนสด",
+    edit: "แก้ไขคลาสเรียนสด",
+    join: "เข้าห้องเรียน",
+    empty: "ยังไม่มีคลาสเรียนสด",
+    emptyDesc: "สร้างคลาสเรียนสดและแจ้งเตือนนักเรียนอัตโนมัติ",
+    studentEmpty: "ยังไม่มีคลาสเรียนสดในคอร์สของคุณ",
   },
   course: {
     title: "ชื่อคอร์ส",

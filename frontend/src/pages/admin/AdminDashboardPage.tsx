@@ -37,8 +37,8 @@ export function AdminDashboardPage() {
       title: 'ผู้ใช้ทั้งหมด',
       value: dashboard?.totalUsers || 0,
       icon: Users,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100',
+      color: 'text-amber-800',
+      bgColor: 'bg-amber-100',
     },
     {
       title: 'ครูทั้งหมด',
@@ -51,8 +51,8 @@ export function AdminDashboardPage() {
       title: 'ครูที่อนุมัติแล้ว',
       value: dashboard?.approvedTeachers || 0,
       icon: Award,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100',
+      color: 'text-emerald-700',
+      bgColor: 'bg-emerald-100',
     },
     {
       title: 'คอร์สทั้งหมด',
@@ -116,7 +116,7 @@ export function AdminDashboardPage() {
         <Card className="rounded-3xl border-slate-200 shadow-sm">
           <CardContent className="pt-6">
             <h3 className="mb-2 font-semibold text-slate-900">การจัดการระบบ</h3>
-            <button className="inline-flex items-center gap-2 text-sm font-medium text-indigo-600">
+            <button className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700">
               ดูรายการทั้งหมด <ArrowRight className="h-4 w-4" />
             </button>
           </CardContent>

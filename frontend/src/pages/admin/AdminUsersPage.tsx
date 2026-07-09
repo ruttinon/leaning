@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Users, User, GraduationCap, BookOpen } from 'lucide-react'
 import { api } from '@/lib/api'
@@ -19,19 +21,22 @@ interface User {
 }
 
 export function AdminUsersPage() {
-  const { data: users, isLoading } = useQuery({
-    queryKey: ['admin-users'],
-    queryFn: async () => api.get<User[]>('/admin/users'),
+  const [page, setPage] = useState(1)
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin-users', page],
+    queryFn: async () => api.get<{ data: User[]; meta: any }>(`/admin/users?page=${page}&limit=20`),
   })
+
+  const users = data?.data ?? []
 
   const getRoleIcon = (role: string) => {
     switch (role) {
       case 'ADMIN':
-        return <Users className="h-5 w-5 text-purple-600" />
+        return <Users className="h-5 w-5 text-amber-800" />
       case 'TEACHER':
         return <BookOpen className="h-5 w-5 text-green-600" />
       case 'STUDENT':
-        return <GraduationCap className="h-5 w-5 text-blue-600" />
+        return <GraduationCap className="h-5 w-5 text-emerald-700" />
       default:
         return <User className="h-5 w-5 text-gray-600" />
     }
@@ -89,7 +94,7 @@ export function AdminUsersPage() {
                   <div className="flex items-center gap-4">
                     <Avatar>
                       <AvatarImage src={getAvatarUrl(user) || ''} />
-                      <AvatarFallback className="bg-gradient-to-br from-primary to-purple-600 text-white">
+                      <AvatarFallback className="bg-gradient-to-br from-primary to-green-600 text-white">
                         {user.firstName.charAt(0)}
                         {user.lastName.charAt(0)}
                       </AvatarFallback>
@@ -151,6 +156,24 @@ export function AdminUsersPage() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      )}
+
+      {data?.meta && data.meta.totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4">
+          <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+            ก่อนหน้า
+          </Button>
+          <span className="text-sm text-gray-600">
+            หน้า {data.meta.page} / {data.meta.totalPages}
+          </span>
+          <Button
+            variant="outline"
+            disabled={page >= data.meta.totalPages}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            ถัดไป
+          </Button>
         </div>
       )}
     </div>

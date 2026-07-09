@@ -48,7 +48,7 @@ export function NotificationsPage() {
         return 'text-red-600 bg-red-50';
       case 'INFO':
       default:
-        return 'text-blue-600 bg-blue-50';
+        return 'text-emerald-700 bg-emerald-50';
     }
   };
 

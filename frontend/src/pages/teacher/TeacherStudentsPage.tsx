@@ -47,7 +47,7 @@ export function TeacherStudentsPage() {
             <Card key={student.id} className="hover:shadow-lg transition-shadow">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                  <div className="w-12 h-12 bg-emerald-800 rounded-full flex items-center justify-center text-white font-semibold">
                     {student.firstName.charAt(0)}
                     {student.lastName.charAt(0)}
                   </div>
@@ -66,7 +66,7 @@ export function TeacherStudentsPage() {
                     <Calendar className="h-3 w-3" />
                     {new Date(student.createdAt).toLocaleDateString('th-TH')}
                   </span>
-                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                  <span className="text-xs bg-emerald-100 text-blue-700 px-2 py-1 rounded-full">
                     {student.enrollments} คอร์ส
                   </span>
                 </div>

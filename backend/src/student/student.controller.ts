@@ -163,6 +163,11 @@ export class StudentController {
     return this.studentService.getProgress(req.user.id)
   }
 
+  @Get('live-classes')
+  async getLiveClasses(@Request() req) {
+    return this.studentService.getLiveClasses(req.user.id)
+  }
+
   @Get('payments')
   async getMyPayments(@Request() req) {
     return this.studentService.getMyPayments(req.user.id)

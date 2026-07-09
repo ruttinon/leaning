@@ -1,6 +1,7 @@
-import { BadRequestException, Controller, Get, Headers, Param, Post, Req } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Headers, Param, Post, Query, Req } from '@nestjs/common';
 import { PublicService } from './public.service';
 import { StudentService } from '../student/student.service';
+import { ContactDto } from './dto/contact.dto';
 
 @Controller('public')
 export class PublicController {
@@ -42,6 +43,17 @@ export class PublicController {
   @Get('announcements')
   async getAnnouncements() {
     return this.publicService.getAnnouncements();
+  }
+
+  @Get('courses/featured')
+  async getFeaturedCourses(@Query('limit') limit?: string) {
+    const parsed = limit ? Number(limit) : 6;
+    return this.publicService.getFeaturedCourses(Number.isFinite(parsed) ? parsed : 6);
+  }
+
+  @Post('contact')
+  async submitContact(@Body() dto: ContactDto) {
+    return this.publicService.submitContact(dto);
   }
 
   @Post('payments/webhook/stripe')

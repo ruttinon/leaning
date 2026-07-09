@@ -2,31 +2,40 @@ import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { BookOpen, Star, Users, Zap, CheckCircle, GraduationCap, Clock, Award, ArrowRight, Sparkles } from 'lucide-react'
+import { BookOpen, Users, Zap, CheckCircle, GraduationCap, Clock, Award, ArrowRight, Sparkles } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useAppStore } from '@/store/theme-store'
+import { api } from '@/lib/api'
+import { LoadingState } from '@/components/LoadingState'
+import { EmptyState } from '@/components/EmptyState'
 
 export function HomePage() {
   const { theme, language } = useAppStore()
+
+  const { data: featuredCourses, isLoading: coursesLoading } = useQuery({
+    queryKey: ['featured-courses'],
+    queryFn: () => api.get<any[]>('/public/courses/featured?limit=3'),
+  })
 
   const features = [
     { 
       title: language === 'th' ? 'คอร์สคุณภาพสูง' : 'High Quality Courses', 
       description: language === 'th' ? 'คอร์สที่ออกแบบโดยครูผู้เชี่ยวชาญ' : 'Courses designed by expert teachers', 
       icon: BookOpen,
-      gradient: 'from-indigo-500 to-purple-600'
+      gradient: 'from-emerald-600 to-green-700'
     },
     { 
       title: language === 'th' ? 'เรียนได้ทุกที่' : 'Learn Anywhere', 
       description: language === 'th' ? 'เรียนได้ทุกเวลา ทุกที่ทุกเมื่อ' : 'Learn anytime, anywhere', 
       icon: Zap,
-      gradient: 'from-blue-500 to-cyan-600'
+      gradient: 'from-teal-600 to-emerald-600'
     },
     { 
       title: language === 'th' ? 'ครูผู้สอนคุณภาพ' : 'Expert Teachers', 
       description: language === 'th' ? 'ครูที่มีประสบการณ์และความเชี่ยวชาญ' : 'Experienced and specialized teachers', 
       icon: Users,
-      gradient: 'from-pink-500 to-rose-600'
+      gradient: 'from-amber-600 to-orange-600'
     },
     { 
       title: language === 'th' ? 'ติดตามความก้าวหน้า' : 'Track Your Progress', 
@@ -34,12 +43,6 @@ export function HomePage() {
       icon: CheckCircle,
       gradient: 'from-amber-500 to-orange-600'
     },
-  ]
-
-  const courses = [
-    { id: '1', title: language === 'th' ? 'คณิตศาสตร์พื้นฐาน' : 'Basic Mathematics', teacher: language === 'th' ? 'ครูสมศักดิ์' : 'Mr. Smith', rating: 4.8, students: 1234, price: 0 },
-    { id: '2', title: language === 'th' ? 'ภาษาอังกฤษสำหรับผู้เริ่มต้น' : 'English for Beginners', teacher: language === 'th' ? 'ครูสุภาพร' : 'Ms. Johnson', rating: 4.9, students: 2567, price: 0 },
-    { id: '3', title: language === 'th' ? 'วิทยาศาสตร์ ม.ปลาย' : 'High School Science', teacher: language === 'th' ? 'ครูวิทยา' : 'Mr. Brown', rating: 4.7, students: 987, price: 0 },
   ]
 
   return (
@@ -50,14 +53,14 @@ export function HomePage() {
         {/* Hero Section - Premium 3D Effect */}
         <section className="relative overflow-hidden py-20 md:py-32">
           {/* Background Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-green-500/10 to-amber-500/10"></div>
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               {/* Left Content */}
               <div className="space-y-8">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 backdrop-blur-sm shadow-premium">
-                  <Sparkles className="h-4 w-4 text-indigo-500" />
+                  <Sparkles className="h-4 w-4 text-emerald-500" />
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     {language === 'th' ? 'แพลตฟอร์มเรียนออนไลน์ #1' : '#1 Online Learning Platform'}
                   </span>
@@ -65,7 +68,7 @@ export function HomePage() {
                 
                 <h1 className={`text-4xl md:text-6xl lg:text-7xl font-bold leading-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                   {language === 'th' ? 'การเรียนรู้ที่' : 'Learning Without'}
-                  <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-emerald-800 via-green-700 to-amber-700 bg-clip-text text-transparent">
                     {language === 'th' ? ' ไม่มีขีดจำกัด' : ' Limits'}
                   </span>
                 </h1>
@@ -79,7 +82,7 @@ export function HomePage() {
                 
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link to="/register">
-                    <Button size="lg" className="premium-btn text-white text-lg px-8 py-6 shadow-lg hover:shadow-indigo-500/40">
+                    <Button size="lg" className="premium-btn text-white text-lg px-8 py-6 shadow-lg hover:shadow-emerald-700/40">
                       {language === 'th' ? 'เริ่มเรียนตอนนี้' : 'Start Learning Now'}
                       <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
@@ -102,7 +105,7 @@ export function HomePage() {
                     { label: language === 'th' ? 'คะแนน' : 'Rating', value: '4.9' }
                   ].map((stat, i) => (
                     <div key={i} className="text-center p-4 rounded-2xl glass">
-                      <div className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                      <div className="text-3xl font-bold bg-gradient-to-r from-emerald-700 to-green-600 bg-clip-text text-transparent">
                         {stat.value}
                       </div>
                       <div className={`text-sm mt-1 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
@@ -118,13 +121,13 @@ export function HomePage() {
                 <div className="relative">
                   {/* Floating Elements */}
                   <div className="floating absolute -top-8 -left-8">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-premium flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-600 to-green-700 shadow-premium flex items-center justify-center">
                       <BookOpen className="h-10 w-10 text-white" />
                     </div>
                   </div>
                   
                   <div className="floating-slow absolute -bottom-8 -right-8">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 shadow-premium flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-600 to-orange-600 shadow-premium flex items-center justify-center">
                       <GraduationCap className="h-8 w-8 text-white" />
                     </div>
                   </div>
@@ -132,8 +135,8 @@ export function HomePage() {
                   {/* Main 3D Card */}
                   <div className="card-3d w-full max-w-md p-8 rounded-3xl bg-white dark:bg-slate-800 shadow-2xl border border-slate-100 dark:border-slate-700">
                     <div className="text-center">
-                      <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-600/20 flex items-center justify-center mb-6">
-                        <Clock className="h-16 w-16 text-indigo-500" />
+                      <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-emerald-500/20 to-green-600/20 flex items-center justify-center mb-6">
+                        <Clock className="h-16 w-16 text-emerald-500" />
                       </div>
                       <h3 className="text-2xl font-bold mb-2">
                         {language === 'th' ? 'เรียนได้ทุกเวลา' : 'Learn Anytime'}
@@ -203,42 +206,60 @@ export function HomePage() {
               </p>
             </div>
 
+            {coursesLoading ? (
+              <LoadingState />
+            ) : !featuredCourses?.length ? (
+              <EmptyState
+                icon={BookOpen}
+                title={language === 'th' ? 'ยังไม่มีคอร์ส' : 'No courses yet'}
+                description={language === 'th' ? 'คอร์สใหม่จะปรากฏที่นี่เร็วๆ นี้' : 'New courses will appear here soon'}
+                actionLabel={language === 'th' ? 'ดูคอร์สทั้งหมด' : 'Browse courses'}
+                onAction={() => window.location.assign('/courses')}
+              />
+            ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {courses.map((course) => (
+              {featuredCourses.map((course: any) => (
                 <Card 
                   key={course.id} 
                   className="card-3d border-0 overflow-hidden"
                 >
-                  <div className="h-52 bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-400 flex items-center justify-center relative overflow-hidden">
-                    <BookOpen className="h-20 w-20 text-white/90" />
+                  <div className="h-52 bg-gradient-to-br from-emerald-500 via-green-500 to-amber-500 flex items-center justify-center relative overflow-hidden">
+                    {course.thumbnailUrl ? (
+                      <img src={course.thumbnailUrl} alt={course.title} className="h-full w-full object-cover" />
+                    ) : (
+                      <BookOpen className="h-20 w-20 text-white/90" />
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                   </div>
                   <CardContent className="p-8">
                     <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
                     <p className={`mb-6 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
-                      {language === 'th' ? 'โดย ' : 'by '}{course.teacher}
+                      {language === 'th' ? 'โดย ' : 'by '}
+                      {course.teacher?.user ? `${course.teacher.user.firstName} ${course.teacher.user.lastName}` : '-'}
                     </p>
                     
                     <div className="flex items-center justify-between mb-6">
                       <div className="flex items-center space-x-1">
-                        <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                        <span className="text-sm font-medium">{course.rating}</span>
+                        <Users className="h-4 w-4 text-emerald-600" />
                         <span className={`text-sm ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
-                          ({course.students.toLocaleString()})
+                          {course._count?.enrollments ?? 0} {language === 'th' ? 'นักเรียน' : 'students'}
                         </span>
                       </div>
-                      <span className="font-bold text-indigo-600 dark:text-indigo-400 text-lg">
-                        {course.price === 0 ? (language === 'th' ? 'ฟรี' : 'Free') : `฿${course.price}`}
+                      <span className="font-bold text-emerald-700 dark:text-emerald-400 text-lg">
+                        {Number(course.price) === 0 ? (language === 'th' ? 'ฟรี' : 'Free') : `฿${course.price}`}
                       </span>
                     </div>
 
-                    <Button className="w-full premium-btn text-white">
-                      {language === 'th' ? 'ดูรายละเอียด' : 'View Details'}
-                    </Button>
+                    <Link to={`/courses/${course.id}`}>
+                      <Button className="w-full premium-btn text-white">
+                        {language === 'th' ? 'ดูรายละเอียด' : 'View Details'}
+                      </Button>
+                    </Link>
                   </CardContent>
                 </Card>
               ))}
             </div>
+            )}
             
             <div className="text-center mt-12">
               <Link to="/courses">
@@ -256,7 +277,7 @@ export function HomePage() {
         {/* CTA Section */}
         <section className="py-20 md:py-32">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="relative rounded-3xl overflow-hidden p-8 md:p-16 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 shadow-2xl">
+            <div className="relative rounded-3xl overflow-hidden p-8 md:p-16 bg-gradient-to-r from-emerald-800 via-green-700 to-amber-700 shadow-2xl">
               {/* Decorations */}
               <div className="absolute top-8 right-8 floating">
                 <Award className="h-16 w-16 text-white/30" />
@@ -277,7 +298,7 @@ export function HomePage() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link to="/register/student">
-                    <Button size="lg" className="text-lg px-8 py-6 bg-white text-indigo-600 hover:bg-white/90 shadow-xl">
+                    <Button size="lg" className="text-lg px-8 py-6 bg-white text-emerald-700 hover:bg-white/90 shadow-xl">
                       {language === 'th' ? 'สมัครเป็นนักเรียน' : 'Sign Up as Student'}
                     </Button>
                   </Link>

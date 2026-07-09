@@ -95,7 +95,7 @@ export function StudentCourseDetailPage() {
                         onClick={() => setSelectedLessonId(chapterLesson.id)}
                         className={`w-full rounded-lg px-4 py-2 text-left text-sm transition-colors ${
                           selectedLessonId === chapterLesson.id
-                            ? 'bg-blue-100 text-blue-700'
+                            ? 'bg-emerald-100 text-blue-700'
                             : 'hover:bg-gray-100'
                         }`}
                       >
@@ -258,14 +258,14 @@ export function StudentCourseDetailPage() {
                                   <button
                                     type="button"
                                     onClick={() => openFile(submission.fileUrl)}
-                                    className="mt-2 inline-flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                                    className="mt-2 inline-flex items-center gap-2 text-sm text-emerald-700 hover:underline"
                                   >
                                     <Paperclip className="h-4 w-4" />
                                     เปิดไฟล์แนบที่ส่ง
                                   </button>
                                 )}
                                 {submission.feedback && (
-                                  <p className="mt-1 text-sm text-blue-600">
+                                  <p className="mt-1 text-sm text-emerald-700">
                                     ความคิดเห็น: {submission.feedback}
                                   </p>
                                 )}

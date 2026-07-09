@@ -139,7 +139,7 @@ function StripeCheckoutForm({
     <form onSubmit={handleSubmit} className="space-y-5">
       <PaymentElement options={{ layout: 'tabs' }} />
       {message && (
-        <div className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+        <div className="rounded-2xl border border-blue-200 bg-emerald-50 px-4 py-3 text-sm text-blue-700">
           {message}
         </div>
       )}
@@ -243,7 +243,7 @@ export function StudentPaymentCheckoutPage() {
       </div>
 
       {state.notice && (
-        <div className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+        <div className="rounded-2xl border border-blue-200 bg-emerald-50 px-4 py-3 text-sm text-blue-700">
           {state.notice}
         </div>
       )}
@@ -268,7 +268,7 @@ export function StudentPaymentCheckoutPage() {
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-xl bg-white px-4 py-3">
                   <p className="text-sm text-slate-500">ยอดชำระ</p>
-                  <p className="text-xl font-bold text-indigo-600">
+                  <p className="text-xl font-bold text-emerald-700">
                     {formatCurrency(payment.amount, payment.currency)}
                   </p>
                 </div>
@@ -352,7 +352,7 @@ export function StudentPaymentCheckoutPage() {
         <Card className="border-slate-200 shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
-              <ShieldCheck className="h-5 w-5 text-indigo-600" />
+              <ShieldCheck className="h-5 w-5 text-emerald-700" />
               ดำเนินการชำระเงิน
             </CardTitle>
             <CardDescription>
@@ -396,7 +396,7 @@ export function StudentPaymentCheckoutPage() {
 
             <div className="rounded-2xl bg-slate-50 px-4 py-4 text-sm text-slate-600">
               <div className="flex items-start gap-3">
-                <CreditCard className="mt-0.5 h-4 w-4 flex-shrink-0 text-indigo-600" />
+                <CreditCard className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" />
                 <p>
                   ถ้ามีการยืนยันเพิ่มเติมจากธนาคารหรือบัตร ระบบจะพาคุณกลับมาหน้านี้และอัปเดตสถานะให้เอง
                 </p>

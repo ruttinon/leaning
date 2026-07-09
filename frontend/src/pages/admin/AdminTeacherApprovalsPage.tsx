@@ -50,8 +50,8 @@ export function AdminTeacherApprovalsPage() {
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-4">
-                    <div className="p-3 bg-purple-100 rounded-full">
-                      <Users className="h-6 w-6 text-purple-600" />
+                    <div className="p-3 bg-amber-100 rounded-full">
+                      <Users className="h-6 w-6 text-amber-800" />
                     </div>
                     <div>
                       <h3 className="font-semibold">

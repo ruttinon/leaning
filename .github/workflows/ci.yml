@@ -16,6 +16,24 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: study_platform
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      NODE_ENV: test
+      JWT_SECRET: ci-test-jwt-secret
+      DATABASE_URL: postgresql://postgres:password@localhost:5432/study_platform?schema=public
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,12 +43,22 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
       - run: npm run prisma:generate
+      - run: npx prisma db push
       - run: npm run build
       - run: npm test
+      - run: npm run test:integration
+      - run: npm run start &
         env:
-          NODE_ENV: test
-          JWT_SECRET: ci-test-jwt-secret
-          DATABASE_URL: file:./ci.db
+          PORT: 5000
+      - run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:5000/health/live && exit 0
+            sleep 2
+          done
+          exit 1
+      - run: npm run e2e:smoke
+        env:
+          API_BASE_URL: http://localhost:5000
 
   frontend:
     runs-on: ubuntu-latest

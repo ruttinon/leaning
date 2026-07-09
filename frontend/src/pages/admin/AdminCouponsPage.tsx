@@ -145,7 +145,7 @@ export function AdminCouponsPage() {
             <Card key={coupon.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-bold text-purple-600">
+                  <CardTitle className="text-lg font-bold text-amber-800">
                     {coupon.code}
                   </CardTitle>
                   <span

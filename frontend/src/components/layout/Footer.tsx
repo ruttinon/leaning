@@ -9,7 +9,7 @@ export function Footer() {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <BookOpen className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold text-primary">EduPlatform</span>
+              <span className="text-xl font-bold text-primary">EduPro</span>
             </div>
             <p className="text-gray-600 text-sm">
               แพลตฟอร์มเรียนออนไลน์ที่ครบวงจร ให้คุณเรียนได้ทุกที่ทุกเวลา
@@ -55,7 +55,7 @@ export function Footer() {
         </div>
 
         <div className="border-t mt-8 pt-8 text-center text-sm text-gray-500">
-          <p>&copy; 2024 EduPlatform. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} EduPro. All rights reserved.</p>
         </div>
       </div>
     </footer>

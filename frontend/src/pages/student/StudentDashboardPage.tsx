@@ -38,8 +38,8 @@ export function StudentDashboardPage() {
       title: 'คอร์สที่ลงทะเบียน',
       value: dashboard?.totalEnrollments || 0,
       icon: BookOpen,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100',
+      color: 'text-emerald-700',
+      bgColor: 'bg-emerald-100',
     },
     {
       title: 'บทเรียนที่เสร็จ',
@@ -59,14 +59,14 @@ export function StudentDashboardPage() {
       title: 'คะแนนเฉลี่ย',
       value: '-',
       icon: Award,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100',
+      color: 'text-amber-800',
+      bgColor: 'bg-amber-100',
     },
   ]
 
   return (
     <div className="space-y-6">
-      <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-6 text-white shadow-lg">
+      <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-emerald-800 via-green-700 to-amber-700 p-6 text-white shadow-lg">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-sm backdrop-blur">
@@ -74,7 +74,7 @@ export function StudentDashboardPage() {
               ยินดีต้อนรับกลับมา
             </div>
             <h1 className="text-2xl font-bold">แดชบอร์ดนักเรียน</h1>
-            <p className="mt-2 text-sm text-indigo-50">ติดตามความก้าวหน้า เรียนต่อ และดูงานที่ต้องทำได้จากที่นี่</p>
+            <p className="mt-2 text-sm text-emerald-50">ติดตามความก้าวหน้า เรียนต่อ และดูงานที่ต้องทำได้จากที่นี่</p>
           </div>
           <div className="rounded-2xl bg-white/15 p-4 backdrop-blur">
             <div className="flex items-center gap-3 text-sm">
@@ -111,7 +111,7 @@ export function StudentDashboardPage() {
               <h2 className="text-xl font-semibold">คอร์สที่กำลังเรียน</h2>
               <p className="text-sm text-slate-500">ดำเนินการเรียนต่อได้ทันที</p>
             </div>
-            <a href="/student/my-courses" className="text-sm font-medium text-indigo-600">ดูทั้งหมด</a>
+            <a href="/student/my-courses" className="text-sm font-medium text-emerald-700">ดูทั้งหมด</a>
           </div>
 
           {dashboard?.studentProfile?.enrollments && dashboard.studentProfile.enrollments.length > 0 ? (
@@ -130,9 +130,9 @@ export function StudentDashboardPage() {
                     <span>{enrollment.progress || 0}%</span>
                   </div>
                   <div className="h-2 rounded-full bg-slate-200">
-                    <div className="h-2 rounded-full bg-indigo-600" style={{ width: `${enrollment.progress || 0}%` }} />
+                    <div className="h-2 rounded-full bg-emerald-700" style={{ width: `${enrollment.progress || 0}%` }} />
                   </div>
-                  <button className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-indigo-600">
+                  <button className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-emerald-700">
                     เรียนต่อ <ArrowRight className="h-4 w-4" />
                   </button>
                 </div>

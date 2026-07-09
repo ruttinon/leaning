@@ -14,6 +14,7 @@ import { ArrowRight, ShieldCheck, Sparkles } from 'lucide-react'
 
 interface AuthResponse {
   access_token: string;
+  refresh_token?: string;
   user: {
     id: string;
     email: string;
@@ -45,7 +46,7 @@ export function LoginPage() {
     try {
       const response = await api.post<AuthResponse>('/auth/login', { email: emailInput, password: passwordInput })
       
-      login(response.user, response.access_token)
+      login(response.user, response.access_token, response.refresh_token)
       
       // Redirect based on role
       if (response.user.role === 'STUDENT') {
@@ -73,13 +74,13 @@ export function LoginPage() {
       
       <main className="flex-1 py-16 md:py-24">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
-          <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-8 text-white shadow-2xl">
+          <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-emerald-800 via-green-700 to-amber-700 p-8 text-white shadow-2xl">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-sm backdrop-blur">
               <Sparkles className="h-4 w-4" />
               เข้าสู่ระบบอย่างปลอดภัย
             </div>
             <h1 className="text-3xl font-bold md:text-4xl">ยินดีต้อนรับกลับสู่แพลตฟอร์มการเรียนรู้</h1>
-            <p className="mt-4 text-lg text-indigo-50">เรียนต่อ สมัครคอร์สใหม่ และติดตามความก้าวหน้าตั้งแต่หน้าแรกเดียว</p>
+            <p className="mt-4 text-lg text-emerald-50">เรียนต่อ สมัครคอร์สใหม่ และติดตามความก้าวหน้าตั้งแต่หน้าแรกเดียว</p>
             <div className="mt-8 flex items-center gap-2 rounded-2xl bg-white/15 p-4 text-sm backdrop-blur">
               <ShieldCheck className="h-5 w-5" />
               ระบบรองรับการเข้าสู่ระบบที่ปลอดภัยและใช้งานง่าย
@@ -108,7 +109,7 @@ export function LoginPage() {
                       <div className="flex items-center gap-2">
                         <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white ${
                           account.role === 'ADMIN' ? 'bg-red-600' :
-                          account.role === 'TEACHER' ? 'bg-green-600' : 'bg-blue-600'
+                          account.role === 'TEACHER' ? 'bg-green-600' : 'bg-emerald-700'
                         }`}>
                           {account.role[0]}
                         </div>

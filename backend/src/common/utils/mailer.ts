@@ -33,3 +33,31 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
 
   return true;
 }
+
+export async function sendContactEmail(contact: {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}) {
+  const transporter = createTransport();
+  const adminEmail = process.env.CONTACT_EMAIL || process.env.SMTP_FROM;
+
+  if (!transporter || !adminEmail) {
+    return false;
+  }
+
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM || 'no-reply@studyplatform.local',
+    to: adminEmail,
+    replyTo: contact.email,
+    subject: `[Contact] ${contact.subject}`,
+    html: `
+      <p><strong>จาก:</strong> ${contact.name} (${contact.email})</p>
+      <p><strong>หัวข้อ:</strong> ${contact.subject}</p>
+      <p>${contact.message.replace(/\n/g, '<br>')}</p>
+    `,
+  });
+
+  return true;
+}

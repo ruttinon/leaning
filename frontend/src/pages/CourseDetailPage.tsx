@@ -197,7 +197,7 @@ export function CourseDetailPage() {
         )}
         {!isLoading && !error && course && (
           <>
-            <section className="bg-gradient-to-br from-indigo-700 via-purple-700 to-pink-600 py-20 text-white">
+            <section className="bg-gradient-to-br from-emerald-800 via-green-700 to-amber-700 py-20 text-white">
               <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
                   <div>
@@ -206,8 +206,8 @@ export function CourseDetailPage() {
                       {course.level || 'คอร์สยอดนิยม'}
                     </div>
                     <h1 className="mb-6 text-3xl font-bold md:text-5xl">{course.title}</h1>
-                    <p className="mb-8 max-w-2xl text-lg text-indigo-50">{course.description}</p>
-                    <div className="mb-8 flex flex-wrap items-center gap-4 text-sm text-indigo-50">
+                    <p className="mb-8 max-w-2xl text-lg text-emerald-50">{course.description}</p>
+                    <div className="mb-8 flex flex-wrap items-center gap-4 text-sm text-emerald-50">
                       <div className="flex items-center gap-2 rounded-full bg-white/15 px-3 py-2">
                         <Users className="h-4 w-4" />
                         <span>
@@ -229,12 +229,12 @@ export function CourseDetailPage() {
                       size="lg"
                       onClick={handlePrimaryAction}
                       disabled={isActionPending || (isAuthenticated && !isStudent)}
-                      className="bg-white text-indigo-700 hover:bg-slate-100"
+                      className="bg-white text-emerald-800 hover:bg-slate-100"
                     >
                       {primaryActionLabel}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
-                    <p className="mt-4 text-sm text-indigo-100">{actionHint}</p>
+                    <p className="mt-4 text-sm text-emerald-100">{actionHint}</p>
                     {actionError && <p className="mt-2 text-sm text-red-100">{actionError}</p>}
                   </div>
                   <div className="flex justify-center">
@@ -245,7 +245,7 @@ export function CourseDetailPage() {
                       <h2 className="text-2xl font-semibold">
                         {isPaidCourse ? 'ปลดล็อกหลังชำระเงิน' : 'พร้อมเรียนทันที'}
                       </h2>
-                      <p className="mt-3 text-sm text-indigo-50">
+                      <p className="mt-3 text-sm text-emerald-50">
                         เข้าถึงเนื้อหาแบบเป็นลำดับ ติดตามความก้าวหน้า และเรียนต่อจากอุปกรณ์ใดก็ได้
                       </p>
                     </div>
@@ -258,7 +258,7 @@ export function CourseDetailPage() {
               <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
                 <div>
                   <div className="mb-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-                    <div className="mb-4 flex items-center gap-2 text-indigo-600">
+                    <div className="mb-4 flex items-center gap-2 text-emerald-700">
                       <ShieldCheck className="h-5 w-5" />
                       <h2 className="text-xl font-semibold">สิ่งที่คุณจะได้รับ</h2>
                     </div>
@@ -281,7 +281,7 @@ export function CourseDetailPage() {
                   <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
                     <div className="mb-5 flex items-center justify-between">
                       <h2 className="text-xl font-semibold">บทเรียนทั้งหมด</h2>
-                      <span className="rounded-full bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
+                      <span className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300">
                         {totalLessons} บทเรียน
                       </span>
                     </div>
@@ -298,7 +298,7 @@ export function CourseDetailPage() {
                                 key={lesson.id}
                                 className="flex items-center gap-3 rounded-xl bg-white px-3 py-3 text-sm shadow-sm dark:bg-slate-800"
                               >
-                                <PlayCircle className="h-5 w-5 flex-shrink-0 text-indigo-600" />
+                                <PlayCircle className="h-5 w-5 flex-shrink-0 text-emerald-700" />
                                 <span>{lesson.title}</span>
                               </div>
                             ))}
@@ -315,7 +315,7 @@ export function CourseDetailPage() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-700/60">
                         <span className="text-slate-500">ราคา</span>
-                        <span className="text-xl font-bold text-indigo-600">
+                        <span className="text-xl font-bold text-emerald-700">
                           {course.price === 0 ? 'ฟรี' : `฿${course.price}`}
                         </span>
                       </div>

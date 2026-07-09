@@ -3,4 +3,5 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/src', '<rootDir>/test'],
   testMatch: ['**/?(*.)+(spec|test).[tj]s'],
+  testPathIgnorePatterns: ['/node_modules/', '/dist/', '/test/integration/'],
 };

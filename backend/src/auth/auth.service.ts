@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationService } from '../common/services/notification.service';
 import { sendPasswordResetEmail } from '../common/utils/mailer';
 import { LoginDto } from './dto/login.dto';
 import { RegisterStudentDto } from './dto/register-student.dto';
@@ -13,6 +14,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private notificationService: NotificationService,
   ) {}
 
   async registerStudent(dto: RegisterStudentDto) {
@@ -44,10 +46,7 @@ export class AuthService {
       include: { studentProfile: true },
     });
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
-    const accessToken = this.jwtService.sign(payload);
-
-    return { access_token: accessToken, user };
+    return this.issueAuthResponse(user);
   }
 
   async registerTeacher(dto: RegisterTeacherDto) {
@@ -81,10 +80,14 @@ export class AuthService {
       include: { teacherProfile: true },
     });
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
-    const accessToken = this.jwtService.sign(payload);
+    await this.notificationService.notifyAdmins(
+      'ครูใหม่สมัครสมาชิก',
+      `${user.firstName} ${user.lastName} สมัครเป็นครูและรอการอนุมัติ`,
+      'TEACHER_REGISTRATION',
+      '/admin/teacher-approvals',
+    );
 
-    return { access_token: accessToken, user };
+    return this.issueAuthResponse(user);
   }
 
   async login(dto: LoginDto) {
@@ -100,15 +103,66 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if (!user.isActive) {
+      throw new UnauthorizedException('Account is deactivated');
+    }
+
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
-    const accessToken = this.jwtService.sign(payload);
+    return this.issueAuthResponse(user);
+  }
 
-    return { access_token: accessToken, user };
+  async refreshTokens(refreshToken: string) {
+    const stored = await this.prisma.refreshToken.findUnique({
+      where: { token: refreshToken },
+      include: {
+        user: {
+          include: { studentProfile: true, teacherProfile: true },
+        },
+      },
+    });
+
+    if (!stored || stored.expiresAt < new Date() || !stored.user.isActive) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+
+    await this.prisma.refreshToken.delete({ where: { id: stored.id } });
+    return this.issueAuthResponse(stored.user);
+  }
+
+  async logout(refreshToken: string) {
+    await this.prisma.refreshToken.deleteMany({ where: { token: refreshToken } });
+    return { message: 'Logged out successfully' };
+  }
+
+  private async issueAuthResponse(user: any) {
+    const tokens = await this.createTokenPair(user.id, user.email, user.role);
+    const { password, resetToken, resetTokenExpiry, ...safeUser } = user;
+    return { ...tokens, user: safeUser };
+  }
+
+  private async createTokenPair(userId: string, email: string, role: string) {
+    const payload = { sub: userId, email, role };
+    const access_token = this.jwtService.sign(payload);
+    const refresh_token = randomBytes(48).toString('hex');
+    const refreshDays = Number(process.env.REFRESH_TOKEN_DAYS || 30);
+
+    await this.prisma.refreshToken.create({
+      data: {
+        userId,
+        token: refresh_token,
+        expiresAt: new Date(Date.now() + refreshDays * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    return { access_token, refresh_token };
+  }
+
+  private async revokeUserRefreshTokens(userId: string) {
+    await this.prisma.refreshToken.deleteMany({ where: { userId } });
   }
 
   async getMe(userId: string) {
@@ -195,8 +249,8 @@ export class AuthService {
   }
 
   async changePassword(userId: string, currentPassword: string, newPassword: string) {
-    if (!newPassword || newPassword.length < 6) {
-      throw new BadRequestException('New password must be at least 6 characters')
+    if (!newPassword || newPassword.length < 8) {
+      throw new BadRequestException('New password must be at least 8 characters')
     }
 
     const user = await this.prisma.user.findUnique({
@@ -218,6 +272,8 @@ export class AuthService {
       where: { id: userId },
       data: { password: hashedNewPassword },
     });
+
+    await this.revokeUserRefreshTokens(userId);
 
     return { message: 'Password updated successfully' };
   }
@@ -293,6 +349,7 @@ export class AuthService {
         resetTokenExpiry: null,
       },
     });
+    await this.revokeUserRefreshTokens(user.id);
     return { message: 'Password updated successfully' };
   }
 }

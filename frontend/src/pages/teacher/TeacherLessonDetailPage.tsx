@@ -297,10 +297,10 @@ export function TeacherLessonDetailPage() {
         </div>
       )}
 
-      <Card className="border-indigo-200 bg-indigo-50/50">
+      <Card className="border-indigo-200 bg-emerald-50/50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Sparkles className="h-5 w-5 text-indigo-600" />
+            <Sparkles className="h-5 w-5 text-emerald-700" />
             เพิ่มเนื้อหาแบบง่าย
           </CardTitle>
         </CardHeader>

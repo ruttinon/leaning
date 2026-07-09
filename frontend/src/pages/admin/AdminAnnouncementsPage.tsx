@@ -156,7 +156,7 @@ export function AdminAnnouncementsPage() {
                     <Calendar className="h-3 w-3" />
                     {new Date(announcement.createdAt).toLocaleDateString('th-TH')}
                   </span>
-                  <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
+                  <span className="text-xs px-2 py-1 bg-emerald-100 text-blue-700 rounded-full">
                     {announcement.type}
                   </span>
                 </div>

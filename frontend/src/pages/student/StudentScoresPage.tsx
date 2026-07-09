@@ -42,7 +42,7 @@ export function StudentScoresPage() {
                       <p className="text-sm text-gray-500">{attempt.quiz?.lesson?.chapter?.course?.title}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xl font-bold text-blue-600">
+                      <p className="text-xl font-bold text-emerald-700">
                         {attempt.score !== null ? `${attempt.score}/${attempt.maxScore}` : '-'}
                       </p>
                     </div>
@@ -70,7 +70,7 @@ export function StudentScoresPage() {
                       <p className="text-sm text-gray-500">{submission.assignment?.lesson?.chapter?.course?.title}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xl font-bold text-blue-600">
+                      <p className="text-xl font-bold text-emerald-700">
                         {submission.grade !== null ? `${submission.grade}/${submission.assignment?.maxPoints}` : '-'}
                       </p>
                       <p className="text-xs text-gray-500">

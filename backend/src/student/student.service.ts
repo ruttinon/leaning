@@ -8,6 +8,9 @@ import {
   canUseClientPaymentConfirmation,
 } from '../common/utils/payment'
 import { SubmitAssignmentDto } from './dto/submit-assignment.dto'
+import { prepareQuizForStudent } from '../common/utils/quiz'
+import { updateEnrollmentProgress } from '../common/utils/enrollment-progress'
+import { NotificationService } from '../common/services/notification.service'
 
 type PaymentRecord = Prisma.PaymentGetPayload<{
   include: { course: true }
@@ -25,7 +28,10 @@ const ACTIVE_STRIPE_PAYMENT_STATUSES = new Set<Stripe.PaymentIntent.Status>([
 export class StudentService {
   private stripe: Stripe | null = null
 
-  constructor(private prisma: PrismaService) {
+  constructor(
+    private prisma: PrismaService,
+    private notificationService: NotificationService,
+  ) {
     if (process.env.STRIPE_SECRET_KEY) {
       this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
     }
@@ -145,15 +151,31 @@ export class StudentService {
       throw new BadRequestException('Already enrolled in this course')
     }
 
-    return this.prisma.enrollment.create({
+    const enrollment = await this.prisma.enrollment.create({
       data: {
         courseId,
         studentId: studentProfile.id,
       },
       include: {
-        course: true,
+        course: {
+          include: {
+            teacher: { include: { user: true } },
+          },
+        },
       },
     })
+
+    if (enrollment.course.teacher?.userId) {
+      await this.notificationService.notifyUser(
+        enrollment.course.teacher.userId,
+        'มีนักเรียนลงทะเบียนใหม่',
+        `นักเรียนลงทะเบียนคอร์ส "${enrollment.course.title}"`,
+        'NEW_ENROLLMENT',
+        `/teacher/courses/${courseId}`,
+      )
+    }
+
+    return enrollment
   }
 
   async getCourseDetail(userId: string, courseId: string) {
@@ -350,23 +372,35 @@ export class StudentService {
     });
 
     if (existingProgress) {
-      return this.prisma.progressLog.update({
+      const result = await this.prisma.progressLog.update({
         where: { id: existingProgress.id },
         data: {
           isCompleted: true,
           completedAt: new Date(),
         },
       });
-    } else {
-      return this.prisma.progressLog.create({
-        data: {
-          studentId: studentProfile.id,
-          lessonId,
-          isCompleted: true,
-          completedAt: new Date(),
-        },
-      });
+      await updateEnrollmentProgress(
+        this.prisma,
+        studentProfile.id,
+        lesson.chapter.course.id,
+      );
+      return result;
     }
+
+    const result = await this.prisma.progressLog.create({
+      data: {
+        studentId: studentProfile.id,
+        lessonId,
+        isCompleted: true,
+        completedAt: new Date(),
+      },
+    });
+    await updateEnrollmentProgress(
+      this.prisma,
+      studentProfile.id,
+      lesson.chapter.course.id,
+    );
+    return result;
   }
 
   async getScores(userId: string) {
@@ -462,7 +496,7 @@ export class StudentService {
       throw new ForbiddenException('Not enrolled in this course')
     }
 
-    return quiz
+    return prepareQuizForStudent(quiz)
   }
 
   async startQuizAttempt(userId: string, quizId: string) {
@@ -561,7 +595,11 @@ export class StudentService {
       throw new ForbiddenException('Not authorized to view this attempt')
     }
 
-    return attempt
+    const revealAnswers = !!attempt.completedAt && attempt.quiz.showAnswers
+    return {
+      ...attempt,
+      quiz: prepareQuizForStudent(attempt.quiz, { revealAnswers }),
+    }
   }
 
   async submitQuizAttempt(userId: string, attemptId: string, data: any) {
@@ -925,13 +963,11 @@ export class StudentService {
     }
 
     let discount = 0
+    let appliedCouponCode: string | undefined
     if (couponCode) {
-      try {
-        const coupon = await this.applyCoupon(couponCode)
-        discount = Number(coupon.discount)
-      } catch (e) {
-        // Ignore coupon if invalid
-      }
+      const coupon = await this.applyCoupon(couponCode)
+      discount = Number(coupon.discount)
+      appliedCouponCode = coupon.code
     }
 
     const price = Number(course.price)
@@ -971,6 +1007,7 @@ export class StudentService {
         courseId,
         amount,
         paymentMethod: this.stripe ? 'stripe' : 'mock',
+        couponCode: appliedCouponCode,
       },
     })
 
@@ -1375,6 +1412,13 @@ export class StudentService {
         },
       })
 
+      if (payment.couponCode) {
+        await tx.coupon.updateMany({
+          where: { code: payment.couponCode },
+          data: { usedCount: { increment: 1 } },
+        })
+      }
+
       if (existingEnrollment) {
         return { payment: updatedPayment, enrollment: existingEnrollment }
       }
@@ -1388,6 +1432,32 @@ export class StudentService {
       })
 
       return { payment: updatedPayment, enrollment }
+    })
+  }
+
+  async getLiveClasses(userId: string) {
+    const studentProfile = await this.prisma.studentProfile.findUnique({ where: { userId } })
+    if (!studentProfile) throw new NotFoundException('Student profile not found')
+
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: { studentId: studentProfile.id },
+      select: { courseId: true },
+    })
+
+    const courseIds = enrollments.map((e) => e.courseId)
+    if (courseIds.length === 0) return []
+
+    return this.prisma.liveClass.findMany({
+      where: {
+        courseId: { in: courseIds },
+        status: { not: 'CANCELLED' },
+        scheduledAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+      },
+      include: {
+        course: { include: { subject: true } },
+        teacher: { include: { user: true } },
+      },
+      orderBy: { scheduledAt: 'asc' },
     })
   }
 }
