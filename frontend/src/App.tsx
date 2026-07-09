@@ -1,28 +1,54 @@
+import { Suspense, useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import { HomePage } from './pages/HomePage'
-import { CoursesPage } from './pages/CoursesPage'
-import { CourseDetailPage } from './pages/CourseDetailPage'
-import { SubjectsPage } from './pages/SubjectsPage'
-import { SubjectDetailPage } from './pages/SubjectDetailPage'
-import { TeachersPage } from './pages/TeachersPage'
-import { TeacherDetailPage } from './pages/TeacherDetailPage'
-import { AboutPage } from './pages/AboutPage'
-import { BecomeTeacherPage } from './pages/BecomeTeacherPage'
-import { ContactPage } from './pages/ContactPage'
-import { LoginPage } from './pages/auth/LoginPage'
-import { RegisterPage } from './pages/auth/RegisterPage'
-import { RegisterStudentPage } from './pages/auth/RegisterStudentPage'
-import { RegisterTeacherPage } from './pages/auth/RegisterTeacherPage'
-import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage'
-import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
-import { StudentDashboardLayout } from './layouts/StudentDashboardLayout'
-import { TeacherDashboardLayout } from './layouts/TeacherDashboardLayout'
-import { AdminDashboardLayout } from './layouts/AdminDashboardLayout'
+import { AppErrorBoundary } from './components/AppErrorBoundary'
+import { RouteFallback } from './components/RouteFallback'
 import { useAuthStore } from './store/auth-store'
 import { api } from './lib/api'
-import { useEffect } from 'react'
+import { lazyNamed } from './lib/lazy'
 import { useAppStore } from './store/theme-store'
 import { ProtectedRoute } from './components/ProtectedRoute'
+
+const HomePage = lazyNamed(() => import('./pages/HomePage'), 'HomePage')
+const CoursesPage = lazyNamed(() => import('./pages/CoursesPage'), 'CoursesPage')
+const CourseDetailPage = lazyNamed(() => import('./pages/CourseDetailPage'), 'CourseDetailPage')
+const SubjectsPage = lazyNamed(() => import('./pages/SubjectsPage'), 'SubjectsPage')
+const SubjectDetailPage = lazyNamed(() => import('./pages/SubjectDetailPage'), 'SubjectDetailPage')
+const TeachersPage = lazyNamed(() => import('./pages/TeachersPage'), 'TeachersPage')
+const TeacherDetailPage = lazyNamed(() => import('./pages/TeacherDetailPage'), 'TeacherDetailPage')
+const AboutPage = lazyNamed(() => import('./pages/AboutPage'), 'AboutPage')
+const BecomeTeacherPage = lazyNamed(() => import('./pages/BecomeTeacherPage'), 'BecomeTeacherPage')
+const ContactPage = lazyNamed(() => import('./pages/ContactPage'), 'ContactPage')
+const LoginPage = lazyNamed(() => import('./pages/auth/LoginPage'), 'LoginPage')
+const RegisterPage = lazyNamed(() => import('./pages/auth/RegisterPage'), 'RegisterPage')
+const RegisterStudentPage = lazyNamed(
+  () => import('./pages/auth/RegisterStudentPage'),
+  'RegisterStudentPage',
+)
+const RegisterTeacherPage = lazyNamed(
+  () => import('./pages/auth/RegisterTeacherPage'),
+  'RegisterTeacherPage',
+)
+const ForgotPasswordPage = lazyNamed(
+  () => import('./pages/auth/ForgotPasswordPage'),
+  'ForgotPasswordPage',
+)
+const ResetPasswordPage = lazyNamed(
+  () => import('./pages/auth/ResetPasswordPage'),
+  'ResetPasswordPage',
+)
+const NotFoundPage = lazyNamed(() => import('./pages/NotFoundPage'), 'NotFoundPage')
+const StudentDashboardLayout = lazyNamed(
+  () => import('./layouts/StudentDashboardLayout'),
+  'StudentDashboardLayout',
+)
+const TeacherDashboardLayout = lazyNamed(
+  () => import('./layouts/TeacherDashboardLayout'),
+  'TeacherDashboardLayout',
+)
+const AdminDashboardLayout = lazyNamed(
+  () => import('./layouts/AdminDashboardLayout'),
+  'AdminDashboardLayout',
+)
 
 function App() {
   const { token } = useAuthStore()
@@ -42,55 +68,61 @@ function App() {
 
   return (
     <div className={`min-h-screen ${theme === 'dark' ? 'bg-slate-900' : 'bg-slate-50'}`}>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/courses" element={<CoursesPage />} />
-        <Route path="/courses/:id" element={<CourseDetailPage />} />
-        <Route path="/subjects" element={<SubjectsPage />} />
-        <Route path="/subjects/:id" element={<SubjectDetailPage />} />
-        <Route path="/teachers" element={<TeachersPage />} />
-        <Route path="/teachers/:id" element={<TeacherDetailPage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/become-teacher" element={<BecomeTeacherPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/register/student" element={<RegisterStudentPage />} />
-        <Route path="/register/teacher" element={<RegisterTeacherPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <AppErrorBoundary>
+        <Suspense fallback={<RouteFallback label="Loading page..." />}>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/courses" element={<CoursesPage />} />
+            <Route path="/courses/:id" element={<CourseDetailPage />} />
+            <Route path="/subjects" element={<SubjectsPage />} />
+            <Route path="/subjects/:id" element={<SubjectDetailPage />} />
+            <Route path="/teachers" element={<TeachersPage />} />
+            <Route path="/teachers/:id" element={<TeacherDetailPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/become-teacher" element={<BecomeTeacherPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/register/student" element={<RegisterStudentPage />} />
+            <Route path="/register/teacher" element={<RegisterTeacherPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-        {/* Student Dashboard Routes */}
-        <Route
-          path="/student/*"
-          element={
-            <ProtectedRoute allowedRoles={['STUDENT']}>
-              <StudentDashboardLayout />
-            </ProtectedRoute>
-          }
-        />
+            {/* Student Dashboard Routes */}
+            <Route
+              path="/student/*"
+              element={
+                <ProtectedRoute allowedRoles={['STUDENT']}>
+                  <StudentDashboardLayout />
+                </ProtectedRoute>
+              }
+            />
 
-        {/* Teacher Dashboard Routes */}
-        <Route
-          path="/teacher/*"
-          element={
-            <ProtectedRoute allowedRoles={['TEACHER']}>
-              <TeacherDashboardLayout />
-            </ProtectedRoute>
-          }
-        />
+            {/* Teacher Dashboard Routes */}
+            <Route
+              path="/teacher/*"
+              element={
+                <ProtectedRoute allowedRoles={['TEACHER']}>
+                  <TeacherDashboardLayout />
+                </ProtectedRoute>
+              }
+            />
 
-        {/* Admin Dashboard Routes */}
-        <Route
-          path="/admin/*"
-          element={
-            <ProtectedRoute allowedRoles={['ADMIN']}>
-              <AdminDashboardLayout />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
+            {/* Admin Dashboard Routes */}
+            <Route
+              path="/admin/*"
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN']}>
+                  <AdminDashboardLayout />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
+      </AppErrorBoundary>
     </div>
   )
 }

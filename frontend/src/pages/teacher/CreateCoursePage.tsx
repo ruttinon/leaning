@@ -58,12 +58,6 @@ export function CreateCoursePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Button variant="outline" onClick={() => navigate(-1)}>
-          ← กลับ
-        </Button>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>สร้างคอร์สใหม่</CardTitle>

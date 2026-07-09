@@ -62,6 +62,7 @@
 - JWT Authentication
 - BCrypt
 - Multer (file upload)
+- Pluggable Storage (Local / S3-compatible)
 
 ### Frontend
 - React 18 (TypeScript)
@@ -92,6 +93,29 @@
    ```powershell
    cd frontend ; npm run dev
    ```
+
+### File Storage Configuration
+
+- Default (local): `STORAGE_PROVIDER=local` stores files at `backend/uploads`
+- S3-compatible:
+  - Set `STORAGE_PROVIDER=s3`
+  - Configure `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`
+- Optional `S3_ENDPOINT` for MinIO/R2/other compatible providers
+- Optional `S3_PUBLIC_URL` to serve files via CDN/custom domain
+
+Signed URL APIs (teacher):
+- `POST /teacher/storage/signed-upload` `{ folder, fileName, contentType }`
+- `POST /teacher/storage/signed-download` `{ fileUrl }`
+
+### Observability
+- Health: `GET /health`, `GET /health/live`, `GET /health/ready`
+- Metrics: `GET /health/metrics`
+- Backend structured logs include `requestId`, method, path, status, duration
+- Optional Sentry: set `SENTRY_DSN` (backend) / `VITE_SENTRY_DSN` (frontend)
+
+### Backup / Restore
+- See `docs/BACKUP_RESTORE.md`
+- Local shortcut: `cd backend ; npm run db:backup`
 
 ### Production (Docker Compose)
 

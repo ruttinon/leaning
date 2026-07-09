@@ -20,12 +20,9 @@ export function TeacherGradebookPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" onClick={() => navigate(-1)}>← กลับ</Button>
-        <div>
-          <h1 className="text-2xl font-bold">สมุดคะแนน</h1>
-          <p className="text-gray-600">ดูคะแนนของนักเรียนทั้งหมด</p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold">สมุดคะแนน</h1>
+        <p className="text-gray-600">ดูคะแนนของนักเรียนทั้งหมด</p>
       </div>
 
       {!gradebook || gradebook.length === 0 ? (

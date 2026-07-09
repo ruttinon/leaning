@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { File, Calendar, FileText, Image, Video } from 'lucide-react';
 import { api } from '@/lib/api';
+import { resolveFileUrl } from '@/lib/storage';
 
 interface Material {
   id: string;
@@ -30,6 +31,11 @@ export function TeacherMaterialsPage() {
       default:
         return <File className="h-8 w-8 text-gray-500" />;
     }
+  };
+
+  const openMaterial = async (fileUrl: string) => {
+    const url = await resolveFileUrl(fileUrl);
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   if (isLoading) {
@@ -72,14 +78,13 @@ export function TeacherMaterialsPage() {
                   <Calendar className="h-4 w-4" />
                   {new Date(material.createdAt).toLocaleDateString('th-TH')}
                 </p>
-                <a
-                  href={material.fileUrl}
-                  target="_blank"
-                  rel="noreferrer"
+                <button
+                  type="button"
+                  onClick={() => openMaterial(material.fileUrl)}
                   className="text-primary hover:underline text-sm mt-2 inline-block"
                 >
                   ดาวน์โหลด / เปิดไฟล์
-                </a>
+                </button>
               </CardContent>
             </Card>
           ))}

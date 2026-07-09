@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Camera, Save, User, Lock, Mail, Phone, MapPin, GraduationCap, BookOpen, Award, Briefcase, Zap, CheckCircle2, AlertCircle, Loader2, Sparkles } from 'lucide-react'
 import { api, API_BASE_URL } from '@/lib/api'
+import { uploadAvatar } from '@/lib/storage'
 import { useAuthStore } from '@/store/auth-store'
 import { useAppStore } from '@/store/theme-store'
 
@@ -126,15 +127,7 @@ export function ProfilePage() {
   
   // Upload avatar mutation
   const uploadAvatarMutation = useMutation({
-    mutationFn: async (file: File) => {
-      const formData = new FormData()
-      formData.append('file', file)
-      return api.post('/auth/me/avatar', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
-    },
+    mutationFn: async (file: File) => uploadAvatar(file),
     onSuccess: (response) => {
       setUser(response as any)
       queryClient.invalidateQueries({ queryKey: ['currentUser'] })

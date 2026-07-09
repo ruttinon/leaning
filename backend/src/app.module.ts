@@ -20,6 +20,10 @@ import { HealthController } from './health/health.controller'
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
+      serveStaticOptions: {
+        index: false,
+        fallthrough: false,
+      },
     }),
   ],
   controllers: [HealthController],

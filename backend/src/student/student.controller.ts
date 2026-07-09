@@ -1,14 +1,37 @@
-import { Controller, Get, Post, Put, Param, Body, UseGuards, Request } from '@nestjs/common'
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Request,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common'
+import { FileInterceptor } from '@nestjs/platform-express'
+import { memoryStorage } from 'multer'
 import { StudentService } from './student.service'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { RolesGuard } from '../common/guards/roles.guard'
 import { Roles } from '../common/decorators/roles.decorator'
+import { CreatePaymentIntentDto } from './dto/create-payment-intent.dto'
+import { ConfirmPaymentDto } from './dto/confirm-payment.dto'
+import { PaymentWebhookDto } from './dto/payment-webhook.dto'
+import { SubmitAssignmentDto } from './dto/submit-assignment.dto'
+import { StudentSignedUploadDto } from './dto/student-signed-upload.dto'
+import { isAllowedUpload } from '../common/utils/file-upload'
+import { StorageService } from '../storage/storage.service'
 
 @Controller('student')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('STUDENT')
 export class StudentController {
-  constructor(private studentService: StudentService) {}
+  constructor(
+    private studentService: StudentService,
+    private storageService: StorageService,
+  ) {}
 
   @Get('dashboard')
   async getDashboard(@Request() req) {
@@ -33,6 +56,11 @@ export class StudentController {
   @Get('lessons/:id')
   async getLessonDetail(@Request() req, @Param('id') lessonId: string) {
     return this.studentService.getLessonDetail(req.user.id, lessonId)
+  }
+
+  @Get('materials/:id')
+  async getMaterial(@Request() req, @Param('id') materialId: string) {
+    return this.studentService.getMaterial(req.user.id, materialId)
   }
 
   @Post('lessons/:id/complete')
@@ -66,8 +94,63 @@ export class StudentController {
   }
 
   @Post('assignments/:id/submit')
-  async submitAssignment(@Request() req, @Param('id') assignmentId: string, @Body() data: any) {
-    return this.studentService.submitAssignment(req.user.id, assignmentId, data)
+  @UseInterceptors(FileInterceptor('file', {
+    storage: memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+      if (!file) {
+        cb(null, true)
+        return
+      }
+      if (!isAllowedUpload(file as Express.Multer.File)) {
+        cb(new BadRequestException('Only document/image/video uploads are allowed'), false)
+        return
+      }
+      cb(null, true)
+    },
+  }))
+  async submitAssignment(
+    @Request() req,
+    @Param('id') assignmentId: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: SubmitAssignmentDto,
+  ) {
+    let fileUrl = body.fileUrl
+    if (file) {
+      fileUrl = await this.storageService.uploadMulterFile(file, 'submissions')
+    }
+
+    if (!body.textAnswer?.trim() && !fileUrl) {
+      throw new BadRequestException('textAnswer or file is required')
+    }
+
+    const payload: SubmitAssignmentDto = {
+      textAnswer: body.textAnswer?.trim() || undefined,
+      fileUrl,
+    }
+
+    return this.studentService.submitAssignment(req.user.id, assignmentId, payload)
+  }
+
+  @Post('storage/signed-upload')
+  async createSignedUpload(@Body() body: StudentSignedUploadDto) {
+    if (body.folder && body.folder !== 'submissions') {
+      throw new BadRequestException('Invalid upload folder')
+    }
+
+    return this.storageService.createUploadSignedUrl(
+      'submissions',
+      body.fileName,
+      body.contentType || 'application/octet-stream',
+    )
+  }
+
+  @Post('storage/signed-download')
+  async createSignedDownload(@Body() body: { fileUrl?: string }) {
+    if (!body.fileUrl) {
+      throw new BadRequestException('fileUrl is required')
+    }
+    return this.storageService.createDownloadSignedUrl(body.fileUrl)
   }
 
   @Get('scores')
@@ -85,22 +168,27 @@ export class StudentController {
     return this.studentService.getMyPayments(req.user.id)
   }
 
+  @Get('payments/:id')
+  async getPayment(@Request() req, @Param('id') paymentId: string) {
+    return this.studentService.getPayment(req.user.id, paymentId)
+  }
+
   @Post('courses/:id/payment-intent')
   async createPaymentIntent(
     @Request() req,
     @Param('id') courseId: string,
-    @Body() body: { couponCode?: string },
+    @Body() body: CreatePaymentIntentDto,
   ) {
     return this.studentService.createPaymentIntent(req.user.id, courseId, body.couponCode)
   }
 
   @Post('payments/:id/confirm')
-  async confirmPayment(@Request() req, @Param('id') paymentId: string, @Body() body: { transactionId: string }) {
+  async confirmPayment(@Request() req, @Param('id') paymentId: string, @Body() body: ConfirmPaymentDto) {
     return this.studentService.confirmPayment(req.user.id, paymentId, body.transactionId)
   }
 
   @Post('payments/webhook')
-  async handlePaymentWebhook(@Body() body: { paymentId?: string; transactionId?: string; type?: string }) {
+  async handlePaymentWebhook(@Body() body: PaymentWebhookDto) {
     return this.studentService.handlePaymentWebhook(body)
   }
 }

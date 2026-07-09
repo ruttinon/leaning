@@ -1,61 +1,200 @@
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { Navbar } from '../components/layout/Navbar';
-import { Footer } from '../components/layout/Footer';
-import { BookOpen, Star, Users, Clock, PlayCircle, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
-import { Button } from '../components/ui/button';
-import { useAuthStore } from '../store/auth-store';
-import { useAppStore } from '../store/theme-store';
-import { api } from '../lib/api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useNavigate, useParams } from 'react-router-dom'
+import {
+  ArrowRight,
+  BookOpen,
+  Clock,
+  PlayCircle,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Users,
+} from 'lucide-react'
+import { Navbar } from '../components/layout/Navbar'
+import { Footer } from '../components/layout/Footer'
+import { Button } from '../components/ui/button'
+import { useAuthStore } from '../store/auth-store'
+import { useAppStore } from '../store/theme-store'
+import { api } from '../lib/api'
 
 interface Course {
-  id: string;
-  title: string;
-  description: string;
-  thumbnailUrl?: string;
-  subject: any;
-  teacher: any;
-  status: string;
-  price: number;
-  level?: string;
-  duration?: string;
-  chapters?: any[];
-  publishedAt?: string;
-  createdAt: string;
-  updatedAt: string;
+  id: string
+  title: string
+  description: string
+  thumbnailUrl?: string
+  subject: any
+  teacher: any
+  status: string
+  price: number
+  level?: string
+  duration?: string
+  chapters?: any[]
+  publishedAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
+interface PaymentIntentResponse {
+  clientSecret: string | null
+  paymentIntentStatus?: string | null
+  checkoutMode?: string
+  payment?: {
+    id: string
+    status: string
+    paymentMethod?: string | null
+  }
+  enrollment?: {
+    courseId?: string
+    course?: {
+      id: string
+    } | null
+  } | null
 }
 
 export function CourseDetailPage() {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore();
-  const { theme } = useAppStore();
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const { isAuthenticated, user } = useAuthStore()
+  const { theme } = useAppStore()
+
   const { data: course, isLoading, error } = useQuery<Course>({
     queryKey: ['course', id],
     queryFn: async () => {
-      if (!id) throw new Error('Course ID not found');
-      return await api.get(`/public/courses/${id}`);
+      if (!id) {
+        throw new Error('Course ID not found')
+      }
+
+      return api.get(`/public/courses/${id}`)
     },
     enabled: !!id,
-  });
+  })
 
-  const handleEnroll = () => {
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
+  const enrollMutation = useMutation({
+    mutationFn: async () => {
+      if (!id) {
+        throw new Error('Course ID not found')
+      }
+
+      return api.post(`/student/courses/${id}/enroll`, {})
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['public-courses'] })
+      queryClient.invalidateQueries({ queryKey: ['student-dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['my-courses'] })
+      navigate(`/student/courses/${id}`)
+    },
+  })
+
+  const purchaseMutation = useMutation({
+    mutationFn: async () => {
+      if (!id) {
+        throw new Error('Course ID not found')
+      }
+
+      return api.post<PaymentIntentResponse>(`/student/courses/${id}/payment-intent`, {})
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['public-courses'] })
+      queryClient.invalidateQueries({ queryKey: ['student-dashboard'] })
+      queryClient.invalidateQueries({ queryKey: ['student-payments'] })
+
+      const enrolledCourseId =
+        result.enrollment?.courseId || result.enrollment?.course?.id || id
+
+      if (result.enrollment && enrolledCourseId) {
+        queryClient.invalidateQueries({ queryKey: ['my-courses'] })
+        navigate(`/student/courses/${enrolledCourseId}`)
+        return
+      }
+
+      if (result.payment?.id && result.clientSecret) {
+        navigate(`/student/payments/${result.payment.id}/checkout`, {
+          state: {
+            notice: 'กรอกข้อมูลการชำระเงินเพื่อปลดล็อกคอร์สนี้',
+          },
+        })
+        return
+      }
+
+      navigate('/student/payments', {
+        state: {
+          notice: 'สร้างรายการชำระเงินแล้ว คุณสามารถกลับมาชำระเงินต่อได้จากหน้านี้',
+          highlightPaymentId: result.payment?.id,
+        },
+      })
+    },
+  })
+
+  const isStudent = user?.role === 'STUDENT'
+  const isPaidCourse = Number(course?.price ?? 0) > 0
+  const isActionPending = enrollMutation.isPending || purchaseMutation.isPending
+  const totalLessons =
+    course?.chapters?.reduce((acc, chapter) => acc + (chapter.lessons?.length || 0), 0) || 0
+
+  const actionError =
+    enrollMutation.error instanceof Error
+      ? enrollMutation.error.message
+      : purchaseMutation.error instanceof Error
+        ? purchaseMutation.error.message
+        : null
+
+  const primaryActionLabel = !course
+    ? 'กำลังโหลด...'
+    : !isAuthenticated
+      ? isPaidCourse
+        ? 'เข้าสู่ระบบเพื่อซื้อคอร์ส'
+        : 'เข้าสู่ระบบเพื่อสมัครเรียน'
+      : !isStudent
+        ? 'ใช้บัญชีนักเรียนเพื่อดำเนินการ'
+        : isPaidCourse
+          ? purchaseMutation.isPending
+            ? 'กำลังสร้างรายการชำระเงิน...'
+            : 'เริ่มชำระเงิน'
+          : enrollMutation.isPending
+            ? 'กำลังลงทะเบียน...'
+            : 'ลงทะเบียนเรียนทันที'
+
+  const actionHint = isPaidCourse
+    ? 'คอร์สเสียเงินจะพาไปยังหน้าชำระเงินจริง และเปิดเรียนหลังระบบยืนยันการจ่ายสำเร็จ'
+    : 'คอร์สฟรีสามารถลงทะเบียนและเริ่มเรียนได้ทันที'
+
+  const handlePrimaryAction = () => {
+    if (!course) {
+      return
     }
-    // Will implement enroll API later
-    alert('Enrolling in course...');
-  };
 
-  const totalLessons = course?.chapters?.reduce((acc, chapter) => acc + (chapter.lessons?.length || 0), 0) || 0;
+    if (!isAuthenticated) {
+      navigate('/login')
+      return
+    }
+
+    if (!isStudent) {
+      return
+    }
+
+    if (isPaidCourse) {
+      purchaseMutation.mutate()
+      return
+    }
+
+    enrollMutation.mutate()
+  }
 
   return (
-    <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+    <div
+      className={`min-h-screen flex flex-col ${
+        theme === 'dark' ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'
+      }`}
+    >
       <Navbar />
       <main className="flex-1">
         {isLoading && <div className="py-20 text-center text-slate-600">กำลังโหลด...</div>}
-        {error && <div className="py-20 text-center text-red-600">เกิดข้อผิดพลาด: {String(error)}</div>}
+        {error && (
+          <div className="py-20 text-center text-red-600">
+            เกิดข้อผิดพลาด: {String(error)}
+          </div>
+        )}
         {!isLoading && !error && course && (
           <>
             <section className="bg-gradient-to-br from-indigo-700 via-purple-700 to-pink-600 py-20 text-white">
@@ -71,10 +210,12 @@ export function CourseDetailPage() {
                     <div className="mb-8 flex flex-wrap items-center gap-4 text-sm text-indigo-50">
                       <div className="flex items-center gap-2 rounded-full bg-white/15 px-3 py-2">
                         <Users className="h-4 w-4" />
-                        <span>อาจารย์ {course.teacher?.user?.firstName} {course.teacher?.user?.lastName}</span>
+                        <span>
+                          อาจารย์ {course.teacher?.user?.firstName} {course.teacher?.user?.lastName}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2 rounded-full bg-white/15 px-3 py-2">
-                        <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                         <span>4.8 คะแนน</span>
                       </div>
                       {course.duration && (
@@ -84,18 +225,29 @@ export function CourseDetailPage() {
                         </div>
                       )}
                     </div>
-                    <Button size="lg" onClick={handleEnroll} className="bg-white text-indigo-700 hover:bg-slate-100">
-                      ลงทะเบียนเรียน
+                    <Button
+                      size="lg"
+                      onClick={handlePrimaryAction}
+                      disabled={isActionPending || (isAuthenticated && !isStudent)}
+                      className="bg-white text-indigo-700 hover:bg-slate-100"
+                    >
+                      {primaryActionLabel}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
+                    <p className="mt-4 text-sm text-indigo-100">{actionHint}</p>
+                    {actionError && <p className="mt-2 text-sm text-red-100">{actionError}</p>}
                   </div>
                   <div className="flex justify-center">
                     <div className="w-full max-w-md rounded-3xl border border-white/20 bg-white/10 p-8 text-center shadow-2xl backdrop-blur">
                       <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-2xl bg-white/15">
                         <BookOpen className="h-12 w-12 text-white" />
                       </div>
-                      <h2 className="text-2xl font-semibold">พร้อมเรียนทันที</h2>
-                      <p className="mt-3 text-sm text-indigo-50">เข้าถึงเนื้อหาแบบเป็นลำดับและติดตามความก้าวหน้าได้อย่างง่าย ๆ</p>
+                      <h2 className="text-2xl font-semibold">
+                        {isPaidCourse ? 'ปลดล็อกหลังชำระเงิน' : 'พร้อมเรียนทันที'}
+                      </h2>
+                      <p className="mt-3 text-sm text-indigo-50">
+                        เข้าถึงเนื้อหาแบบเป็นลำดับ ติดตามความก้าวหน้า และเรียนต่อจากอุปกรณ์ใดก็ได้
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -112,7 +264,7 @@ export function CourseDetailPage() {
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-700/60">
-                        <p className="font-medium">เนื้อหาที่จัดระเบียบชัดเจน</p>
+                        <p className="font-medium">เนื้อหาที่จัดเรียงชัดเจน</p>
                       </div>
                       <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-700/60">
                         <p className="font-medium">เรียนตามลำดับขั้นตอน</p>
@@ -135,11 +287,17 @@ export function CourseDetailPage() {
                     </div>
                     <div className="space-y-4">
                       {course.chapters?.map((chapter) => (
-                        <div key={chapter.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-700/50">
+                        <div
+                          key={chapter.id}
+                          className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-700/50"
+                        >
                           <h3 className="mb-3 text-lg font-semibold">{chapter.title}</h3>
                           <div className="space-y-2">
                             {chapter.lessons?.map((lesson: any) => (
-                              <div key={lesson.id} className="flex items-center gap-3 rounded-xl bg-white px-3 py-3 text-sm shadow-sm dark:bg-slate-800">
+                              <div
+                                key={lesson.id}
+                                className="flex items-center gap-3 rounded-xl bg-white px-3 py-3 text-sm shadow-sm dark:bg-slate-800"
+                              >
                                 <PlayCircle className="h-5 w-5 flex-shrink-0 text-indigo-600" />
                                 <span>{lesson.title}</span>
                               </div>
@@ -157,7 +315,9 @@ export function CourseDetailPage() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-700/60">
                         <span className="text-slate-500">ราคา</span>
-                        <span className="text-xl font-bold text-indigo-600">{course.price === 0 ? 'ฟรี' : `฿${course.price}`}</span>
+                        <span className="text-xl font-bold text-indigo-600">
+                          {course.price === 0 ? 'ฟรี' : `฿${course.price}`}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-700/60">
                         <span className="text-slate-500">ระดับ</span>
@@ -172,13 +332,20 @@ export function CourseDetailPage() {
                       {course.publishedAt && (
                         <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-700/60">
                           <span className="text-slate-500">เผยแพร่</span>
-                          <span className="font-medium">{new Date(course.publishedAt).toLocaleDateString('th-TH')}</span>
+                          <span className="font-medium">
+                            {new Date(course.publishedAt).toLocaleDateString('th-TH')}
+                          </span>
                         </div>
                       )}
                     </div>
-                    <Button className="mt-6 w-full" onClick={handleEnroll}>
-                      ลงทะเบียนเรียนตอนนี้
+                    <Button
+                      className="mt-6 w-full"
+                      onClick={handlePrimaryAction}
+                      disabled={isActionPending || (isAuthenticated && !isStudent)}
+                    >
+                      {primaryActionLabel}
                     </Button>
+                    <p className="mt-3 text-sm text-slate-500">{actionHint}</p>
                   </div>
                 </div>
               </div>
@@ -188,5 +355,5 @@ export function CourseDetailPage() {
       </main>
       <Footer />
     </div>
-  );
+  )
 }

@@ -87,12 +87,9 @@ export function StudentQuizPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" onClick={() => navigate(-1)}>← กลับ</Button>
-        <div>
-          <h1 className="text-2xl font-bold">{quiz.title}</h1>
-          {quiz.description && <p className="text-gray-600">{quiz.description}</p>}
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold">{quiz.title}</h1>
+        {quiz.description && <p className="text-gray-600">{quiz.description}</p>}
       </div>
 
       {!attemptId && !isSubmitted && (

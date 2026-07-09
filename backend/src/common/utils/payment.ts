@@ -9,3 +9,15 @@ export function calculatePaymentAmount(price: number, discountPercent: number) {
     amountInSmallestUnit,
   };
 }
+
+export function isPaidCourse(price: number) {
+  return (Number(price) || 0) > 0;
+}
+
+export function canDirectlyEnrollInCourse(price: number, hasCompletedPayment: boolean) {
+  return !isPaidCourse(price) || hasCompletedPayment;
+}
+
+export function canUseClientPaymentConfirmation(stripeConfigured: boolean) {
+  return !stripeConfigured;
+}

@@ -1,9 +1,13 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
+import { StorageService } from '../storage/storage.service'
 
 @Injectable()
 export class TeacherService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private storageService: StorageService,
+  ) {}
 
   async getDashboard(userId: string) {
     const teacherProfile = await this.prisma.teacherProfile.findUnique({
@@ -420,6 +424,127 @@ export class TeacherService {
         ...data,
         lessonId,
       },
+    })
+  }
+
+  async updateMaterial(userId: string, materialId: string, data: any) {
+    const teacherProfile = await this.prisma.teacherProfile.findUnique({
+      where: { userId },
+    })
+
+    if (!teacherProfile) {
+      throw new NotFoundException('Teacher profile not found')
+    }
+
+    const material = await this.prisma.material.findUnique({
+      where: { id: materialId },
+      include: { lesson: { include: { chapter: { include: { course: true } } } } },
+    })
+
+    if (!material) {
+      throw new NotFoundException('Material not found')
+    }
+
+    if (material.lesson.chapter.course.teacherId !== teacherProfile.id) {
+      throw new ForbiddenException('Not authorized to update this material')
+    }
+
+    return this.prisma.material.update({
+      where: { id: materialId },
+      data: {
+        title: data.title,
+        description: data.description,
+        type: data.type,
+      },
+    })
+  }
+
+  async deleteMaterial(userId: string, materialId: string) {
+    const teacherProfile = await this.prisma.teacherProfile.findUnique({
+      where: { userId },
+    })
+
+    if (!teacherProfile) {
+      throw new NotFoundException('Teacher profile not found')
+    }
+
+    const material = await this.prisma.material.findUnique({
+      where: { id: materialId },
+      include: { lesson: { include: { chapter: { include: { course: true } } } } },
+    })
+
+    if (!material) {
+      throw new NotFoundException('Material not found')
+    }
+
+    if (material.lesson.chapter.course.teacherId !== teacherProfile.id) {
+      throw new ForbiddenException('Not authorized to delete this material')
+    }
+
+    await this.storageService.deleteByFileUrl(material.fileUrl)
+
+    return this.prisma.material.delete({
+      where: { id: materialId },
+    })
+  }
+
+  async updateAssignment(userId: string, assignmentId: string, data: any) {
+    const teacherProfile = await this.prisma.teacherProfile.findUnique({
+      where: { userId },
+    })
+
+    if (!teacherProfile) {
+      throw new NotFoundException('Teacher profile not found')
+    }
+
+    const assignment = await this.prisma.assignment.findUnique({
+      where: { id: assignmentId },
+      include: { lesson: { include: { chapter: { include: { course: true } } } } },
+    })
+
+    if (!assignment) {
+      throw new NotFoundException('Assignment not found')
+    }
+
+    if (assignment.lesson.chapter.course.teacherId !== teacherProfile.id) {
+      throw new ForbiddenException('Not authorized to update this assignment')
+    }
+
+    return this.prisma.assignment.update({
+      where: { id: assignmentId },
+      data: {
+        title: data.title,
+        description: data.description,
+        maxPoints: data.maxPoints,
+        dueDate: data.dueDate ? new Date(data.dueDate) : null,
+      },
+    })
+  }
+
+  async deleteAssignment(userId: string, assignmentId: string) {
+    const teacherProfile = await this.prisma.teacherProfile.findUnique({
+      where: { userId },
+    })
+
+    if (!teacherProfile) {
+      throw new NotFoundException('Teacher profile not found')
+    }
+
+    const assignment = await this.prisma.assignment.findUnique({
+      where: { id: assignmentId },
+      include: { lesson: { include: { chapter: { include: { course: true } } } } },
+    })
+
+    if (!assignment) {
+      throw new NotFoundException('Assignment not found')
+    }
+
+    if (assignment.lesson.chapter.course.teacherId !== teacherProfile.id) {
+      throw new ForbiddenException('Not authorized to delete this assignment')
+    }
+
+    return this.prisma.assignment.delete({
+      where: { id: assignmentId },
     })
   }
 

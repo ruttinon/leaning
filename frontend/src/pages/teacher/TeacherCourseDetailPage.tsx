@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Plus, BookOpen, Award } from 'lucide-react'
 import { api } from '@/lib/api'
+import { uploadCourseThumbnail } from '@/lib/storage'
 
 export function TeacherCourseDetailPage() {
   const { courseId } = useParams<{ courseId: string }>()
@@ -18,6 +19,7 @@ export function TeacherCourseDetailPage() {
   const [showAddChapter, setShowAddChapter] = useState(false)
   const [chapterTitle, setChapterTitle] = useState('')
   const [chapterDescription, setChapterDescription] = useState('')
+  const [quickLessonTitle, setQuickLessonTitle] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
   
   // States for adding lesson
@@ -71,15 +73,39 @@ export function TeacherCourseDetailPage() {
     },
   })
 
+  const quickAddLessonMutation = useMutation({
+    mutationFn: async (lessonTitle: string) => {
+      let chapterId = course?.chapters?.[0]?.id
+      if (!chapterId) {
+        const chapter = await api.post<any>(`/teacher/courses/${courseId}/chapters`, {
+          title: 'เนื้อหาหลัก',
+          description: 'บทเรียนในคอร์สนี้',
+          order: 1,
+        })
+        chapterId = chapter.id
+      }
+      const order = (course?.chapters?.[0]?.lessons?.length || 0) + 1
+      return api.post(`/teacher/chapters/${chapterId}/lessons`, {
+        title: lessonTitle,
+        order,
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teacher-course', courseId] })
+      setQuickLessonTitle('')
+      setStatusMessage('เพิ่มบทเรียนเรียบร้อยแล้ว')
+    },
+    onError: (err: any) => {
+      setStatusMessage(err?.message || 'เพิ่มบทเรียนไม่สำเร็จ')
+    },
+  })
+
   const uploadThumbnailMutation = useMutation({
     mutationFn: async () => {
       if (!selectedThumbnail) {
         throw new Error('กรุณาเลือกไฟล์ภาพก่อนอัปโหลด')
       }
-
-      const formData = new FormData()
-      formData.append('file', selectedThumbnail)
-      return api.post(`/teacher/courses/${courseId}/thumbnail`, formData)
+      return uploadCourseThumbnail(courseId!, selectedThumbnail)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teacher-course', courseId] })
@@ -99,8 +125,7 @@ export function TeacherCourseDetailPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <Button variant="outline" onClick={() => navigate(-1)}>← กลับ</Button>
-          <h1 className="text-2xl font-bold mt-2">{course.title}</h1>
+          <h1 className="text-2xl font-bold">{course.title}</h1>
           <p className="text-gray-600">{course.description}</p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -110,7 +135,7 @@ export function TeacherCourseDetailPage() {
           <Button variant="secondary" onClick={() => submitForReviewMutation.mutate()} disabled={submitForReviewMutation.isPending || course.status === 'PENDING_REVIEW' || course.status === 'PUBLISHED'}>
             {submitForReviewMutation.isPending ? 'กำลังส่ง...' : 'ส่งให้ตรวจสอบ'}
           </Button>
-          <Button onClick={() => setShowAddChapter(true)}><Plus className="h-4 w-4 mr-2" />เพิ่มบทเรียน</Button>
+          <Button onClick={() => setShowAddChapter(true)}><Plus className="h-4 w-4 mr-2" />เพิ่มบท (ขั้นสูง)</Button>
         </div>
       </div>
 
@@ -120,13 +145,50 @@ export function TeacherCourseDetailPage() {
         </div>
       )}
 
+      <Card className="border-indigo-200 bg-indigo-50/50">
+        <CardHeader>
+          <CardTitle className="text-lg">เพิ่มบทเรียนด่วน</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-3 text-sm text-slate-600">พิมพ์ชื่อแล้วกดเพิ่มได้เลย ไม่ต้องสร้างบทแยก</p>
+          <form
+            className="flex flex-col gap-2 sm:flex-row"
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (quickLessonTitle.trim()) {
+                quickAddLessonMutation.mutate(quickLessonTitle.trim())
+              }
+            }}
+          >
+            <Input
+              value={quickLessonTitle}
+              onChange={(e) => setQuickLessonTitle(e.target.value)}
+              placeholder="เช่น บทที่ 1 การนับเลข 1-10"
+              className="bg-white"
+            />
+            <Button type="submit" disabled={!quickLessonTitle.trim() || quickAddLessonMutation.isPending}>
+              {quickAddLessonMutation.isPending ? 'กำลังเพิ่ม...' : 'เพิ่มบทเรียน'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>ภาพปกคอร์ส</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {course.thumbnailUrl ? (
-            <img src={course.thumbnailUrl} alt={course.title} className="h-40 w-full rounded-xl object-cover" />
+            <img
+              src={course.thumbnailUrl}
+              alt={course.title}
+              className="h-40 w-full rounded-xl object-cover"
+              onError={(event) => {
+                const target = event.currentTarget
+                target.onerror = null
+                target.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='
+              }}
+            />
           ) : (
             <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">
               ยังไม่มีภาพปกคอร์ส
@@ -187,7 +249,9 @@ export function TeacherCourseDetailPage() {
                     <span>{lesson.title}</span>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => navigate(`/teacher/lessons/${lesson.id}`)}>จัดการเนื้อหา</Button>
+                    <Button variant="outline" size="sm" onClick={() => navigate(`/teacher/lessons/${lesson.id}`)}>
+                      เพิ่มเนื้อหา/ข้อสอบ
+                    </Button>
                   </div>
                 </div>
               ))}

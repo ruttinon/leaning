@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { BookOpen, Plus } from 'lucide-react'
+import { BookOpen, Sparkles } from 'lucide-react'
 import { api } from '@/lib/api'
 
 export function TeacherCoursesPage() {
@@ -22,20 +22,22 @@ export function TeacherCoursesPage() {
           <h1 className="text-2xl font-bold">คอร์สของฉัน</h1>
           <p className="text-gray-600">จัดการคอร์สของคุณ</p>
         </div>
-        <Link to="/teacher/courses/create">
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            สร้างคอร์สใหม่
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link to="/teacher/courses/quick-create">
+            <Button>
+              <Sparkles className="mr-2 h-4 w-4" />
+              สร้างคอร์สแบบง่าย
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {!courses || courses.length === 0 ? (
         <Card>
           <CardContent className="pt-6 text-center py-12">
             <p className="text-gray-500 mb-4">คุณยังไม่มีคอร์ส</p>
-            <Link to="/teacher/courses/create">
-              <Button>สร้างคอร์สแรกของคุณ</Button>
+            <Link to="/teacher/courses/quick-create">
+              <Button><Sparkles className="mr-2 h-4 w-4" />สร้างคอร์สแบบง่าย</Button>
             </Link>
           </CardContent>
         </Card>

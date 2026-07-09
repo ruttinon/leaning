@@ -9,6 +9,42 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) {
+            return
+          }
+
+          if (id.includes('react-pdf') || id.includes('pdfjs-dist')) {
+            return 'pdf'
+          }
+
+          if (id.includes('@stripe')) {
+            return 'stripe'
+          }
+
+          if (id.includes('@tanstack/react-query') || id.includes('zustand')) {
+            return 'state'
+          }
+
+          if (
+            id.includes('/react/') ||
+            id.includes('\\react\\') ||
+            id.includes('react-dom') ||
+            id.includes('react-router')
+          ) {
+            return 'react-core'
+          }
+
+          if (id.includes('lucide-react')) {
+            return 'icons'
+          }
+        },
+      },
+    },
+  },
   server: {
     proxy: {
       '/auth': {

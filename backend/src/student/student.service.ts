@@ -1,7 +1,25 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common'
+import { Prisma } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import Stripe from 'stripe'
-import { calculatePaymentAmount } from '../common/utils/payment'
+import {
+  calculatePaymentAmount,
+  canDirectlyEnrollInCourse,
+  canUseClientPaymentConfirmation,
+} from '../common/utils/payment'
+import { SubmitAssignmentDto } from './dto/submit-assignment.dto'
+
+type PaymentRecord = Prisma.PaymentGetPayload<{
+  include: { course: true }
+}>
+
+const ACTIVE_STRIPE_PAYMENT_STATUSES = new Set<Stripe.PaymentIntent.Status>([
+  'processing',
+  'requires_action',
+  'requires_capture',
+  'requires_confirmation',
+  'requires_payment_method',
+])
 
 @Injectable()
 export class StudentService {
@@ -100,6 +118,18 @@ export class StudentService {
 
     if (course.status !== 'PUBLISHED') {
       throw new BadRequestException('Course is not available for enrollment')
+    }
+
+    const completedPayment = await this.prisma.payment.findFirst({
+      where: {
+        studentId: studentProfile.id,
+        courseId,
+        status: 'COMPLETED',
+      },
+    })
+
+    if (!canDirectlyEnrollInCourse(Number(course.price), !!completedPayment)) {
+      throw new BadRequestException('Paid courses must be purchased before enrollment')
     }
 
     const existingEnrollment = await this.prisma.enrollment.findUnique({
@@ -234,6 +264,47 @@ export class StudentService {
       lesson,
       isCompleted: progressLog?.isCompleted || false,
     }
+  }
+
+  async getMaterial(userId: string, materialId: string) {
+    const studentProfile = await this.prisma.studentProfile.findUnique({
+      where: { userId },
+    })
+
+    if (!studentProfile) {
+      throw new NotFoundException('Student profile not found')
+    }
+
+    const material = await this.prisma.material.findUnique({
+      where: { id: materialId },
+      include: {
+        lesson: {
+          include: {
+            chapter: {
+              include: {
+                course: {
+                  include: {
+                    enrollments: {
+                      where: { studentId: studentProfile.id },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    if (!material) {
+      throw new NotFoundException('Material not found')
+    }
+
+    if (material.lesson.chapter.course.enrollments.length === 0) {
+      throw new ForbiddenException('Not enrolled in this course')
+    }
+
+    return material
   }
 
   async completeLesson(userId: string, lessonId: string) {
@@ -642,7 +713,7 @@ export class StudentService {
     }
   }
 
-  async submitAssignment(userId: string, assignmentId: string, data: any) {
+  async submitAssignment(userId: string, assignmentId: string, data: SubmitAssignmentDto) {
     const studentProfile = await this.prisma.studentProfile.findUnique({
       where: { userId },
     })
@@ -684,6 +755,10 @@ export class StudentService {
       throw new BadRequestException('Assignment is overdue')
     }
 
+    if (!data.textAnswer?.trim() && !data.fileUrl) {
+      throw new BadRequestException('textAnswer or fileUrl is required')
+    }
+
     return this.prisma.assignmentSubmission.upsert({
       where: {
         assignmentId_studentId: {
@@ -694,13 +769,13 @@ export class StudentService {
       create: {
         assignmentId,
         studentId: studentProfile.id,
-        textAnswer: data.textAnswer,
+        textAnswer: data.textAnswer?.trim() || null,
         fileUrl: data.fileUrl,
         submittedAt: new Date(),
         status: 'SUBMITTED',
       },
       update: {
-        textAnswer: data.textAnswer,
+        textAnswer: data.textAnswer?.trim() || null,
         fileUrl: data.fileUrl,
         submittedAt: new Date(),
         status: 'SUBMITTED',
@@ -767,6 +842,28 @@ export class StudentService {
       include: { course: true },
       orderBy: { createdAt: 'desc' },
     })
+  }
+
+  async getPayment(userId: string, paymentId: string) {
+    const studentProfile = await this.prisma.studentProfile.findUnique({
+      where: { userId },
+    })
+
+    if (!studentProfile) {
+      throw new NotFoundException('Student profile not found')
+    }
+
+    const payment = await this.getPaymentRecord(paymentId)
+
+    if (!payment) {
+      throw new NotFoundException('Payment not found')
+    }
+
+    if (payment.studentId !== studentProfile.id) {
+      throw new ForbiddenException('Not authorized to view this payment')
+    }
+
+    return this.buildPaymentCheckoutResponse(payment)
   }
 
   async applyCoupon(code: string) {
@@ -839,21 +936,50 @@ export class StudentService {
 
     const price = Number(course.price)
     const { amount, amountInSmallestUnit } = calculatePaymentAmount(price, discount)
+    const pendingPayments = await this.prisma.payment.findMany({
+      where: {
+        studentId: studentProfile.id,
+        courseId,
+        status: 'PENDING',
+      },
+      include: { course: true },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    for (const pendingPayment of pendingPayments) {
+      const checkoutResponse = await this.buildPaymentCheckoutResponse(pendingPayment)
+
+      if (checkoutResponse.payment.status === 'COMPLETED') {
+        return checkoutResponse
+      }
+
+      if (
+        checkoutResponse.payment.status === 'PENDING' &&
+        checkoutResponse.clientSecret &&
+        Number(checkoutResponse.payment.amount) === amount
+      ) {
+        return checkoutResponse
+      }
+    }
+
+    await this.retirePendingPayments(studentProfile.id, courseId)
 
     // Create payment record first
     const payment = await this.prisma.payment.create({
       data: {
         studentId: studentProfile.id,
         courseId,
-        amount: price * (1 - discount / 100),
+        amount,
+        paymentMethod: this.stripe ? 'stripe' : 'mock',
       },
     })
 
     // If price is 0, mark as completed and enroll directly
-    if (price * (1 - discount / 100) <= 0) {
-      await this.prisma.payment.update({
+    if (amount <= 0) {
+      const updatedPayment = await this.prisma.payment.update({
         where: { id: payment.id },
         data: { status: 'COMPLETED' },
+        include: { course: true },
       })
 
       const enrollment = await this.prisma.enrollment.create({
@@ -864,7 +990,13 @@ export class StudentService {
         include: { course: true },
       })
 
-      return { clientSecret: null, payment, enrollment }
+      return {
+        clientSecret: null,
+        payment: updatedPayment,
+        paymentIntentStatus: 'succeeded',
+        checkoutMode: 'mock',
+        enrollment,
+      }
     }
 
     if (!this.stripe) {
@@ -876,9 +1008,10 @@ export class StudentService {
         throw new BadRequestException('Stripe payment is not configured for this environment')
       }
 
-      await this.prisma.payment.update({
+      const updatedPayment = await this.prisma.payment.update({
         where: { id: payment.id },
         data: { status: 'COMPLETED' },
+        include: { course: true },
       })
 
       const enrollment = await this.prisma.enrollment.create({
@@ -889,7 +1022,13 @@ export class StudentService {
         include: { course: true },
       })
 
-      return { clientSecret: 'mock_secret_' + payment.id, payment, enrollment }
+      return {
+        clientSecret: 'mock_secret_' + payment.id,
+        payment: updatedPayment,
+        paymentIntentStatus: 'succeeded',
+        checkoutMode: 'mock',
+        enrollment,
+      }
     }
 
     const paymentIntent = await this.stripe.paymentIntents.create({
@@ -902,10 +1041,27 @@ export class StudentService {
       },
     })
 
-    return { clientSecret: paymentIntent.client_secret, payment }
+    const updatedPayment = await this.prisma.payment.update({
+      where: { id: payment.id },
+      data: {
+        transactionId: paymentIntent.id,
+      },
+      include: { course: true },
+    })
+
+    return {
+      clientSecret: paymentIntent.client_secret,
+      payment: updatedPayment,
+      paymentIntentStatus: paymentIntent.status,
+      checkoutMode: 'stripe',
+    }
   }
 
   async confirmPayment(userId: string, paymentId: string, transactionId: string) {
+    if (!canUseClientPaymentConfirmation(!!this.stripe)) {
+      throw new BadRequestException('Client-side payment confirmation is disabled when Stripe is configured')
+    }
+
     const studentProfile = await this.prisma.studentProfile.findUnique({
       where: { userId },
     })
@@ -931,34 +1087,7 @@ export class StudentService {
       throw new BadRequestException('Payment already completed')
     }
 
-    const updatedPayment = await this.prisma.payment.update({
-      where: { id: paymentId },
-      data: {
-        status: 'COMPLETED',
-        transactionId,
-      },
-    })
-
-    const existingEnrollment = await this.prisma.enrollment.findUnique({
-      where: {
-        courseId_studentId: {
-          courseId: payment.courseId,
-          studentId: payment.studentId,
-        },
-      },
-    })
-
-    if (!existingEnrollment) {
-      await this.prisma.enrollment.create({
-        data: {
-          courseId: payment.courseId,
-          studentId: payment.studentId,
-        },
-        include: { course: true },
-      })
-    }
-
-    return { payment: updatedPayment, enrollment: existingEnrollment }
+    return this.finalizePayment(paymentId, transactionId)
   }
 
   async handlePaymentWebhook(body: { paymentId?: string; transactionId?: string; type?: string }) {
@@ -970,6 +1099,295 @@ export class StudentService {
       return { received: true, status: 'ignored' }
     }
 
-    return this.confirmPayment(body.paymentId, body.transactionId || `webhook-${body.paymentId}`)
+    try {
+      return await this.finalizePayment(
+        body.paymentId,
+        body.transactionId || `webhook-${body.paymentId}`,
+      )
+    } catch (error) {
+      if (this.isNotCompletablePaymentError(error)) {
+        return { received: true, status: 'ignored' }
+      }
+      throw error
+    }
+  }
+
+  async handleStripeWebhook(signature: string | undefined, rawBody: Buffer) {
+    if (!this.stripe) {
+      throw new BadRequestException('Stripe is not configured for this environment')
+    }
+
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+    if (!webhookSecret) {
+      throw new BadRequestException('Stripe webhook secret is not configured')
+    }
+
+    if (!signature) {
+      throw new BadRequestException('Stripe signature header is required')
+    }
+
+    let event: Stripe.Event
+    try {
+      event = this.stripe.webhooks.constructEvent(rawBody, signature, webhookSecret)
+    } catch {
+      throw new BadRequestException('Invalid Stripe webhook signature')
+    }
+
+    return this.handleStripeWebhookEvent(event)
+  }
+
+  private async handleStripeWebhookEvent(event: Stripe.Event) {
+    if (event.type === 'payment_intent.succeeded') {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent
+      const paymentId = paymentIntent.metadata?.paymentId
+      if (!paymentId) {
+        throw new BadRequestException('Stripe payment intent metadata.paymentId is required')
+      }
+
+      try {
+        return await this.finalizePayment(paymentId, paymentIntent.id)
+      } catch (error) {
+        if (this.isNotCompletablePaymentError(error)) {
+          return { received: true, status: 'ignored' }
+        }
+        throw error
+      }
+    }
+
+    if (event.type === 'payment_intent.payment_failed') {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent
+      const paymentId = paymentIntent.metadata?.paymentId
+      if (paymentId) {
+        await this.prisma.payment.updateMany({
+          where: { id: paymentId, status: 'PENDING' },
+          data: {
+            status: 'FAILED',
+            transactionId: paymentIntent.id,
+          },
+        })
+      }
+
+      return { received: true, status: 'failed_recorded' }
+    }
+
+    return { received: true, status: 'ignored', type: event.type }
+  }
+
+  private async getPaymentRecord(paymentId: string) {
+    return this.prisma.payment.findUnique({
+      where: { id: paymentId },
+      include: { course: true },
+    })
+  }
+
+  private async buildPaymentCheckoutResponse(payment: PaymentRecord) {
+    if (payment.status !== 'PENDING' || !this.stripe) {
+      return {
+        payment,
+        clientSecret: null,
+        paymentIntentStatus: payment.status === 'COMPLETED' ? 'succeeded' : null,
+        checkoutMode: this.stripe ? 'history' : 'mock',
+      }
+    }
+
+    if (!payment.transactionId) {
+      await this.markPaymentFailed(payment.id)
+      const failedPayment = await this.getPaymentRecord(payment.id)
+
+      return {
+        payment: failedPayment ?? payment,
+        clientSecret: null,
+        paymentIntentStatus: null,
+        checkoutMode: 'stripe',
+      }
+    }
+
+    let paymentIntent: Stripe.PaymentIntent
+    try {
+      paymentIntent = await this.stripe.paymentIntents.retrieve(payment.transactionId)
+    } catch {
+      await this.markPaymentFailed(payment.id, payment.transactionId)
+      const failedPayment = await this.getPaymentRecord(payment.id)
+
+      return {
+        payment: failedPayment ?? payment,
+        clientSecret: null,
+        paymentIntentStatus: null,
+        checkoutMode: 'stripe',
+      }
+    }
+
+    if (paymentIntent.status === 'succeeded') {
+      const finalized = await this.finalizePayment(payment.id, paymentIntent.id)
+      const completedPayment = await this.getPaymentRecord(payment.id)
+
+      return {
+        payment: completedPayment ?? payment,
+        clientSecret: null,
+        paymentIntentStatus: paymentIntent.status,
+        checkoutMode: 'stripe',
+        enrollment: finalized.enrollment,
+      }
+    }
+
+    if (ACTIVE_STRIPE_PAYMENT_STATUSES.has(paymentIntent.status)) {
+      return {
+        payment,
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentStatus: paymentIntent.status,
+        checkoutMode: 'stripe',
+      }
+    }
+
+    await this.markPaymentFailed(payment.id, paymentIntent.id)
+    const failedPayment = await this.getPaymentRecord(payment.id)
+
+    return {
+      payment: failedPayment ?? payment,
+      clientSecret: null,
+      paymentIntentStatus: paymentIntent.status,
+      checkoutMode: 'stripe',
+    }
+  }
+
+  private async retirePendingPayments(studentId: string, courseId: string) {
+    const pendingPayments = await this.prisma.payment.findMany({
+      where: {
+        studentId,
+        courseId,
+        status: 'PENDING',
+      },
+    })
+
+    if (pendingPayments.length === 0) {
+      return
+    }
+
+    const idsToFail: string[] = []
+
+    for (const pendingPayment of pendingPayments) {
+      if (!this.stripe || !pendingPayment.transactionId) {
+        idsToFail.push(pendingPayment.id)
+        continue
+      }
+
+      let paymentIntent: Stripe.PaymentIntent
+      try {
+        paymentIntent = await this.stripe.paymentIntents.retrieve(pendingPayment.transactionId)
+      } catch {
+        idsToFail.push(pendingPayment.id)
+        continue
+      }
+
+      if (paymentIntent.status === 'succeeded') {
+        continue
+      }
+
+      if (ACTIVE_STRIPE_PAYMENT_STATUSES.has(paymentIntent.status)) {
+        try {
+          await this.stripe.paymentIntents.cancel(pendingPayment.transactionId)
+          idsToFail.push(pendingPayment.id)
+        } catch {
+          continue
+        }
+        continue
+      }
+
+      idsToFail.push(pendingPayment.id)
+    }
+
+    if (idsToFail.length > 0) {
+      await this.prisma.payment.updateMany({
+        where: {
+          id: { in: idsToFail },
+          status: 'PENDING',
+        },
+        data: { status: 'FAILED' },
+      })
+    }
+  }
+
+  private async markPaymentFailed(paymentId: string, transactionId?: string | null) {
+    return this.prisma.payment.updateMany({
+      where: {
+        id: paymentId,
+        status: 'PENDING',
+      },
+      data: {
+        status: 'FAILED',
+        ...(transactionId ? { transactionId } : {}),
+      },
+    })
+  }
+
+  private isNotCompletablePaymentError(error: unknown) {
+    return (
+      error instanceof BadRequestException &&
+      error.message === 'Payment is not in a completable state'
+    )
+  }
+
+  private async finalizePayment(paymentId: string, transactionId: string) {
+    return this.prisma.$transaction(async (tx) => {
+      const payment = await tx.payment.findUnique({
+        where: { id: paymentId },
+      })
+
+      if (!payment) {
+        throw new NotFoundException('Payment not found')
+      }
+
+      const existingEnrollment = await tx.enrollment.findUnique({
+        where: {
+          courseId_studentId: {
+            courseId: payment.courseId,
+            studentId: payment.studentId,
+          },
+        },
+        include: { course: true },
+      })
+
+      if (payment.status === 'COMPLETED') {
+        if (existingEnrollment) {
+          return { payment, enrollment: existingEnrollment }
+        }
+
+        const enrollment = await tx.enrollment.create({
+          data: {
+            courseId: payment.courseId,
+            studentId: payment.studentId,
+          },
+          include: { course: true },
+        })
+
+        return { payment, enrollment }
+      }
+
+      if (payment.status !== 'PENDING') {
+        throw new BadRequestException('Payment is not in a completable state')
+      }
+
+      const updatedPayment = await tx.payment.update({
+        where: { id: paymentId },
+        data: {
+          status: 'COMPLETED',
+          transactionId,
+        },
+      })
+
+      if (existingEnrollment) {
+        return { payment: updatedPayment, enrollment: existingEnrollment }
+      }
+
+      const enrollment = await tx.enrollment.create({
+        data: {
+          courseId: payment.courseId,
+          studentId: payment.studentId,
+        },
+        include: { course: true },
+      })
+
+      return { payment: updatedPayment, enrollment }
+    })
   }
 }

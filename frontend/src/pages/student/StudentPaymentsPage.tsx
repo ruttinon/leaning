@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { ArrowRight, Calendar, CheckCircle2, CreditCard } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { CreditCard, Calendar, CheckCircle2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { api } from '@/lib/api'
 
 interface Payment {
@@ -20,10 +22,20 @@ interface Payment {
   } | null
 }
 
+interface PaymentLocationState {
+  notice?: string
+  highlightPaymentId?: string
+}
+
 export function StudentPaymentsPage() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const state = (location.state || {}) as PaymentLocationState
+
   const { data: payments, isLoading } = useQuery({
     queryKey: ['student-payments'],
     queryFn: async () => api.get<Payment[]>('/student/payments'),
+    refetchInterval: 10000,
   })
 
   const getStatusBadge = (status: string) => {
@@ -65,81 +77,114 @@ export function StudentPaymentsPage() {
   }
 
   if (isLoading) {
-    return (
-      <div className="text-center py-12 text-gray-600">กำลังโหลด...</div>
-    )
+    return <div className="py-12 text-center text-gray-600">กำลังโหลด...</div>
   }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">ประวัติการชำระเงิน</h1>
-        <p className="text-gray-600">ดูประวัติการชำระเงินของคุณ</p>
+        <p className="text-gray-600">ติดตามรายการที่ชำระแล้ว รายการค้าง และกลับมาชำระเงินต่อได้จากหน้านี้</p>
       </div>
+
+      {state.notice && (
+        <div className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+          {state.notice}
+        </div>
+      )}
 
       {!payments || payments.length === 0 ? (
         <Card>
-          <CardContent className="pt-6 text-center py-12">
-            <CreditCard className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500 mb-4">ยังไม่มีประวัติการชำระเงิน</p>
+          <CardContent className="py-12 pt-6 text-center">
+            <CreditCard className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+            <p className="mb-4 text-gray-500">ยังไม่มีประวัติการชำระเงิน</p>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-4">
-          {payments.map((payment) => (
-            <Card
-              key={payment.id}
-              className="hover:shadow-lg transition-shadow"
-            >
-              <CardContent className="pt-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-blue-100 rounded-lg">
-                      {payment.status === 'COMPLETED' ? (
-                        <CheckCircle2 className="h-6 w-6 text-green-600" />
-                      ) : (
-                        <CreditCard className="h-6 w-6 text-blue-600" />
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">
-                        {payment.course?.title || 'คอร์ส'}
-                      </h3>
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className="text-sm text-gray-500 flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {new Date(payment.createdAt).toLocaleDateString(
-                            'th-TH',
-                            {
+          {payments.map((payment) => {
+            const isHighlighted = state.highlightPaymentId === payment.id
+
+            return (
+              <Card
+                key={payment.id}
+                className={`transition-shadow hover:shadow-lg ${
+                  isHighlighted ? 'border-blue-300 ring-2 ring-blue-100' : ''
+                }`}
+              >
+                <CardContent className="pt-6">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="rounded-lg bg-blue-100 p-3">
+                        {payment.status === 'COMPLETED' ? (
+                          <CheckCircle2 className="h-6 w-6 text-green-600" />
+                        ) : (
+                          <CreditCard className="h-6 w-6 text-blue-600" />
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold">
+                          {payment.course?.title || 'คอร์ส'}
+                        </h3>
+                        <div className="mt-1 flex flex-wrap items-center gap-3">
+                          <span className="flex items-center gap-1 text-sm text-gray-500">
+                            <Calendar className="h-4 w-4" />
+                            {new Date(payment.createdAt).toLocaleDateString('th-TH', {
                               year: 'numeric',
                               month: 'long',
                               day: 'numeric',
-                            }
-                          )}
-                        </span>
-                        {payment.paymentMethod && (
-                          <span className="text-sm text-gray-500">
-                            {payment.paymentMethod}
+                            })}
                           </span>
+                          {payment.paymentMethod && (
+                            <span className="text-sm text-gray-500">{payment.paymentMethod}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-start gap-3 sm:items-end">
+                      <p className="text-xl font-bold text-primary">
+                        {formatCurrency(payment.amount, payment.currency)}
+                      </p>
+                      {getStatusBadge(payment.status)}
+                      {payment.transactionId && (
+                        <p className="text-xs text-gray-400">Ref: {payment.transactionId}</p>
+                      )}
+                      <div className="flex flex-wrap gap-2">
+                        {payment.status === 'PENDING' && (
+                          <Button
+                            size="sm"
+                            onClick={() => navigate(`/student/payments/${payment.id}/checkout`)}
+                          >
+                            ชำระเงินต่อ
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                          </Button>
+                        )}
+                        {payment.status === 'COMPLETED' && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => navigate(`/student/courses/${payment.courseId}`)}
+                          >
+                            เปิดคอร์ส
+                          </Button>
+                        )}
+                        {payment.status === 'FAILED' && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => navigate(`/courses/${payment.courseId}`)}
+                          >
+                            กลับไปหน้าคอร์ส
+                          </Button>
                         )}
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <p className="text-xl font-bold text-primary">
-                      {formatCurrency(payment.amount, payment.currency)}
-                    </p>
-                    {getStatusBadge(payment.status)}
-                    {payment.transactionId && (
-                      <p className="text-xs text-gray-400">
-                        Ref: {payment.transactionId}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       )}
     </div>

@@ -74,7 +74,16 @@ export function CoursesPage() {
                   <div className={`overflow-hidden rounded-3xl border shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${theme === 'dark' ? 'border-slate-700 bg-slate-800' : 'border-slate-200 bg-white'}`}>
                     <div className="flex h-48 items-center justify-center bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100">
                       {course.thumbnailUrl ? (
-                        <img src={course.thumbnailUrl} alt={course.title} className="h-full w-full object-cover" />
+                        <img
+                          src={course.thumbnailUrl}
+                          alt={course.title}
+                          className="h-full w-full object-cover"
+                          onError={(event) => {
+                            const target = event.currentTarget
+                            target.onerror = null
+                            target.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=='
+                          }}
+                        />
                       ) : (
                         <BookOpen className="h-16 w-16 text-indigo-600" />
                       )}

@@ -5,13 +5,16 @@ import { RegisterStudentDto } from './dto/register-student.dto';
 import { RegisterTeacherDto } from './dto/register-teacher.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
-import { buildUploadFilename, isAllowedUpload } from '../common/utils/file-upload';
+import { memoryStorage } from 'multer';
+import { isAllowedImageUpload } from '../common/utils/file-upload';
+import { StorageService } from '../storage/storage.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private storageService: StorageService,
+  ) {}
 
   @Post('register/student')
   async registerStudent(@Body() dto: RegisterStudentDto) {
@@ -43,15 +46,10 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post('me/avatar')
   @UseInterceptors(FileInterceptor('file', {
-    storage: diskStorage({
-      destination: './uploads',
-      filename: (req, file, cb) => {
-        cb(null, buildUploadFilename(file.originalname))
-      }
-    }),
+    storage: memoryStorage(),
     limits: { fileSize: 2 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
-      if (!isAllowedUpload(file as Express.Multer.File)) {
+      if (!isAllowedImageUpload(file as Express.Multer.File)) {
         cb(new BadRequestException('Only image uploads are allowed'), false);
         return;
       }
@@ -62,9 +60,10 @@ export class AuthController {
     if (!file) {
       throw new BadRequestException('File is required');
     }
+    const avatarUrl = await this.storageService.uploadMulterFile(file, 'avatars')
 
     return this.authService.updateProfile(req.user.id, {
-      avatarUrl: file ? `/uploads/${file.filename}` : null
+      avatarUrl
     });
   }
 
