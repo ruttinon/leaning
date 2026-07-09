@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Users, User, GraduationCap, BookOpen } from 'lucide-react'
 import { api } from '@/lib/api'
+import { PaginationControls } from '@/components/PaginationControls'
 
 interface User {
   id: string
@@ -159,23 +160,7 @@ export function AdminUsersPage() {
         </div>
       )}
 
-      {data?.meta && data.meta.totalPages > 1 && (
-        <div className="flex items-center justify-center gap-4">
-          <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-            ก่อนหน้า
-          </Button>
-          <span className="text-sm text-gray-600">
-            หน้า {data.meta.page} / {data.meta.totalPages}
-          </span>
-          <Button
-            variant="outline"
-            disabled={page >= data.meta.totalPages}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            ถัดไป
-          </Button>
-        </div>
-      )}
+      <PaginationControls meta={data?.meta} page={page} onPageChange={setPage} />
     </div>
   )
 }

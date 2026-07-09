@@ -87,23 +87,52 @@ async function main() {
 
   const subjects = await prisma.subject.findMany()
 
-  const existingCourse = await prisma.course.findFirst({
-    where: { teacherId: teacher.id, title: 'คณิตศาสตร์ ม.5 เทอม 1' },
-  })
+  const demoCourses = [
+    {
+      title: 'คณิตศาสตร์ ม.5 เทอม 1',
+      description: 'คอร์สเรียนคณิตศาสตร์สำหรับนักเรียนชั้นมัธยมศึกษาปีที่ 5 เทอมที่ 1',
+      subjectId: subjects[0]?.id,
+      price: 0,
+    },
+    {
+      title: 'วิทยาศาสตร์ ม.4 เทอม 2',
+      description: 'ทบทวนและฝึกโจทย์วิทยาศาสตร์ ม.4 ครบทุกบทสำคัญ',
+      subjectId: subjects[1]?.id ?? subjects[0]?.id,
+      price: 990,
+    },
+    {
+      title: 'ภาษาไทย การอ่านจับใจความ',
+      description: 'เทคนิคการอ่านจับใจความและการเขียนเรียงความ',
+      subjectId: subjects[2]?.id ?? subjects[0]?.id,
+      price: 0,
+    },
+    {
+      title: 'English Conversation Basics',
+      description: 'พูดอังกฤษในชีวิตประจำวัน พร้อมแบบฝึกหัด',
+      subjectId: subjects[3]?.id ?? subjects[0]?.id,
+      price: 1290,
+    },
+  ]
 
-  if (!existingCourse) {
-    await prisma.course.create({
-      data: {
-        title: 'คณิตศาสตร์ ม.5 เทอม 1',
-        description:
-          'คอร์สเรียนคณิตศาสตร์สำหรับนักเรียนชั้นมัธยมศึกษาปีที่ 5 เทอมที่ 1',
-        subjectId: subjects[0].id,
-        teacherId: teacher.id,
-        price: 0,
-        status: 'PUBLISHED',
-        publishedAt: new Date(),
-      },
+  for (const course of demoCourses) {
+    if (!course.subjectId) continue
+    const exists = await prisma.course.findFirst({
+      where: { teacherId: teacher.id, title: course.title },
     })
+    if (!exists) {
+      await prisma.course.create({
+        data: {
+          title: course.title,
+          description: course.description,
+          subjectId: course.subjectId,
+          teacherId: teacher.id,
+          price: course.price,
+          status: 'PUBLISHED',
+          publishedAt: new Date(),
+          level: 'BEGINNER',
+        },
+      })
+    }
   }
 
   console.log({ admin, teacher, student })

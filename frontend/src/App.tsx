@@ -51,12 +51,24 @@ const AdminDashboardLayout = lazyNamed(
 )
 
 function App() {
-  const { token } = useAuthStore()
+  const { token, isAuthenticated, setUser } = useAuthStore()
   const { theme } = useAppStore()
 
   useEffect(() => {
     api.setToken(token)
   }, [token])
+
+  useEffect(() => {
+    if (!isAuthenticated || !token) {
+      return
+    }
+
+    api.get<any>('/auth/me')
+      .then((user) => setUser(user))
+      .catch(() => {
+        // handled by api layer on 401
+      })
+  }, [isAuthenticated, token, setUser])
 
   useEffect(() => {
     if (theme === 'dark') {

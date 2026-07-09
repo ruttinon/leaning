@@ -90,6 +90,7 @@ export const translationsTh = {
   login: {
     title: "เข้าสู่ระบบ",
     subtitle: "เข้าสู่ระบบเพื่อเข้าใช้งานแพลตฟอร์ม",
+    sessionExpired: "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง",
     manualLogin: "เข้าสู่ระบบด้วยตัวเอง",
     noAccount: "ยังไม่มีบัญชี?",
     loginWithDemo: "เข้าสู่ระบบด้วยบัญชีทดสอบ",
@@ -122,6 +123,10 @@ export const translationsTh = {
     gradebook: "เกรด",
     students: "นักเรียน",
     liveClasses: "Live Classes",
+    pendingTitle: "บัญชีครูรอการอนุมัติ",
+    pendingDesc: "คุณสามารถดูแดชบอร์ดได้ แต่การสร้างหรือแก้ไขเนื้อหาจะใช้งานได้หลังแอดมินอนุมัติ",
+    rejectedTitle: "บัญชีครูไม่ได้รับการอนุมัติ",
+    rejectedDesc: "กรุณาติดต่อผู้ดูแลระบบหากต้องการสอบถามเพิ่มเติม",
   },
   adminDashboard: {
     title: "แดชบอร์ดแอดมิน",

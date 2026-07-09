@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BookOpen, TrendingUp, Award, Plus, ArrowRight, Sparkles, FileText, Users } from 'lucide-react'
 import { api } from '@/lib/api'
+import { LoadingState } from '@/components/LoadingState'
+import { ErrorState } from '@/components/ErrorState'
+import { isApiError } from '@/lib/api-error'
 
 interface DashboardData {
   totalCourses: number
@@ -14,24 +17,23 @@ interface DashboardData {
 }
 
 export function TeacherDashboardPage() {
-  const { data: dashboard, isLoading } = useQuery({
+  const { data: dashboard, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['teacher-dashboard'],
     queryFn: async () => api.get<DashboardData>('/teacher/dashboard'),
   })
 
   if (isLoading) {
+    return <LoadingState />
+  }
+
+  if (isError) {
+    const message = isApiError(error) ? error.message : undefined
     return (
-      <div className="space-y-6">
-        <div className="animate-pulse space-y-3">
-          <div className="h-8 w-48 rounded bg-slate-200" />
-          <div className="h-4 w-72 rounded bg-slate-200" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="h-32 rounded-2xl border border-slate-200 bg-white p-6 animate-pulse" />
-          ))}
-        </div>
-      </div>
+      <ErrorState
+        title="ไม่สามารถโหลดแดชบอร์ดได้"
+        message={message}
+        onRetry={() => refetch()}
+      />
     )
   }
 

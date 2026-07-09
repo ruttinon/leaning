@@ -88,6 +88,12 @@ async function main() {
     subjectId = subjects[0].id
   })
 
+  await step('featured courses', async () => {
+    const featured = await req('/public/courses/featured?limit=3')
+    assert(Array.isArray(featured) && featured.length > 0, 'featured courses empty')
+    assert(featured[0].title, 'featured course missing title')
+  })
+
   let freeCourseId
   await step('teacher create free course', async () => {
     const course = await req('/teacher/courses', {

@@ -31,15 +31,19 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       refreshToken: null,
       isAuthenticated: false,
-      login: (user, token, refreshToken) =>
-        set({ user, token, refreshToken: refreshToken || null, isAuthenticated: true }),
+      login: (user, token, refreshToken) => {
+        api.setToken(token)
+        set({ user, token, refreshToken: refreshToken || null, isAuthenticated: true })
+      },
       setUser: (user) => set({ user }),
-      setTokens: (token, refreshToken) =>
+      setTokens: (token, refreshToken) => {
+        api.setToken(token)
         set({
           token,
           refreshToken: refreshToken ?? get().refreshToken,
           isAuthenticated: true,
-        }),
+        })
+      },
       logout: async () => {
         const refreshToken = get().refreshToken
         if (refreshToken) {
@@ -49,11 +53,15 @@ export const useAuthStore = create<AuthState>()(
             // ignore logout API errors
           }
         }
+        api.setToken(null)
         set({ user: null, token: null, refreshToken: null, isAuthenticated: false })
       },
     }),
     {
       name: 'auth-storage',
+      onRehydrateStorage: () => (state) => {
+        api.setToken(state?.token ?? null)
+      },
     },
   ),
 )

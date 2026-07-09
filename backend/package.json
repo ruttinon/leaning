@@ -11,7 +11,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/main.ts",
     "build": "tsc",
     "test": "jest --runInBand",
-    "test:integration": "jest --runInBand --testPathPattern=integration",
+    "test:integration": "jest --runInBand --config jest.integration.config.js",
     "e2e:smoke": "node ./scripts/e2e-smoke.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",

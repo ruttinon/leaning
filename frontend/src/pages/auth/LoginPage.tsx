@@ -5,10 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '@/store/auth-store'
 import { useAppStore } from '@/store/theme-store'
 import { api } from '@/lib/api'
+import { useTranslation } from '@/lib/i18n'
 import { Separator } from '@/components/ui/separator'
 import { ArrowRight, ShieldCheck, Sparkles } from 'lucide-react'
 
@@ -31,6 +32,7 @@ const demoAccounts = [
 ]
 
 export function LoginPage() {
+  const [searchParams] = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -38,6 +40,8 @@ export function LoginPage() {
   const navigate = useNavigate()
   const login = useAuthStore((state) => state.login)
   const { theme } = useAppStore()
+  const { t } = useTranslation()
+  const sessionExpired = searchParams.get('session') === 'expired'
 
   const handleLogin = async (emailInput: string, passwordInput: string) => {
     setError('')
@@ -128,6 +132,11 @@ export function LoginPage() {
               <div className="space-y-2">
                 <Label className={`text-sm font-semibold ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>🔑 เข้าสู่ระบบด้วยตัวเอง</Label>
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {sessionExpired && (
+                    <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
+                      {t('login.sessionExpired')}
+                    </div>
+                  )}
                   {error && (
                     <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-red-700">
                       {error}

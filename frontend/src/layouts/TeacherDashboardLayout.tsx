@@ -24,6 +24,7 @@ import { API_BASE_URL } from '@/lib/api'
 import { lazyNamed } from '@/lib/lazy'
 import { useAppStore } from '@/store/theme-store'
 import { DashboardThemeToggle } from '@/components/DashboardThemeToggle'
+import { TeacherApprovalBanner } from '@/components/TeacherApprovalBanner'
 import { useTranslation } from '@/lib/i18n'
 
 const TeacherDashboardPage = lazyNamed(
@@ -205,6 +206,7 @@ export function TeacherDashboardLayout() {
         </header>
 
         <div className="p-6">
+          <TeacherApprovalBanner />
           <Suspense fallback={<RouteFallback label="Loading teacher area..." />}>
             <Routes>
               <Route path="dashboard" element={<TeacherDashboardPage />} />

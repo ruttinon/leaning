@@ -1,5 +1,6 @@
 import { reportError } from '@/lib/observability'
 import { useAuthStore } from '@/store/auth-store'
+import { ApiError } from '@/lib/api-error'
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
@@ -14,6 +15,7 @@ const AUTH_SKIP_REFRESH = [
 class ApiService {
   private token: string | null = null;
   private refreshPromise: Promise<boolean> | null = null;
+  private redirectingToLogin = false;
 
   setToken(token: string | null) {
     this.token = token;
@@ -21,6 +23,31 @@ class ApiService {
 
   private shouldAttemptRefresh(endpoint: string): boolean {
     return !AUTH_SKIP_REFRESH.some((path) => endpoint.startsWith(path));
+  }
+
+  private async handleSessionExpired(): Promise<void> {
+    if (this.redirectingToLogin) {
+      return;
+    }
+
+    const { logout, isAuthenticated } = useAuthStore.getState();
+    if (!isAuthenticated) {
+      return;
+    }
+
+    this.redirectingToLogin = true;
+    try {
+      await logout();
+    } finally {
+      if (
+        typeof window !== 'undefined' &&
+        !window.location.pathname.startsWith('/login')
+      ) {
+        const params = new URLSearchParams({ session: 'expired' });
+        window.location.assign(`/login?${params.toString()}`);
+      }
+      this.redirectingToLogin = false;
+    }
   }
 
   private async refreshAccessToken(): Promise<boolean> {
@@ -32,6 +59,7 @@ class ApiService {
       const { refreshToken, setTokens, logout } = useAuthStore.getState();
       if (!refreshToken) {
         await logout();
+        await this.handleSessionExpired();
         return false;
       }
 
@@ -44,6 +72,7 @@ class ApiService {
 
         if (!response.ok) {
           await logout();
+          await this.handleSessionExpired();
           return false;
         }
 
@@ -53,6 +82,7 @@ class ApiService {
         return true;
       } catch {
         await logout();
+        await this.handleSessionExpired();
         return false;
       } finally {
         this.refreshPromise = null;
@@ -71,7 +101,6 @@ class ApiService {
     const requestId = crypto.randomUUID();
     headers.set('x-request-id', requestId);
     
-    // Don't set Content-Type if body is FormData - browser will handle it with boundary
     if (!(options.body instanceof FormData) && !headers.has('Content-Type')) {
       headers.set('Content-Type', 'application/json');
     }
@@ -95,6 +124,7 @@ class ApiService {
         if (refreshed) {
           return this.request<T>(endpoint, options, false);
         }
+        throw new ApiError('Session expired', 401);
       }
 
       if (!response.ok) {
@@ -108,7 +138,7 @@ class ApiService {
           // ignore JSON parse error on failed responses
         }
 
-        const err = new Error(message);
+        const err = new ApiError(message, response.status);
         if (response.status >= 500) {
           reportError(err, {
             type: 'api.error',

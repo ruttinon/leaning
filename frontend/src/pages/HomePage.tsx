@@ -13,9 +13,16 @@ import { EmptyState } from '@/components/EmptyState'
 export function HomePage() {
   const { theme, language } = useAppStore()
 
-  const { data: featuredCourses, isLoading: coursesLoading } = useQuery({
+  const { data: featuredCourses, isLoading: coursesLoading, isError } = useQuery({
     queryKey: ['featured-courses'],
-    queryFn: () => api.get<any[]>('/public/courses/featured?limit=3'),
+    queryFn: async () => {
+      const featured = await api.get<any[]>('/public/courses/featured?limit=3')
+      if (Array.isArray(featured) && featured.length > 0) {
+        return featured
+      }
+      const all = await api.get<any[]>('/public/courses')
+      return Array.isArray(all) ? all.slice(0, 3) : []
+    },
   })
 
   const features = [
@@ -208,7 +215,7 @@ export function HomePage() {
 
             {coursesLoading ? (
               <LoadingState />
-            ) : !featuredCourses?.length ? (
+            ) : isError || !featuredCourses?.length ? (
               <EmptyState
                 icon={BookOpen}
                 title={language === 'th' ? 'ยังไม่มีคอร์ส' : 'No courses yet'}

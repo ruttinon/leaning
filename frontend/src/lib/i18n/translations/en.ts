@@ -90,6 +90,7 @@ export const translationsEn = {
   login: {
     title: "Login",
     subtitle: "Login to access the platform",
+    sessionExpired: "Your session has expired. Please sign in again.",
     manualLogin: "Login Manually",
     noAccount: "Don't have an account?",
     loginWithDemo: "Login with Demo Accounts",
@@ -122,6 +123,10 @@ export const translationsEn = {
     gradebook: "Gradebook",
     students: "Students",
     liveClasses: "Live Classes",
+    pendingTitle: "Teacher account pending approval",
+    pendingDesc: "You can view the dashboard, but creating or editing content requires admin approval.",
+    rejectedTitle: "Teacher account not approved",
+    rejectedDesc: "Please contact support if you need more information.",
   },
   adminDashboard: {
     title: "Admin Dashboard",

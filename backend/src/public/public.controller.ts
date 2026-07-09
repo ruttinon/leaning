@@ -25,6 +25,12 @@ export class PublicController {
     return this.publicService.getCourses();
   }
 
+  @Get('courses/featured')
+  async getFeaturedCourses(@Query('limit') limit?: string) {
+    const parsed = limit ? Number(limit) : 6;
+    return this.publicService.getFeaturedCourses(Number.isFinite(parsed) ? parsed : 6);
+  }
+
   @Get('courses/:id')
   async getCourseById(@Param('id') id: string) {
     return this.publicService.getCourseById(id);
@@ -43,12 +49,6 @@ export class PublicController {
   @Get('announcements')
   async getAnnouncements() {
     return this.publicService.getAnnouncements();
-  }
-
-  @Get('courses/featured')
-  async getFeaturedCourses(@Query('limit') limit?: string) {
-    const parsed = limit ? Number(limit) : 6;
-    return this.publicService.getFeaturedCourses(Number.isFinite(parsed) ? parsed : 6);
   }
 
   @Post('contact')
