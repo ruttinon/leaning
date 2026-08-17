@@ -3,22 +3,16 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowRight,
-  BookOpen,
-  Clock,
   PlayCircle,
-  ShieldCheck,
-  Sparkles,
-  Star,
   Tag,
-  Users,
   X,
 } from 'lucide-react'
-import { Navbar } from '../components/layout/Navbar'
-import { Footer } from '../components/layout/Footer'
+import { PublicShell } from '@/components/PublicShell'
+import { Photo } from '@/components/media/Photo'
+import { resolveCover } from '@/lib/media'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { useAuthStore } from '../store/auth-store'
-import { useAppStore } from '../store/theme-store'
 import { useTranslation } from '../lib/i18n'
 import { api } from '../lib/api'
 import { toast } from '../store/toast-store'
@@ -70,7 +64,6 @@ export function CourseDetailPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { isAuthenticated, user } = useAuthStore()
-  const { theme } = useAppStore()
   const { t } = useTranslation()
   const [couponInput, setCouponInput] = useState('')
   const [appliedCoupon, setAppliedCoupon] = useState<CouponPreview | null>(null)
@@ -235,106 +228,66 @@ export function CourseDetailPage() {
   }
 
   return (
-    <div
-      className={`min-h-screen flex flex-col ${
-        theme === 'dark' ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'
-      }`}
-    >
-      <Navbar />
-      <main className="flex-1">
-        {isLoading && <div className="py-20 text-center text-slate-600">กำลังโหลด...</div>}
+    <PublicShell>
+        {isLoading && <div className="py-20 text-center text-[var(--text-muted)]">กำลังโหลด...</div>}
         {error && (
-          <div className="py-20 text-center text-red-600">
+          <div className="py-20 text-center text-[var(--danger)]">
             เกิดข้อผิดพลาด: {String(error)}
           </div>
         )}
         {!isLoading && !error && course && (
           <>
-            <section className="bg-gradient-to-br from-emerald-800 via-green-700 to-amber-700 py-20 text-white">
-              <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-                  <div>
-                    <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-sm backdrop-blur">
-                      <Sparkles className="h-4 w-4" />
-                      {course.level || 'คอร์สยอดนิยม'}
-                    </div>
-                    <h1 className="mb-6 text-3xl font-bold md:text-5xl">{course.title}</h1>
-                    <p className="mb-8 max-w-2xl text-lg text-emerald-50">{course.description}</p>
-                    <div className="mb-8 flex flex-wrap items-center gap-4 text-sm text-emerald-50">
-                      <div className="flex items-center gap-2 rounded-full bg-white/15 px-3 py-2">
-                        <Users className="h-4 w-4" />
-                        <span>
-                          อาจารย์ {course.teacher?.user?.firstName} {course.teacher?.user?.lastName}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 rounded-full bg-white/15 px-3 py-2">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span>4.8 คะแนน</span>
-                      </div>
-                      {course.duration && (
-                        <div className="flex items-center gap-2 rounded-full bg-white/15 px-3 py-2">
-                          <Clock className="h-4 w-4" />
-                          <span>{course.duration}</span>
-                        </div>
-                      )}
-                    </div>
-                    <Button
-                      size="lg"
-                      onClick={handlePrimaryAction}
-                      disabled={isActionPending || (isAuthenticated && !isStudent)}
-                      className="bg-white text-emerald-800 hover:bg-slate-100"
-                    >
-                      {primaryActionLabel}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                    <p className="mt-4 text-sm text-emerald-100">{actionHint}</p>
-                    {actionError && <p className="mt-2 text-sm text-red-100">{actionError}</p>}
-                  </div>
-                  <div className="flex justify-center">
-                    <div className="w-full max-w-md rounded-3xl border border-white/20 bg-white/10 p-8 text-center shadow-2xl backdrop-blur">
-                      <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-2xl bg-white/15">
-                        <BookOpen className="h-12 w-12 text-white" />
-                      </div>
-                      <h2 className="text-2xl font-semibold">
-                        {isPaidCourse ? 'ปลดล็อกหลังชำระเงิน' : 'พร้อมเรียนทันที'}
-                      </h2>
-                      <p className="mt-3 text-sm text-emerald-50">
-                        เข้าถึงเนื้อหาแบบเป็นลำดับ ติดตามความก้าวหน้า และเรียนต่อจากอุปกรณ์ใดก็ได้
-                      </p>
-                    </div>
-                  </div>
-                </div>
+            <section className="mx-auto grid max-w-6xl items-end gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[0.95fr_1.05fr]">
+              <div>
+                <p className="kicker">{course.level || 'คอร์ส'}</p>
+                <h1 className="mt-3 text-4xl md:text-5xl">{course.title}</h1>
+                <p className="mt-5 max-w-xl text-lg leading-8 text-[var(--text-secondary)]">{course.description}</p>
+                <p className="mt-6 text-sm text-[var(--text-muted)]">
+                  อาจารย์ {course.teacher?.user?.firstName} {course.teacher?.user?.lastName}
+                  {course.duration ? ` · ${course.duration}` : ''}
+                </p>
+                <Button
+                  size="lg"
+                  className="mt-8 rounded-sm"
+                  onClick={handlePrimaryAction}
+                  disabled={isActionPending || (isAuthenticated && !isStudent)}
+                >
+                  {primaryActionLabel}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+                <p className="mt-3 text-sm text-[var(--text-muted)]">{actionHint}</p>
+                {actionError && <p className="mt-2 text-sm text-[var(--danger)]">{actionError}</p>}
+              </div>
+              <div className="img-frame overflow-hidden rounded-sm">
+                <Photo src={resolveCover(course.thumbnailUrl, course.id)} alt={course.title} className="aspect-[4/3]" />
               </div>
             </section>
 
-            <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+            <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
               <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
                 <div>
-                  <div className="mb-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-                    <div className="mb-4 flex items-center gap-2 text-emerald-700">
-                      <ShieldCheck className="h-5 w-5" />
-                      <h2 className="text-xl font-semibold">สิ่งที่คุณจะได้รับ</h2>
-                    </div>
+                  <div className="mb-6 border border-[var(--border)] bg-[var(--bg-card)] p-6">
+                    <h2 className="mb-4 text-2xl">สิ่งที่คุณจะได้รับ</h2>
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-700/60">
+                      <div className="border border-[var(--border)] bg-[var(--bg-secondary)] p-4">
                         <p className="font-medium">เนื้อหาที่จัดเรียงชัดเจน</p>
                       </div>
-                      <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-700/60">
+                      <div className="border border-[var(--border)] bg-[var(--bg-secondary)] p-4">
                         <p className="font-medium">เรียนตามลำดับขั้นตอน</p>
                       </div>
-                      <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-700/60">
+                      <div className="border border-[var(--border)] bg-[var(--bg-secondary)] p-4">
                         <p className="font-medium">ติดตามความก้าวหน้าได้ง่าย</p>
                       </div>
-                      <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-700/60">
+                      <div className="border border-[var(--border)] bg-[var(--bg-secondary)] p-4">
                         <p className="font-medium">สนับสนุนจากครูผู้สอน</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                  <div className="border border-[var(--border)] bg-[var(--bg-card)] p-6">
                     <div className="mb-5 flex items-center justify-between">
-                      <h2 className="text-xl font-semibold">บทเรียนทั้งหมด</h2>
-                      <span className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300">
+                      <h2 className="text-2xl">บทเรียนทั้งหมด</h2>
+                      <span className="text-[11px] uppercase tracking-[0.16em] text-[var(--text-muted)]">
                         {totalLessons} บทเรียน
                       </span>
                     </div>
@@ -342,14 +295,14 @@ export function CourseDetailPage() {
                       {course.chapters?.map((chapter) => (
                         <div
                           key={chapter.id}
-                          className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-700/50"
+                          className="border border-[var(--border)] p-5"
                         >
-                          <h3 className="mb-3 text-lg font-semibold">{chapter.title}</h3>
+                          <h3 className="mb-3 text-lg">{chapter.title}</h3>
                           <div className="space-y-2">
                             {chapter.lessons?.map((lesson: any) => (
                               <div
                                 key={lesson.id}
-                                className="flex items-center gap-3 rounded-xl bg-white px-3 py-3 text-sm shadow-sm dark:bg-slate-800"
+                                className="flex items-center gap-3 border border-[var(--border)] bg-[var(--bg-card)] px-3 py-3 text-sm"
                               >
                                 <PlayCircle className="h-5 w-5 flex-shrink-0 text-emerald-700" />
                                 <span>{lesson.title}</span>
@@ -363,10 +316,10 @@ export function CourseDetailPage() {
                 </div>
 
                 <div className="space-y-6">
-                  <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-                    <h3 className="mb-4 text-xl font-semibold">รายละเอียดคอร์ส</h3>
+                  <div className="border border-[var(--border)] bg-[var(--bg-card)] p-6">
+                    <h3 className="mb-4 text-2xl">รายละเอียดคอร์ส</h3>
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-700/60">
+                      <div className="flex items-center justify-between border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
                         <span className="text-slate-500">{t('course.price')}</span>
                         <div className="text-right">
                           {appliedCoupon && (
@@ -380,13 +333,13 @@ export function CourseDetailPage() {
                         </div>
                       </div>
                       {isPaidCourse && isAuthenticated && isStudent && (
-                        <div className="rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/50 p-4 dark:border-emerald-800 dark:bg-emerald-950/20">
+                        <div className="border border-dashed border-[var(--border)] bg-[var(--bg-secondary)] p-4">
                           <div className="mb-2 flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-300">
                             <Tag className="h-4 w-4" />
                             {t('course.couponCode')}
                           </div>
                           {appliedCoupon ? (
-                            <div className="flex items-center justify-between rounded-xl bg-white px-3 py-2 text-sm dark:bg-slate-800">
+                            <div className="flex items-center justify-between border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2 text-sm">
                               <span>
                                 {appliedCoupon.code} (-{appliedCoupon.discountPercent}%)
                               </span>
@@ -419,18 +372,18 @@ export function CourseDetailPage() {
                           )}
                         </div>
                       )}
-                      <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-700/60">
+                      <div className="flex items-center justify-between border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
                         <span className="text-slate-500">ระดับ</span>
                         <span className="font-medium">{course.level || 'ทั่วไป'}</span>
                       </div>
                       {course.duration && (
-                        <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-700/60">
+                        <div className="flex items-center justify-between border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
                           <span className="text-slate-500">ระยะเวลา</span>
                           <span className="font-medium">{course.duration}</span>
                         </div>
                       )}
                       {course.publishedAt && (
-                        <div className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-700/60">
+                        <div className="flex items-center justify-between border border-[var(--border)] bg-[var(--bg-secondary)] px-4 py-3">
                           <span className="text-slate-500">เผยแพร่</span>
                           <span className="font-medium">
                             {new Date(course.publishedAt).toLocaleDateString('th-TH')}
@@ -452,8 +405,6 @@ export function CourseDetailPage() {
             </section>
           </>
         )}
-      </main>
-      <Footer />
-    </div>
+    </PublicShell>
   )
 }

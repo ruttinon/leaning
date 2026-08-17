@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, BookOpen, TrendingUp, Award, ShieldCheck, ArrowRight, Sparkles } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
 import { api } from '@/lib/api'
 import { LoadingState } from '@/components/LoadingState'
 import { ErrorState } from '@/components/ErrorState'
+import { photos } from '@/lib/media'
 
 interface DashboardData {
   totalUsers: number
@@ -22,94 +23,47 @@ export function AdminDashboardPage() {
   if (isError) return <ErrorState onRetry={() => refetch()} />
 
   const stats = [
-    {
-      title: 'ผู้ใช้ทั้งหมด',
-      value: dashboard?.totalUsers || 0,
-      icon: Users,
-      color: 'text-amber-800',
-      bgColor: 'bg-amber-100',
-    },
-    {
-      title: 'ครูทั้งหมด',
-      value: dashboard?.totalTeachers || 0,
-      icon: TrendingUp,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100',
-    },
-    {
-      title: 'ครูที่อนุมัติแล้ว',
-      value: dashboard?.approvedTeachers || 0,
-      icon: Award,
-      color: 'text-emerald-700',
-      bgColor: 'bg-emerald-100',
-    },
-    {
-      title: 'คอร์สทั้งหมด',
-      value: dashboard?.totalCourses || 0,
-      icon: BookOpen,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-100',
-    },
-  ]
+    ['ผู้ใช้ทั้งหมด', dashboard?.totalUsers || 0],
+    ['ครูทั้งหมด', dashboard?.totalTeachers || 0],
+    ['ครูที่อนุมัติแล้ว', dashboard?.approvedTeachers || 0],
+    ['คอร์สทั้งหมด', dashboard?.totalCourses || 0],
+  ] as const
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 p-6 text-white shadow-lg">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm backdrop-blur">
-              <Sparkles className="h-4 w-4" />
-              แอดมินควบคุมระบบ
-            </div>
-            <h1 className="text-2xl font-bold">แดชบอร์ดผู้ดูแล</h1>
-            <p className="mt-2 text-sm text-slate-300">จัดการผู้ใช้ คอร์ส และการอนุมัติจากจุดเดียว</p>
-          </div>
-          <div className="rounded-2xl bg-white/10 p-4 backdrop-blur">
-            <div className="flex items-center gap-2 text-sm">
-              <ShieldCheck className="h-5 w-5" />
-              ระบบปลอดภัยและควบคุมได้
-            </div>
-          </div>
+    <div className="space-y-8">
+      <div className="relative overflow-hidden rounded-sm">
+        <img src={photos.library} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-[var(--primary-dark)]/65" />
+        <div className="relative px-6 py-10 text-white">
+          <p className="kicker text-white/75">ผู้ดูแลระบบ</p>
+          <h1 className="mt-2 text-4xl">แดชบอร์ดผู้ดูแล</h1>
+          <p className="mt-2 max-w-lg text-sm text-white/80">จัดการผู้ใช้ คอร์ส และการอนุมัติจากจุดเดียว</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon
-          return (
-            <Card key={index} className="rounded-2xl border-slate-200 shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600">{stat.title}</CardTitle>
-                <div className={`${stat.bgColor} p-2 rounded-xl`}>
-                  <Icon className={`h-5 w-5 ${stat.color}`} />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-slate-900">{stat.value}</div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
+      <dl className="grid grid-cols-2 gap-x-8 gap-y-5 border-y border-[var(--border)] py-6 md:grid-cols-4">
+        {stats.map(([label, value]) => (
+          <div key={label}>
+            <dt className="text-[11px] uppercase tracking-[0.16em] text-[var(--text-muted)]">{label}</dt>
+            <dd className="mt-1 text-3xl font-semibold">{value}</dd>
+          </div>
+        ))}
+      </dl>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="rounded-3xl border-slate-200 shadow-sm">
-          <CardContent className="pt-6">
-            <h3 className="mb-2 font-semibold text-slate-900">งานที่ต้องดำเนินการ</h3>
-            <ul className="space-y-3 text-sm text-slate-600">
-              <li className="rounded-xl bg-slate-50 p-3">ตรวจคำขออนุมัติครูใหม่</li>
-              <li className="rounded-xl bg-slate-50 p-3">ตรวจคอร์สที่รอการอนุมัติ</li>
-            </ul>
-          </CardContent>
-        </Card>
-        <Card className="rounded-3xl border-slate-200 shadow-sm">
-          <CardContent className="pt-6">
-            <h3 className="mb-2 font-semibold text-slate-900">การจัดการระบบ</h3>
-            <button className="inline-flex items-center gap-2 text-sm font-medium text-emerald-700">
-              ดูรายการทั้งหมด <ArrowRight className="h-4 w-4" />
-            </button>
-          </CardContent>
-        </Card>
+        <div className="border border-[var(--border)] bg-[var(--bg-card)] p-6">
+          <h3 className="mb-4 text-2xl">งานที่ต้องดำเนินการ</h3>
+          <ul className="space-y-3 text-sm text-[var(--text-secondary)]">
+            <li className="border border-[var(--border)] p-3">ตรวจคำขออนุมัติครูใหม่</li>
+            <li className="border border-[var(--border)] p-3">ตรวจคอร์สที่รอการอนุมัติ</li>
+          </ul>
+        </div>
+        <div className="border border-[var(--border)] bg-[var(--bg-card)] p-6">
+          <h3 className="mb-2 text-2xl">การจัดการระบบ</h3>
+          <Link to="/admin/users" className="inline-flex items-center gap-2 text-sm font-medium text-primary">
+            ดูรายการทั้งหมด <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
       </div>
     </div>
   )

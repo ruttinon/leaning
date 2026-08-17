@@ -1,15 +1,13 @@
-import { Navbar } from '../components/layout/Navbar'
-import { Footer } from '../components/layout/Footer'
+import { PublicShell } from '@/components/PublicShell'
+import { Photo } from '@/components/media/Photo'
+import { photos } from '@/lib/media'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
-import { Mail, Phone, MapPin, SendHorizonal, MessageCircleQuestion, CheckCircle } from 'lucide-react'
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { useAppStore } from '@/store/theme-store'
 import { api } from '@/lib/api'
 
 export function ContactPage() {
-  const { theme } = useAppStore()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -32,94 +30,74 @@ export function ContactPage() {
   }
 
   return (
-    <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
-      <Navbar />
-      
-      <main className="flex-1">
-        <section className="bg-gradient-to-br from-emerald-900 via-green-800 to-stone-800 py-20 text-white">
-          <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm backdrop-blur">
-              <MessageCircleQuestion className="h-4 w-4" />
-              พร้อมช่วยเหลือคุณทุกคำถาม
+    <PublicShell>
+      <section className="relative">
+        <Photo src={photos.writing} alt="" className="h-[36vh] min-h-[240px] w-full" zoom={false} />
+        <div className="absolute inset-0 bg-[var(--primary-dark)]/50" />
+        <div className="absolute inset-0 mx-auto flex max-w-6xl flex-col justify-end px-4 pb-10 sm:px-6">
+          <p className="kicker text-white/80">จดหมาย</p>
+          <h1 className="mt-2 text-4xl text-white md:text-5xl">ติดต่อเรา</h1>
+          <p className="mt-2 max-w-lg text-white/85">มีคำถามเกี่ยวกับคอร์สหรือการใช้งาน — เขียนมาได้เลย</p>
+        </div>
+      </section>
+
+      <section className="mx-auto grid max-w-6xl gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2">
+        <div>
+          <h2 className="text-3xl">ข้อมูลติดต่อ</h2>
+          <dl className="mt-8 space-y-6 text-[var(--text-secondary)]">
+            <div>
+              <dt className="kicker">อีเมล</dt>
+              <dd className="mt-1 text-lg">contact@edupro.local</dd>
             </div>
-            <h1 className="mb-6 text-4xl font-bold md:text-5xl">ติดต่อเรา</h1>
-            <p className="mx-auto max-w-3xl text-xl text-emerald-100">มีคำถามเกี่ยวกับคอร์สหรือการใช้งาน ให้เราเป็นตัวช่วยให้คุณตอบได้เร็วขึ้น</p>
-          </div>
-        </section>
+            <div>
+              <dt className="kicker">โทร</dt>
+              <dd className="mt-1 text-lg">02-123-4567</dd>
+            </div>
+            <div>
+              <dt className="kicker">ที่อยู่</dt>
+              <dd className="mt-1 text-lg leading-8">123 ถนนสุขุมวิท แขวงคลองเตย<br />เขตคลองเตย กรุงเทพฯ 10110</dd>
+            </div>
+          </dl>
+          <Photo src={photos.emptyDesk} alt="" className="mt-10 aspect-[16/9] rounded-sm" />
+        </div>
 
-        <section className="py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-12 lg:grid-cols-2">
-              <div>
-                <h2 className="mb-8 text-2xl font-bold">ข้อมูลติดต่อ</h2>
-                <div className="space-y-6">
-                  <div className={`flex items-start gap-4 rounded-3xl p-6 shadow-sm ${theme === 'dark' ? 'bg-slate-800 border border-slate-700' : 'bg-white'}`}>
-                    <Mail className="mt-1 h-6 w-6 flex-shrink-0 text-emerald-700" />
-                    <div>
-                      <h3 className="text-lg font-semibold">อีเมล</h3>
-                      <p className={`${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>contact@edupro.local</p>
-                    </div>
-                  </div>
-                  <div className={`flex items-start gap-4 rounded-3xl p-6 shadow-sm ${theme === 'dark' ? 'bg-slate-800 border border-slate-700' : 'bg-white'}`}>
-                    <Phone className="mt-1 h-6 w-6 flex-shrink-0 text-emerald-700" />
-                    <div>
-                      <h3 className="text-lg font-semibold">เบอร์โทรศัพท์</h3>
-                      <p className={`${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>02-123-4567</p>
-                    </div>
-                  </div>
-                  <div className={`flex items-start gap-4 rounded-3xl p-6 shadow-sm ${theme === 'dark' ? 'bg-slate-800 border border-slate-700' : 'bg-white'}`}>
-                    <MapPin className="mt-1 h-6 w-6 flex-shrink-0 text-emerald-700" />
-                    <div>
-                      <h3 className="text-lg font-semibold">ที่อยู่</h3>
-                      <p className={`${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>123 ถนนสุขุมวิท แขวงคลองเตย<br />เขตคลองเตย กรุงเทพฯ 10110</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className={`rounded-3xl p-8 shadow-xl ${theme === 'dark' ? 'bg-slate-800 border border-slate-700' : 'bg-white'}`}>
-                <h2 className="mb-8 text-2xl font-bold">ส่งข้อความถึงเรา</h2>
+        <div className="border border-[var(--border)] bg-[var(--bg-card)] p-8">
+          <h2 className="text-3xl">ส่งข้อความ</h2>
                 {submitted ? (
-                  <div className="flex flex-col items-center gap-4 py-12 text-center">
-                    <CheckCircle className="h-12 w-12 text-emerald-600" />
+                  <div className="flex flex-col items-start gap-3 py-8">
+                    <img src={photos.emptyDesk} alt="" className="h-32 w-full rounded-sm object-cover" />
                     <p className="text-lg font-medium">ข้อความของคุณถูกส่งเรียบร้อยแล้ว</p>
-                    <p className="text-sm text-slate-500">ทีมงานจะติดต่อกลับโดยเร็วที่สุด</p>
-                    <Button variant="outline" onClick={() => setSubmitted(false)}>ส่งข้อความอีกครั้ง</Button>
+                    <p className="text-sm text-[var(--text-muted)]">ทีมงานจะติดต่อกลับโดยเร็วที่สุด</p>
+                    <Button variant="outline" className="rounded-sm" onClick={() => setSubmitted(false)}>ส่งข้อความอีกครั้ง</Button>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="space-y-6">
+                  <form onSubmit={handleSubmit} className="mt-6 space-y-5">
                     <div>
-                      <label htmlFor="contact-name" className={`mb-2 block text-sm font-medium ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>ชื่อ</label>
+                      <label htmlFor="contact-name" className="mb-2 block text-sm">ชื่อ</label>
                       <Input id="contact-name" type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
                     </div>
                     <div>
-                      <label htmlFor="contact-email" className={`mb-2 block text-sm font-medium ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>อีเมล</label>
+                      <label htmlFor="contact-email" className="mb-2 block text-sm">อีเมล</label>
                       <Input id="contact-email" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
                     </div>
                     <div>
-                      <label htmlFor="contact-subject" className={`mb-2 block text-sm font-medium ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>หัวข้อ</label>
+                      <label htmlFor="contact-subject" className="mb-2 block text-sm">หัวข้อ</label>
                       <Input id="contact-subject" type="text" value={formData.subject} onChange={(e) => setFormData({ ...formData, subject: e.target.value })} required />
                     </div>
                     <div>
-                      <label htmlFor="contact-message" className={`mb-2 block text-sm font-medium ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>ข้อความ</label>
-                      <textarea id="contact-message" className={`min-h-[150px] w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-600 ${theme === 'dark' ? 'border-slate-700 bg-slate-900 text-slate-100' : 'border-slate-300 bg-white text-slate-900'}`} value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} required />
+                      <label htmlFor="contact-message" className="mb-2 block text-sm">ข้อความ</label>
+                      <textarea id="contact-message" className="min-h-[150px] w-full rounded-sm border border-[var(--border)] bg-[var(--bg-primary)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary" value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} required />
                     </div>
                     {contactMutation.isError && (
-                      <p className="text-sm text-red-600">ส่งข้อความไม่สำเร็จ กรุณาลองใหม่อีกครั้ง</p>
+                      <p className="text-sm text-[var(--danger)]">ส่งข้อความไม่สำเร็จ กรุณาลองใหม่อีกครั้ง</p>
                     )}
-                    <Button type="submit" className="w-full" disabled={contactMutation.isPending}>
+                    <Button type="submit" className="w-full rounded-sm" disabled={contactMutation.isPending}>
                       {contactMutation.isPending ? 'กำลังส่ง...' : 'ส่งข้อความ'}
-                      <SendHorizonal className="ml-2 h-4 w-4" />
                     </Button>
                   </form>
                 )}
               </div>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <Footer />
-    </div>
+      </section>
+    </PublicShell>
   )
 }

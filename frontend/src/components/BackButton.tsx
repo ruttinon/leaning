@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
 import { ChevronLeft } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface BackButtonProps {
   fallback?: string
@@ -20,9 +20,16 @@ export function BackButton({ fallback = '/', label = 'กลับ', className }
   }
 
   return (
-    <Button variant="outline" size="sm" className={className} onClick={handleBack}>
-      <ChevronLeft className="mr-1 h-4 w-4" />
+    <button
+      type="button"
+      onClick={handleBack}
+      className={cn(
+        'inline-flex items-center text-sm tracking-wide text-[var(--text-secondary)] hover:text-[var(--primary)]',
+        className,
+      )}
+    >
+      <ChevronLeft className="mr-0.5 h-4 w-4" />
       {label}
-    </Button>
+    </button>
   )
 }

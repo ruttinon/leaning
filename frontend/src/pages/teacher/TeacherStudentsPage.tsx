@@ -6,6 +6,7 @@ import { api } from '@/lib/api'
 import { LoadingState } from '@/components/LoadingState'
 import { ErrorState } from '@/components/ErrorState'
 import { EmptyState } from '@/components/EmptyState'
+import { PageIntro } from '@/components/PageIntro'
 
 interface Student {
   id: string
@@ -30,16 +31,17 @@ export function TeacherStudentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">นักเรียนทั้งหมด</h1>
-          <p className="text-gray-600">ดูรายชื่อนักเรียนที่ลงทะเบียนเรียนกับคุณ</p>
-        </div>
-        <Link to="/teacher/gradebook" className="inline-flex items-center text-sm font-medium text-emerald-700 hover:underline">
-          <Users className="mr-2 h-4 w-4" />
-          ดูสมุดคะแนน
-        </Link>
-      </div>
+      <PageIntro
+        kicker="ห้องเรียน"
+        title="นักเรียนทั้งหมด"
+        description="ดูรายชื่อนักเรียนที่ลงทะเบียนเรียนกับคุณ"
+        actions={
+          <Link to="/teacher/gradebook" className="inline-flex items-center text-sm font-medium text-primary hover:underline">
+            <Users className="mr-2 h-4 w-4" />
+            ดูสมุดคะแนน
+          </Link>
+        }
+      />
 
       {!students?.length ? (
         <EmptyState

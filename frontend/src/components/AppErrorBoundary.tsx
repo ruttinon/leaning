@@ -1,6 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { photos } from '@/lib/media'
 
 interface AppErrorBoundaryProps {
   children: ReactNode
@@ -36,22 +37,18 @@ export class AppErrorBoundary extends Component<
     }
 
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-6 py-12">
-        <div className="w-full max-w-lg rounded-3xl border border-red-100 bg-white p-8 text-center shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-red-500">
-            Application error
-          </p>
-          <h1 className="mt-4 text-3xl font-bold text-slate-900">
-            Something went wrong
-          </h1>
-          <p className="mt-3 text-sm text-slate-600">
-            The page hit an unexpected error. Reload to try again or go back to the
-            home page.
+      <div className="flex min-h-screen items-center justify-center bg-[var(--bg-primary)] px-6 py-12">
+        <div className="w-full max-w-lg border border-[var(--border)] bg-[var(--bg-card)] p-8 text-center">
+          <img src={photos.emptyDesk} alt="" className="mx-auto mb-6 h-36 w-full object-cover" />
+          <p className="kicker">เกิดข้อผิดพลาด</p>
+          <h1 className="mt-3 text-3xl">หน้านี้ใช้งานไม่ได้ชั่วคราว</h1>
+          <p className="mt-3 text-sm text-[var(--text-muted)]">
+            ลองโหลดใหม่ หรือกลับไปหน้าแรก
           </p>
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-            <Button onClick={this.handleReload}>Reload page</Button>
+            <Button className="rounded-sm" onClick={this.handleReload}>โหลดหน้าใหม่</Button>
             <Link to="/">
-              <Button variant="outline">Back to home</Button>
+              <Button variant="outline" className="rounded-sm">กลับหน้าแรก</Button>
             </Link>
           </div>
         </div>

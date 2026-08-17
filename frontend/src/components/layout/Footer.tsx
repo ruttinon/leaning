@@ -1,62 +1,38 @@
-import { BookOpen, Mail, Phone, MapPin } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { BrandMark } from '@/components/BrandMark'
+import { photos } from '@/lib/media'
 
 export function Footer() {
   return (
-    <footer className="bg-gray-50 border-t mt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <BookOpen className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold text-primary">EduPro</span>
-            </div>
-            <p className="text-gray-600 text-sm">
-              แพลตฟอร์มเรียนออนไลน์ที่ครบวงจร ให้คุณเรียนได้ทุกที่ทุกเวลา
-            </p>
-          </div>
-          
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">เมนูหลัก</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link to="/" className="text-gray-600 hover:text-primary">หน้าแรก</Link></li>
-              <li><Link to="/courses" className="text-gray-600 hover:text-primary">คอร์สทั้งหมด</Link></li>
-              <li><Link to="/teachers" className="text-gray-600 hover:text-primary">ครูผู้สอน</Link></li>
-              <li><Link to="/about" className="text-gray-600 hover:text-primary">เกี่ยวกับเรา</Link></li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">สำหรับผู้ใช้</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link to="/register/student" className="text-gray-600 hover:text-primary">สมัครเป็นนักเรียน</Link></li>
-              <li><Link to="/register/teacher" className="text-gray-600 hover:text-primary">สมัครเป็นครู</Link></li>
-              <li><Link to="/login" className="text-gray-600 hover:text-primary">เข้าสู่ระบบ</Link></li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">ติดต่อเรา</h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li className="flex items-center space-x-2">
-                <Mail className="h-4 w-4" />
-                <span>contact@eduplatform.com</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <Phone className="h-4 w-4" />
-                <span>02-123-4567</span>
-              </li>
-              <li className="flex items-center space-x-2">
-                <MapPin className="h-4 w-4" />
-                <span>กรุงเทพมหานคร</span>
-              </li>
-            </ul>
-          </div>
+    <footer className="mt-24 border-t border-[var(--border)]">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.2fr_1fr_1fr]">
+        <div>
+          <BrandMark />
+          <p className="mt-5 max-w-sm text-sm leading-7 text-[var(--text-secondary)]">
+            สตูดิโอเรียนออนไลน์ที่ออกแบบให้รู้สึกเหมือนห้องเรียนจริง — เนื้อหาคม บรรยากาศอุ่น และจังหวะที่เป็นของคุณ
+          </p>
         </div>
-
-        <div className="border-t mt-8 pt-8 text-center text-sm text-gray-500">
-          <p>&copy; {new Date().getFullYear()} EduPro. All rights reserved.</p>
+        <div>
+          <p className="kicker mb-4">สำรวจ</p>
+          <ul className="space-y-2 text-sm text-[var(--text-secondary)]">
+            <li><Link to="/courses" className="hover:text-[var(--primary)]">คอร์สทั้งหมด</Link></li>
+            <li><Link to="/teachers" className="hover:text-[var(--primary)]">ครูผู้สอน</Link></li>
+            <li><Link to="/about" className="hover:text-[var(--primary)]">เรื่องราวของเรา</Link></li>
+            <li><Link to="/contact" className="hover:text-[var(--primary)]">เขียนถึงเรา</Link></li>
+          </ul>
         </div>
+        <div>
+          <p className="kicker mb-4">เริ่มต้น</p>
+          <ul className="space-y-2 text-sm text-[var(--text-secondary)]">
+            <li><Link to="/register/student" className="hover:text-[var(--primary)]">สมัครเป็นนักเรียน</Link></li>
+            <li><Link to="/register/teacher" className="hover:text-[var(--primary)]">สมัครเป็นครู</Link></li>
+            <li><Link to="/login" className="hover:text-[var(--primary)]">เข้าสู่ระบบ</Link></li>
+          </ul>
+          <img src={photos.emptyDesk} alt="" className="mt-8 h-24 w-full rounded-sm object-cover" />
+        </div>
+      </div>
+      <div className="border-t border-[var(--border)] py-6 text-center text-xs tracking-wide text-[var(--text-muted)]">
+        © {new Date().getFullYear()} EduPro · กรุงเทพฯ
       </div>
     </footer>
   )

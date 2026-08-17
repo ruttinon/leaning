@@ -18,6 +18,7 @@ import { ErrorState } from '@/components/ErrorState'
 import { EmptyState } from '@/components/EmptyState'
 import { TeacherLessonContext, getLessonId } from '@/components/teacher/TeacherLessonContext'
 import { TeacherResourceActions } from '@/components/teacher/TeacherResourceActions'
+import { PageIntro } from '@/components/PageIntro'
 
 interface Exam {
   id: string
@@ -103,18 +104,19 @@ export function TeacherExamsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">{t('teacherDashboard.allExams')}</h1>
-          <p className="text-gray-600">{t('teacherDashboard.allExamsDesc')}</p>
-        </div>
-        <Link to="/teacher/courses">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            สร้างในคอร์ส
-          </Button>
-        </Link>
-      </div>
+      <PageIntro
+        kicker="สตูดิโอ"
+        title={t('teacherDashboard.allExams')}
+        description={t('teacherDashboard.allExamsDesc')}
+        actions={
+          <Link to="/teacher/courses">
+            <Button className="rounded-sm">
+              <Plus className="mr-2 h-4 w-4" />
+              สร้างในคอร์ส
+            </Button>
+          </Link>
+        }
+      />
 
       {!exams?.length ? (
         <EmptyState

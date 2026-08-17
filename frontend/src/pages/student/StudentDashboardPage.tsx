@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { BookOpen, Award, TrendingUp, Clock3, ArrowRight, Sparkles, FileText } from 'lucide-react'
+import { ArrowRight, BookOpen, FileText } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useTranslation } from '@/lib/i18n'
 import { ErrorState } from '@/components/ErrorState'
 import { LoadingState } from '@/components/LoadingState'
+import { photos } from '@/lib/media'
 
 interface DashboardTodo {
   type: 'CONTINUE_COURSE' | 'ASSIGNMENT'
@@ -54,85 +54,44 @@ export function StudentDashboardPage() {
   if (isError) return <ErrorState onRetry={() => refetch()} />
 
   const stats = [
-    {
-      title: t('studentDashboard.enrolledCourses'),
-      value: dashboard?.totalEnrollments || 0,
-      icon: BookOpen,
-      color: 'text-emerald-700',
-      bgColor: 'bg-emerald-100',
-    },
-    {
-      title: t('studentDashboard.completedLessons'),
-      value: dashboard?.completedLessons || 0,
-      icon: Award,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100',
-    },
-    {
-      title: t('studentDashboard.progress'),
-      value: `${dashboard?.averageProgress ?? 0}%`,
-      icon: TrendingUp,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-100',
-    },
-    {
-      title: t('studentDashboard.averageScore'),
-      value:
-        dashboard?.averageScorePercent != null ? `${dashboard.averageScorePercent}%` : '-',
-      icon: Award,
-      color: 'text-amber-800',
-      bgColor: 'bg-amber-100',
-    },
-  ]
+    [t('studentDashboard.enrolledCourses'), dashboard?.totalEnrollments || 0],
+    [t('studentDashboard.completedLessons'), dashboard?.completedLessons || 0],
+    [t('studentDashboard.progress'), `${dashboard?.averageProgress ?? 0}%`],
+    [
+      t('studentDashboard.averageScore'),
+      dashboard?.averageScorePercent != null ? `${dashboard.averageScorePercent}%` : '-',
+    ],
+  ] as const
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-emerald-800 via-green-700 to-amber-700 p-6 text-white shadow-lg">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-sm backdrop-blur">
-              <Sparkles className="h-4 w-4" />
-              {t('studentDashboard.welcomeBack')}
-            </div>
-            <h1 className="text-2xl font-bold">{t('studentDashboard.title')}</h1>
-            <p className="mt-2 text-sm text-emerald-50">{t('studentDashboard.subtitle')}</p>
-          </div>
-          <div className="rounded-2xl bg-white/15 p-4 backdrop-blur">
-            <div className="flex items-center gap-3 text-sm">
-              <Clock3 className="h-5 w-5" />
-              <span>{t('studentDashboard.learnAnytime')}</span>
-            </div>
-          </div>
+    <div className="space-y-8">
+      <div className="relative overflow-hidden rounded-sm">
+        <img src={photos.heroStudy} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-[var(--primary-dark)]/60" />
+        <div className="relative px-6 py-10 text-white">
+          <p className="kicker text-white/75">{t('studentDashboard.welcomeBack')}</p>
+          <h1 className="mt-2 text-4xl">{t('studentDashboard.title')}</h1>
+          <p className="mt-2 max-w-lg text-sm text-white/80">{t('studentDashboard.subtitle')}</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon
-          return (
-            <Card key={index} className="rounded-2xl border-slate-200 shadow-sm">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600">{stat.title}</CardTitle>
-                <div className={`${stat.bgColor} rounded-xl p-2`}>
-                  <Icon className={`h-5 w-5 ${stat.color}`} />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-slate-900">{stat.value}</div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
+      <dl className="grid grid-cols-2 gap-x-8 gap-y-5 border-y border-[var(--border)] py-6 md:grid-cols-4">
+        {stats.map(([label, value]) => (
+          <div key={label}>
+            <dt className="text-[11px] uppercase tracking-[0.16em] text-[var(--text-muted)]">{label}</dt>
+            <dd className="mt-1 text-3xl font-semibold">{value}</dd>
+          </div>
+        ))}
+      </dl>
 
       <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
-        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-4 flex items-center justify-between">
+        <div className="border border-[var(--border)] bg-[var(--bg-card)] p-6">
+          <div className="mb-5 flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-semibold">{t('studentDashboard.activeCourses')}</h2>
-              <p className="text-sm text-slate-500">{t('studentDashboard.continueLearning')}</p>
+              <h2 className="text-2xl">{t('studentDashboard.activeCourses')}</h2>
+              <p className="text-sm text-[var(--text-muted)]">{t('studentDashboard.continueLearning')}</p>
             </div>
-            <Link to="/student/my-courses" className="text-sm font-medium text-emerald-700">
+            <Link to="/student/my-courses" className="text-sm font-medium text-primary">
               {t('studentDashboard.viewAll')}
             </Link>
           </div>
@@ -140,31 +99,31 @@ export function StudentDashboardPage() {
           {dashboard?.studentProfile?.enrollments && dashboard.studentProfile.enrollments.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2">
               {dashboard.studentProfile.enrollments.slice(0, 4).map((enrollment) => (
-                <div key={enrollment.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="mb-3 flex items-center justify-between">
-                    <h3 className="font-semibold text-slate-900">{enrollment.course.title}</h3>
-                    <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                <div key={enrollment.id} className="border border-[var(--border)] p-4">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <h3 className="text-xl font-semibold">{enrollment.course.title}</h3>
+                    <span className="text-[11px] uppercase tracking-[0.14em] text-[var(--text-muted)]">
                       {t('studentDashboard.inProgress')}
                     </span>
                   </div>
-                  <p className="mb-4 text-sm text-slate-500">
+                  <p className="mb-4 text-sm text-[var(--text-muted)]">
                     {t('studentDashboard.teacher')}{' '}
                     {enrollment.course.teacher?.user?.firstName}{' '}
                     {enrollment.course.teacher?.user?.lastName}
                   </p>
-                  <div className="mb-2 flex items-center justify-between text-sm text-slate-500">
+                  <div className="mb-2 flex items-center justify-between text-sm text-[var(--text-muted)]">
                     <span>{t('studentDashboard.progress')}</span>
                     <span>{enrollment.progress || 0}%</span>
                   </div>
-                  <div className="h-2 rounded-full bg-slate-200">
+                  <div className="h-1 bg-[var(--bg-tertiary)]">
                     <div
-                      className="h-2 rounded-full bg-emerald-700"
+                      className="h-1 bg-[var(--primary)]"
                       style={{ width: `${enrollment.progress || 0}%` }}
                     />
                   </div>
                   <Link
                     to={`/student/courses/${enrollment.course.id}`}
-                    className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-emerald-700 hover:text-emerald-800"
+                    className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary"
                   >
                     {t('studentDashboard.continue')} <ArrowRight className="h-4 w-4" />
                   </Link>
@@ -172,55 +131,51 @@ export function StudentDashboardPage() {
               ))}
             </div>
           ) : (
-            <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-500">
+            <p className="border border-dashed border-[var(--border)] px-6 py-10 text-center text-sm text-[var(--text-muted)]">
               {t('studentDashboard.noCourses')}
-            </div>
+            </p>
           )}
         </div>
 
         <div className="space-y-6">
-          <Card className="rounded-3xl border-slate-200 shadow-sm">
-            <CardContent className="pt-6">
-              <h3 className="mb-2 font-semibold text-slate-900">{t('studentDashboard.todos')}</h3>
-              {!dashboard?.todos?.length ? (
-                <p className="text-sm text-slate-500">{t('studentDashboard.noTodos')}</p>
-              ) : (
-                <ul className="space-y-3 text-sm text-slate-600">
-                  {dashboard.todos.map((todo, index) => (
-                    <li key={`${todo.type}-${todo.courseId}-${index}`} className="rounded-xl bg-slate-50 p-3">
-                      <Link to={getTodoHref(todo)} className="block hover:text-emerald-700">
-                        <div className="flex items-start gap-2">
-                          {todo.type === 'ASSIGNMENT' ? (
-                            <FileText className="mt-0.5 h-4 w-4 flex-shrink-0" />
-                          ) : (
-                            <BookOpen className="mt-0.5 h-4 w-4 flex-shrink-0" />
+          <div className="border border-[var(--border)] bg-[var(--bg-card)] p-6">
+            <h3 className="mb-3 text-xl">{t('studentDashboard.todos')}</h3>
+            {!dashboard?.todos?.length ? (
+              <p className="text-sm text-[var(--text-muted)]">{t('studentDashboard.noTodos')}</p>
+            ) : (
+              <ul className="space-y-3 text-sm">
+                {dashboard.todos.map((todo, index) => (
+                  <li key={`${todo.type}-${todo.courseId}-${index}`} className="border border-[var(--border)] p-3">
+                    <Link to={getTodoHref(todo)} className="block hover:text-primary">
+                      <div className="flex items-start gap-2">
+                        {todo.type === 'ASSIGNMENT' ? (
+                          <FileText className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                        ) : (
+                          <BookOpen className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                        )}
+                        <div>
+                          <p className="font-medium">{todo.title}</p>
+                          <p className="text-xs text-[var(--text-muted)]">{todo.courseTitle}</p>
+                          {todo.type === 'CONTINUE_COURSE' && todo.progress != null && (
+                            <p className="text-xs text-primary">
+                              {t('studentDashboard.progress')}: {todo.progress}%
+                            </p>
                           )}
-                          <div>
-                            <p className="font-medium text-slate-900">{todo.title}</p>
-                            <p className="text-xs text-slate-500">{todo.courseTitle}</p>
-                            {todo.type === 'CONTINUE_COURSE' && todo.progress != null && (
-                              <p className="text-xs text-emerald-700">
-                                {t('studentDashboard.progress')}: {todo.progress}%
-                              </p>
-                            )}
-                            {todo.type === 'ASSIGNMENT' && (
-                              <p className="text-xs text-amber-700">{t('studentDashboard.pendingAssignment')}</p>
-                            )}
-                          </div>
+                          {todo.type === 'ASSIGNMENT' && (
+                            <p className="text-xs text-amber-800">{t('studentDashboard.pendingAssignment')}</p>
+                          )}
                         </div>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
-          <Card className="rounded-3xl border-slate-200 shadow-sm">
-            <CardContent className="pt-6">
-              <h3 className="mb-2 font-semibold text-slate-900">{t('studentDashboard.help')}</h3>
-              <p className="text-sm text-slate-600">{t('studentDashboard.helpDesc')}</p>
-            </CardContent>
-          </Card>
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="border border-[var(--border)] bg-[var(--bg-card)] p-6">
+            <h3 className="mb-2 text-xl">{t('studentDashboard.help')}</h3>
+            <p className="text-sm text-[var(--text-secondary)]">{t('studentDashboard.helpDesc')}</p>
+          </div>
         </div>
       </div>
     </div>

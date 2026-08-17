@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Plus, FileText, BookOpen, Video, ClipboardList, Eye, Pencil, Trash2, ExternalLink, Sparkles } from 'lucide-react'
+import { Plus, FileText, BookOpen, Video, ClipboardList, Eye, Pencil, Trash2, ExternalLink } from 'lucide-react'
 import { api } from '@/lib/api'
 import { confirm } from '@/store/confirm-store'
 import { resolveFileUrl, toAbsoluteFileUrl, uploadLessonMaterial } from '@/lib/storage'
+import { PageIntro } from '@/components/PageIntro'
 
 export function TeacherLessonDetailPage() {
   const { lessonId } = useParams<{ lessonId: string }>()
@@ -295,10 +296,7 @@ export function TeacherLessonDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{lesson.title}</h1>
-        <p className="text-gray-600">{lesson.description}</p>
-      </div>
+      <PageIntro kicker="บทเรียน" title={lesson.title} description={lesson.description} />
 
       {quickMessage && (
         <div className={`rounded-xl border px-4 py-3 text-sm ${quickMessage.includes('เรียบร้อย') ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'}`}>
@@ -306,12 +304,9 @@ export function TeacherLessonDetailPage() {
         </div>
       )}
 
-      <Card className="border-indigo-200 bg-emerald-50/50">
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Sparkles className="h-5 w-5 text-emerald-700" />
-            เพิ่มเนื้อหาแบบง่าย
-          </CardTitle>
+          <CardTitle className="text-lg">เพิ่มเนื้อหาแบบง่าย</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <form

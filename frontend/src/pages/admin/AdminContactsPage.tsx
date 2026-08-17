@@ -8,6 +8,7 @@ import { LoadingState } from '@/components/LoadingState'
 import { ErrorState } from '@/components/ErrorState'
 import { EmptyState } from '@/components/EmptyState'
 import { PaginationControls } from '@/components/PaginationControls'
+import { PageIntro } from '@/components/PageIntro'
 import { useTranslation } from '@/lib/i18n'
 
 export function AdminContactsPage() {
@@ -23,10 +24,7 @@ export function AdminContactsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{t('adminDashboard.contacts')}</h1>
-        <p className="text-gray-600">ข้อความจากฟอร์มติดต่อบนเว็บไซต์</p>
-      </div>
+      <PageIntro kicker="ข้อความ" title={t('adminDashboard.contacts')} description="ข้อความจากฟอร์มติดต่อบนเว็บไซต์" />
 
       {!data?.data?.length ? (
         <EmptyState icon={Mail} title="ยังไม่มีข้อความติดต่อ" />

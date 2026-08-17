@@ -14,6 +14,7 @@ import { api } from '@/lib/api'
 import { LoadingState } from '@/components/LoadingState'
 import { ErrorState } from '@/components/ErrorState'
 import { EmptyState } from '@/components/EmptyState'
+import { PageIntro } from '@/components/PageIntro'
 
 interface GradebookEntry {
   student: {
@@ -56,18 +57,19 @@ export function TeacherGradebookPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link to="/teacher/gradebook">
-          <Button variant="outline" size="sm">
-            <ChevronLeft className="mr-1 h-4 w-4" />
-            กลับ
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold">สมุดคะแนน</h1>
-          <p className="text-gray-600">ดูคะแนนของนักเรียนทั้งหมดในคอร์สนี้ — กดดูรายละเอียดเพื่อ drill-down</p>
-        </div>
-      </div>
+      <PageIntro
+        kicker="คะแนน"
+        title="สมุดคะแนน"
+        description="ดูคะแนนของนักเรียนทั้งหมดในคอร์สนี้ — กดดูรายละเอียดเพื่อ drill-down"
+        actions={
+          <Link to="/teacher/gradebook">
+            <Button variant="outline" size="sm" className="rounded-sm">
+              <ChevronLeft className="mr-1 h-4 w-4" />
+              กลับ
+            </Button>
+          </Link>
+        }
+      />
 
       {!gradebook?.length ? (
         <EmptyState

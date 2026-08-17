@@ -18,6 +18,7 @@ import { confirm } from '@/store/confirm-store'
 import { toast } from '@/store/toast-store'
 import { LoadingState } from '@/components/LoadingState'
 import { ErrorState } from '@/components/ErrorState'
+import { PageIntro } from '@/components/PageIntro'
 
 interface Coupon {
   id: string
@@ -120,16 +121,17 @@ export function AdminCouponsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">จัดการคูปอง</h1>
-          <p className="text-gray-600">จัดการคูปองส่วนลดในระบบ</p>
-        </div>
-        <Button onClick={() => setIsAddOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          เพิ่มคูปองใหม่
-        </Button>
-      </div>
+      <PageIntro
+        kicker="ส่วนลด"
+        title="จัดการคูปอง"
+        description="จัดการคูปองส่วนลดในระบบ"
+        actions={
+          <Button className="rounded-sm" onClick={() => setIsAddOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            เพิ่มคูปองใหม่
+          </Button>
+        }
+      />
 
       {!coupons || coupons.length === 0 ? (
         <Card>

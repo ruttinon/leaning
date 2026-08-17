@@ -13,6 +13,7 @@ import { ErrorState } from '@/components/ErrorState'
 import { toast } from '@/store/toast-store'
 import { isApiError } from '@/lib/api-error'
 import { uploadCourseThumbnail } from '@/lib/storage'
+import { PageIntro } from '@/components/PageIntro'
 
 export function TeacherCourseDetailPage() {
   const { courseId } = useParams<{ courseId: string }>()
@@ -128,11 +129,11 @@ export function TeacherCourseDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{course.title}</h1>
-          <p className="text-gray-600">{course.description}</p>
-        </div>
+      <PageIntro
+        kicker="คอร์ส"
+        title={course.title}
+        description={course.description}
+        actions={
         <div className="flex flex-wrap gap-2">
           <Link to={`/teacher/gradebook/${courseId}`}>
             <Button variant="outline"><Award className="h-4 w-4 mr-2" />ดูสมุดคะแนน</Button>
@@ -140,9 +141,10 @@ export function TeacherCourseDetailPage() {
           <Button variant="secondary" onClick={() => submitForReviewMutation.mutate()} disabled={submitForReviewMutation.isPending || course.status === 'PENDING_REVIEW' || course.status === 'PUBLISHED'}>
             {submitForReviewMutation.isPending ? 'กำลังส่ง...' : 'ส่งให้ตรวจสอบ'}
           </Button>
-          <Button onClick={() => setShowAddChapter(true)}><Plus className="h-4 w-4 mr-2" />เพิ่มบท (ขั้นสูง)</Button>
+          <Button className="rounded-sm" onClick={() => setShowAddChapter(true)}><Plus className="h-4 w-4 mr-2" />เพิ่มบท (ขั้นสูง)</Button>
         </div>
-      </div>
+        }
+      />
 
       {statusMessage && (
         <div className={`rounded-xl border px-4 py-3 text-sm ${statusMessage.includes('สำเร็จ') || statusMessage.includes('เรียบร้อย') ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-red-200 bg-red-50 text-red-700'}`}>
@@ -150,7 +152,7 @@ export function TeacherCourseDetailPage() {
         </div>
       )}
 
-      <Card className="border-indigo-200 bg-emerald-50/50">
+      <Card>
         <CardHeader>
           <CardTitle className="text-lg">เพิ่มบทเรียนด่วน</CardTitle>
         </CardHeader>
@@ -187,7 +189,7 @@ export function TeacherCourseDetailPage() {
             <img
               src={course.thumbnailUrl}
               alt={course.title}
-              className="h-40 w-full rounded-xl object-cover"
+              className="h-40 w-full rounded-sm object-cover"
               onError={(event) => {
                 const target = event.currentTarget
                 target.onerror = null
@@ -195,7 +197,7 @@ export function TeacherCourseDetailPage() {
               }}
             />
           ) : (
-            <div className="flex h-40 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">
+            <div className="flex h-40 items-center justify-center rounded-sm border border-dashed border-[var(--border)] bg-[var(--bg-tertiary)] text-sm text-[var(--text-muted)]">
               ยังไม่มีภาพปกคอร์ส
             </div>
           )}

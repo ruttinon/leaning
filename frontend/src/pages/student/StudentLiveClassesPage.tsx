@@ -6,6 +6,7 @@ import { api } from '@/lib/api'
 import { LoadingState } from '@/components/LoadingState'
 import { ErrorState } from '@/components/ErrorState'
 import { EmptyState } from '@/components/EmptyState'
+import { PageIntro } from '@/components/PageIntro'
 import { useTranslation } from '@/lib/i18n'
 
 export function StudentLiveClassesPage() {
@@ -21,10 +22,7 @@ export function StudentLiveClassesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{t('liveClasses.title')}</h1>
-        <p className="text-muted-foreground">{t('liveClasses.studentSubtitle')}</p>
-      </div>
+      <PageIntro kicker="สด" title={t('liveClasses.title')} description={t('liveClasses.studentSubtitle')} />
 
       {!data?.length ? (
         <EmptyState icon={Video} title={t('liveClasses.empty')} description={t('liveClasses.studentEmpty')} />

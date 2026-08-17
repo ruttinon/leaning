@@ -174,7 +174,8 @@ export function StudentQuizPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">{quiz.title}</h1>
+        <p className="kicker">แบบฝึกหัด</p>
+        <h1 className="mt-2 text-4xl">{quiz.title}</h1>
         {quiz.description && <p className="text-gray-600">{quiz.description}</p>}
         <div className="mt-2 flex flex-wrap gap-3 text-sm text-gray-500">
           {quiz.timeLimit && <span>เวลา: {quiz.timeLimit} นาที</span>}

@@ -11,6 +11,7 @@ import { api } from '@/lib/api'
 import { LoadingState } from '@/components/LoadingState'
 import { ErrorState } from '@/components/ErrorState'
 import { EmptyState } from '@/components/EmptyState'
+import { PageIntro } from '@/components/PageIntro'
 import { useTranslation } from '@/lib/i18n'
 
 export function TeacherLiveClassesPage() {
@@ -85,16 +86,17 @@ export function TeacherLiveClassesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{t('liveClasses.title')}</h1>
-          <p className="text-muted-foreground">{t('liveClasses.teacherSubtitle')}</p>
-        </div>
-        <Button onClick={() => { setEditingId(null); setOpen(true) }}>
-          <Plus className="mr-2 h-4 w-4" />
-          {t('liveClasses.create')}
-        </Button>
-      </div>
+      <PageIntro
+        kicker="สด"
+        title={t('liveClasses.title')}
+        description={t('liveClasses.teacherSubtitle')}
+        actions={
+          <Button className="rounded-sm" onClick={() => { setEditingId(null); setOpen(true) }}>
+            <Plus className="mr-2 h-4 w-4" />
+            {t('liveClasses.create')}
+          </Button>
+        }
+      />
 
       {!liveClasses?.length ? (
         <EmptyState icon={Video} title={t('liveClasses.empty')} description={t('liveClasses.emptyDesc')} />

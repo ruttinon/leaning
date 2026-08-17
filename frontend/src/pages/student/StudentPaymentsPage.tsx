@@ -4,6 +4,8 @@ import { ArrowRight, Calendar, CheckCircle2, CreditCard } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { PageIntro } from '@/components/PageIntro'
+import { EmptyState } from '@/components/EmptyState'
 import { api } from '@/lib/api'
 
 interface Payment {
@@ -82,24 +84,20 @@ export function StudentPaymentsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">ประวัติการชำระเงิน</h1>
-        <p className="text-gray-600">ติดตามรายการที่ชำระแล้ว รายการค้าง และกลับมาชำระเงินต่อได้จากหน้านี้</p>
-      </div>
+      <PageIntro
+        kicker="บัญชี"
+        title="ประวัติการชำระเงิน"
+        description="ติดตามรายการที่ชำระแล้ว รายการค้าง และกลับมาชำระเงินต่อได้จากหน้านี้"
+      />
 
       {state.notice && (
-        <div className="rounded-2xl border border-blue-200 bg-emerald-50 px-4 py-3 text-sm text-blue-700">
+        <div className="border border-[var(--border)] bg-[var(--bg-card)] px-4 py-3 text-sm">
           {state.notice}
         </div>
       )}
 
       {!payments || payments.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 pt-6 text-center">
-            <CreditCard className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-            <p className="mb-4 text-gray-500">ยังไม่มีประวัติการชำระเงิน</p>
-          </CardContent>
-        </Card>
+        <EmptyState title="ยังไม่มีประวัติการชำระเงิน" description="เมื่อคุณซื้อคอร์ส รายการจะแสดงที่นี่" />
       ) : (
         <div className="space-y-4">
           {payments.map((payment) => {
@@ -115,7 +113,7 @@ export function StudentPaymentsPage() {
                 <CardContent className="pt-6">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="rounded-lg bg-emerald-100 p-3">
+                      <div className="border border-[var(--border)] p-3">
                         {payment.status === 'COMPLETED' ? (
                           <CheckCircle2 className="h-6 w-6 text-green-600" />
                         ) : (

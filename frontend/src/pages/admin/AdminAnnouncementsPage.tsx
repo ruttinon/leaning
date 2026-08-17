@@ -17,6 +17,7 @@ import { Plus, Edit, Trash2, Bell, Calendar } from 'lucide-react';
 import { api } from '@/lib/api'
 import { LoadingState } from '@/components/LoadingState'
 import { ErrorState } from '@/components/ErrorState'
+import { PageIntro } from '@/components/PageIntro'
 
 interface Announcement {
   id: string;
@@ -107,16 +108,17 @@ export function AdminAnnouncementsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">จัดการประกาศ</h1>
-          <p className="text-gray-600">สร้างและจัดการประกาศให้ผู้ใช้ทุกคน</p>
-        </div>
-        <Button onClick={() => setIsAddOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          เพิ่มประกาศใหม่
-        </Button>
-      </div>
+      <PageIntro
+        kicker="ข่าวสาร"
+        title="จัดการประกาศ"
+        description="สร้างและจัดการประกาศให้ผู้ใช้ทุกคน"
+        actions={
+          <Button className="rounded-sm" onClick={() => setIsAddOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            เพิ่มประกาศใหม่
+          </Button>
+        }
+      />
 
       {!announcements || announcements.length === 0 ? (
         <Card>

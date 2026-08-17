@@ -18,6 +18,7 @@ import { ErrorState } from '@/components/ErrorState'
 import { EmptyState } from '@/components/EmptyState'
 import { TeacherLessonContext, getLessonId } from '@/components/teacher/TeacherLessonContext'
 import { TeacherResourceActions } from '@/components/teacher/TeacherResourceActions'
+import { PageIntro } from '@/components/PageIntro'
 
 interface Assignment {
   id: string
@@ -93,23 +94,24 @@ export function TeacherAssignmentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">{t('teacherDashboard.allAssignments')}</h1>
-          <p className="text-gray-600">{t('teacherDashboard.allAssignmentsDesc')}</p>
-        </div>
-        <div className="flex gap-2">
-          <Link to="/teacher/submissions">
-            <Button variant="outline">ดูงานที่ส่ง</Button>
-          </Link>
-          <Link to="/teacher/courses">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              สร้างในคอร์ส
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <PageIntro
+        kicker="สตูดิโอ"
+        title={t('teacherDashboard.allAssignments')}
+        description={t('teacherDashboard.allAssignmentsDesc')}
+        actions={
+          <div className="flex gap-2">
+            <Link to="/teacher/submissions">
+              <Button variant="outline" className="rounded-sm">ดูงานที่ส่ง</Button>
+            </Link>
+            <Link to="/teacher/courses">
+              <Button className="rounded-sm">
+                <Plus className="mr-2 h-4 w-4" />
+                สร้างในคอร์ส
+              </Button>
+            </Link>
+          </div>
+        }
+      />
 
       {!assignments?.length ? (
         <EmptyState

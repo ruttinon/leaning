@@ -1,28 +1,21 @@
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { PublicShell } from '@/components/PublicShell'
+import { photos } from '@/lib/media'
 
 export function NotFoundPage() {
   return (
-    <div className="flex min-h-[70vh] items-center justify-center px-6 py-12">
-      <div className="w-full max-w-xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
-          404
-        </p>
-        <h1 className="mt-4 text-3xl font-bold text-slate-900">
-          Page not found
-        </h1>
-        <p className="mt-3 text-sm text-slate-600">
-          The link may be outdated or the page may have been moved.
-        </p>
-        <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-          <Link to="/">
-            <Button>Go home</Button>
-          </Link>
-          <Link to="/courses">
-            <Button variant="outline">Browse courses</Button>
-          </Link>
+    <PublicShell>
+      <div className="mx-auto max-w-3xl px-4 py-20 sm:px-6">
+        <img src={photos.library} alt="" className="mb-8 h-56 w-full rounded-sm object-cover" />
+        <p className="kicker">404</p>
+        <h1 className="mt-3 text-5xl">หาหน้านี้ไม่เจอ</h1>
+        <p className="mt-4 text-[var(--text-secondary)]">ลิงก์อาจเก่า หรือหน้าถูกย้ายไปแล้ว</p>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link to="/"><Button className="rounded-sm">กลับหน้าแรก</Button></Link>
+          <Link to="/courses"><Button variant="outline" className="rounded-sm">ดูคอร์ส</Button></Link>
         </div>
       </div>
-    </div>
+    </PublicShell>
   )
 }

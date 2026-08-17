@@ -37,7 +37,8 @@ export default {
         ring: 'var(--primary)',
       },
       fontFamily: {
-        sans: ['Inter', 'Sarabun', 'system-ui', 'sans-serif'],
+        sans: ['"Noto Sans Thai"', '"Noto Sans"', 'system-ui', 'sans-serif'],
+        display: ['"Noto Sans Thai"', '"Noto Sans"', 'system-ui', 'sans-serif'],
       },
     },
   },

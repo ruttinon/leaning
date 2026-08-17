@@ -3,6 +3,8 @@ import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Bell, CheckCircle, Calendar, ExternalLink, X } from 'lucide-react';
 import { api } from '@/lib/api';
+import { PageIntro } from '@/components/PageIntro';
+import { EmptyState } from '@/components/EmptyState';
 
 interface Notification {
   id: string;
@@ -74,30 +76,27 @@ export function NotificationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">การแจ้งเตือน</h1>
-          <p className="text-gray-600">ดูการแจ้งเตือนทั้งหมดของคุณ</p>
-        </div>
-        {notifications && notifications.some(n => !n.isRead) && (
-          <Button
-            variant="outline"
-            onClick={() => markAllReadMutation.mutate()}
-            disabled={markAllReadMutation.isPending}
-          >
-            <CheckCircle className="h-4 w-4 mr-2" />
-            ทำเครื่องหมายทั้งหมดว่าอ่านแล้ว
-          </Button>
-        )}
-      </div>
+      <PageIntro
+        kicker="บัญชี"
+        title="การแจ้งเตือน"
+        description="ดูการแจ้งเตือนทั้งหมดของคุณ"
+        actions={
+          notifications && notifications.some(n => !n.isRead) ? (
+            <Button
+              variant="outline"
+              className="rounded-sm"
+              onClick={() => markAllReadMutation.mutate()}
+              disabled={markAllReadMutation.isPending}
+            >
+              <CheckCircle className="h-4 w-4 mr-2" />
+              ทำเครื่องหมายทั้งหมดว่าอ่านแล้ว
+            </Button>
+          ) : undefined
+        }
+      />
 
       {!notifications || notifications.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6 text-center py-12">
-            <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">ยังไม่มีการแจ้งเตือน</p>
-          </CardContent>
-        </Card>
+        <EmptyState title="ยังไม่มีการแจ้งเตือน" description="เมื่อมีข่าวสารใหม่ จะแสดงที่นี่" />
       ) : (
         <div className="space-y-4">
           {notifications.map((notification) => (

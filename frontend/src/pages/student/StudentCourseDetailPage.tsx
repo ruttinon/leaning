@@ -13,6 +13,9 @@ import { ErrorState } from '@/components/ErrorState'
 import { toast } from '@/store/toast-store'
 import { isApiError } from '@/lib/api-error'
 import { resolveStudentFileUrl, uploadStudentAssignment } from '@/lib/storage'
+import { PageIntro } from '@/components/PageIntro'
+import { Photo } from '@/components/media/Photo'
+import { resolveCover } from '@/lib/media'
 
 export function StudentCourseDetailPage() {
   const { courseId } = useParams<{ courseId: string }>()
@@ -80,10 +83,10 @@ export function StudentCourseDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{course?.title}</h1>
-        <p className="text-gray-600">{course?.description}</p>
+      <div className="overflow-hidden rounded-sm">
+        <Photo src={resolveCover(course?.thumbnailUrl, courseId)} alt="" className="aspect-[21/8]" />
       </div>
+      <PageIntro kicker="คอร์ส" title={course?.title || ''} description={course?.description} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-1">
@@ -160,7 +163,7 @@ export function StudentCourseDetailPage() {
                           <Link
                             key={material.id}
                             to={`/student/materials/${material.id}`}
-                            className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 transition-colors hover:bg-gray-100"
+                            className="flex items-center gap-3 border border-[var(--border)] p-3 transition-colors hover:bg-[var(--bg-secondary)]"
                           >
                             <FileText className="h-5 w-5 text-red-500" />
                             <span>{material.title}</span>
@@ -170,7 +173,7 @@ export function StudentCourseDetailPage() {
                             key={material.id}
                             type="button"
                             onClick={() => openFile(material.fileUrl)}
-                            className="flex w-full items-center gap-3 rounded-lg bg-gray-50 p-3 text-left transition-colors hover:bg-gray-100"
+                            className="flex w-full items-center gap-3 border border-[var(--border)] p-3 text-left transition-colors hover:bg-[var(--bg-secondary)]"
                           >
                             {material.type === 'video' ? (
                               <Video className="h-5 w-5 text-blue-500" />
@@ -197,7 +200,7 @@ export function StudentCourseDetailPage() {
                       {lesson.lesson.quizzes.map((quiz: any) => (
                         <div
                           key={quiz.id}
-                          className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
+                          className="flex items-center justify-between border border-[var(--border)] p-3"
                         >
                           <div className="flex items-center gap-3">
                             <BookOpen className="h-5 w-5 text-yellow-500" />
@@ -226,7 +229,7 @@ export function StudentCourseDetailPage() {
                         const submission = assignment.submissions?.[0]
 
                         return (
-                          <div key={assignment.id} className="rounded-lg bg-gray-50 p-3">
+                          <div key={assignment.id} className="border border-[var(--border)] p-3">
                             <div className="mb-2 flex items-center justify-between">
                               <div className="flex items-center gap-3">
                                 <ClipboardList className="h-5 w-5 text-blue-500" />

@@ -9,7 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Camera, Save, User, Lock, Mail, Phone, MapPin, GraduationCap, BookOpen, Award, Briefcase, Zap, CheckCircle2, AlertCircle, Loader2, Sparkles } from 'lucide-react'
+import { Camera, Save, User, Lock, Mail, Phone, MapPin, GraduationCap, BookOpen, Award, Briefcase, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
+import { PageIntro } from '@/components/PageIntro'
+import { photos } from '@/lib/media'
 import { api, API_BASE_URL } from '@/lib/api'
 import { uploadAvatar } from '@/lib/storage'
 import { useAuthStore } from '@/store/auth-store'
@@ -182,39 +184,24 @@ export function ProfilePage() {
   const isTeacher = user?.role === 'TEACHER'
   
   return (
-    <div className={`min-h-screen px-4 py-8 sm:px-6 lg:px-8 ${theme === 'dark' ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
-      <div className="mx-auto max-w-5xl space-y-8">
-        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300">
-                <Sparkles className="h-4 w-4" />
-                จัดการบัญชีของคุณ
-              </div>
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">โปรไฟล์ของฉัน</h1>
-              <p className={`mt-2 text-lg ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>ดูและอัปเดตข้อมูลส่วนตัวของคุณให้พร้อมใช้งานตลอดเวลา</p>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-700/60">
-                <p className="text-sm text-slate-500">สถานะบัญชี</p>
-                <p className="mt-1 font-semibold">{isStudent ? 'นักเรียน' : isTeacher ? 'ครู' : 'ผู้ดูแลระบบ'}</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-700/60">
-                <p className="text-sm text-slate-500">ความปลอดภัย</p>
-                <p className="mt-1 font-semibold">ปลอดภัยและพร้อมใช้งาน</p>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="space-y-8">
+      <PageIntro
+        kicker="บัญชี"
+        title="โปรไฟล์ของฉัน"
+        description="ดูและอัปเดตข้อมูลส่วนตัวของคุณให้พร้อมใช้งานตลอดเวลา"
+      />
         
-        <Card className={`overflow-hidden border-0 shadow-lg ${theme === 'dark' ? 'bg-slate-800' : 'bg-white'}`}>
-          <div className="h-32 bg-gradient-to-r from-primary via-green-600 to-amber-600"></div>
+        <Card className="overflow-hidden">
+          <div className="relative h-32 overflow-hidden">
+            <img src={photos.heroStudy} alt="" className="h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-[var(--primary-dark)]/35" />
+          </div>
           <CardHeader className="-mt-16 pb-4">
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-end">
               <div className="group relative">
-                <Avatar className="h-32 w-32 border-4 border-background shadow-xl">
+                <Avatar className="h-32 w-32 border-4 border-[var(--bg-card)]">
                   <AvatarImage src={getAvatarUrl() || ''} alt="Profile" />
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-green-600 text-3xl text-white">
+                  <AvatarFallback className="bg-[var(--primary)] text-3xl text-white">
                     {getInitials()}
                   </AvatarFallback>
                 </Avatar>
@@ -277,10 +264,7 @@ export function ProfilePage() {
                 <form onSubmit={handleProfileSubmit} className="space-y-8">
                   {/* Personal Information */}
                   <div className="space-y-6">
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-yellow-500" />
-                      ข้อมูลพื้นฐาน
-                    </h3>
+                    <h3 className="text-lg font-semibold">ข้อมูลพื้นฐาน</h3>
                     <Separator />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
@@ -595,7 +579,6 @@ export function ProfilePage() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
     </div>
   )
 }

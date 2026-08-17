@@ -1,9 +1,10 @@
 import { LucideIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { photos } from '@/lib/media'
 import { cn } from '@/lib/utils'
 
 interface EmptyStateProps {
-  icon: LucideIcon
+  icon?: LucideIcon
   title: string
   description?: string
   actionLabel?: string
@@ -12,7 +13,6 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({
-  icon: Icon,
   title,
   description,
   actionLabel,
@@ -20,15 +20,15 @@ export function EmptyState({
   className,
 }: EmptyStateProps) {
   return (
-    <div className={cn('flex flex-col items-center justify-center gap-4 py-16 text-center', className)}>
-      <div className="rounded-full bg-emerald-50 p-4 dark:bg-emerald-950/30">
-        <Icon className="h-8 w-8 text-emerald-700" />
-      </div>
-      <div>
-        <h3 className="font-semibold text-foreground">{title}</h3>
-        {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
-      </div>
-      {actionLabel && onAction && <Button onClick={onAction}>{actionLabel}</Button>}
+    <div className={cn('mx-auto flex max-w-md flex-col items-center py-16 text-center', className)}>
+      <img src={photos.emptyDesk} alt="" className="mb-6 h-40 w-full rounded-sm object-cover" />
+      <h3 className="text-2xl">{title}</h3>
+      {description && <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">{description}</p>}
+      {actionLabel && onAction && (
+        <Button className="mt-5 rounded-sm" onClick={onAction}>
+          {actionLabel}
+        </Button>
+      )}
     </div>
   )
 }

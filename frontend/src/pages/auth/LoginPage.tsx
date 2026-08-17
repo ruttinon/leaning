@@ -1,17 +1,15 @@
 import { useState } from 'react'
-import { Navbar } from '@/components/layout/Navbar'
-import { Footer } from '@/components/layout/Footer'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { PublicShell } from '@/components/PublicShell'
+import { Photo } from '@/components/media/Photo'
+import { photos } from '@/lib/media'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '@/store/auth-store'
-import { useAppStore } from '@/store/theme-store'
 import { api } from '@/lib/api'
 import { useTranslation } from '@/lib/i18n'
 import { Separator } from '@/components/ui/separator'
-import { ArrowRight, ShieldCheck, Sparkles } from 'lucide-react'
 
 interface AuthResponse {
   access_token: string;
@@ -39,7 +37,6 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const login = useAuthStore((state) => state.login)
-  const { theme } = useAppStore()
   const { t } = useTranslation()
   const sessionExpired = searchParams.get('session') === 'expired'
 
@@ -73,128 +70,97 @@ export function LoginPage() {
   }
 
   return (
-    <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
-      <Navbar />
-      
-      <main className="flex-1 py-16 md:py-24">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
-          <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-emerald-800 via-green-700 to-amber-700 p-8 text-white shadow-2xl">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-sm backdrop-blur">
-              <Sparkles className="h-4 w-4" />
-              {t('login.secureBadge')}
-            </div>
-            <h1 className="text-3xl font-bold md:text-4xl">{t('login.welcomeBack')}</h1>
-            <p className="mt-4 text-lg text-emerald-50">{t('login.welcomeDesc')}</p>
-            <div className="mt-8 flex items-center gap-2 rounded-2xl bg-white/15 p-4 text-sm backdrop-blur">
-              <ShieldCheck className="h-5 w-5" />
-              {t('login.secureNote')}
+    <PublicShell>
+      <div className="mx-auto grid max-w-6xl gap-0 px-4 py-12 sm:px-6 lg:grid-cols-2 lg:py-16">
+        <div className="relative hidden min-h-[520px] overflow-hidden rounded-sm lg:block">
+          <Photo src={photos.heroStudy} alt="" className="absolute inset-0 h-full w-full" zoom={false} />
+          <div className="absolute inset-0 bg-[var(--primary-dark)]/45" />
+          <div className="absolute inset-0 flex flex-col justify-end p-10 text-white">
+            <p className="kicker text-white/80">{t('login.secureBadge')}</p>
+            <h1 className="mt-3 text-4xl">{t('login.welcomeBack')}</h1>
+            <p className="mt-3 max-w-sm text-white/85">{t('login.welcomeDesc')}</p>
+          </div>
+        </div>
+
+        <div className="space-y-6 border border-[var(--border)] bg-[var(--bg-card)] p-8 lg:border-l-0">
+          <div>
+            <h2 className="text-3xl">{t('login.title')}</h2>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">{t('login.subtitle')}</p>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">{t('common.demoAccounts')}</Label>
+            <div className="grid grid-cols-1 gap-2">
+              {demoAccounts.map((account) => (
+                <Button
+                  key={account.email}
+                  variant="outline"
+                  className="w-full justify-start rounded-sm text-left"
+                  onClick={() => handleLogin(account.email, account.password)}
+                  disabled={loading}
+                >
+                  <span className="font-medium">{account.label}</span>
+                  <span className="ml-auto text-xs text-[var(--text-muted)]">{account.email}</span>
+                </Button>
+              ))}
             </div>
           </div>
 
-          <Card className={`rounded-3xl border shadow-xl ${theme === 'dark' ? 'border-slate-700 bg-slate-800' : 'border-slate-200 bg-white'}`}>
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl">{t('login.title')}</CardTitle>
-              <CardDescription className={theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}>
-                {t('login.subtitle')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label className={`text-sm font-semibold ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>🎮 {t('common.demoAccounts')}</Label>
-                <div className="grid grid-cols-1 gap-2">
-                  {demoAccounts.map((account) => (
-                    <Button
-                      key={account.email}
-                      variant="outline"
-                      className="w-full justify-start text-left"
-                      onClick={() => handleLogin(account.email, account.password)}
-                      disabled={loading}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white ${
-                          account.role === 'ADMIN' ? 'bg-red-600' :
-                          account.role === 'TEACHER' ? 'bg-green-600' : 'bg-emerald-700'
-                        }`}>
-                          {account.role[0]}
-                        </div>
-                        <div>
-                          <p className="font-medium">{account.label}</p>
-                          <p className="text-xs text-slate-500">{account.email}</p>
-                        </div>
-                      </div>
-                    </Button>
-                  ))}
+          <Separator />
+
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">{t('login.manualLogin')}</Label>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {sessionExpired && (
+                <div className="border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
+                  {t('login.sessionExpired')}
                 </div>
-              </div>
-
-              <Separator />
-
+              )}
+              {error && (
+                <div className="border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>
+              )}
               <div className="space-y-2">
-                <Label className={`text-sm font-semibold ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>🔑 {t('login.manualLogin')}</Label>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {sessionExpired && (
-                    <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
-                      {t('login.sessionExpired')}
-                    </div>
-                  )}
-                  {error && (
-                    <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-red-700">
-                      {error}
-                    </div>
-                  )}
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email">{t('common.email')}</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      autoComplete="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      placeholder="example@email.com"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="password">{t('common.password')}</Label>
-                      <Link to="/forgot-password" className="text-sm text-primary hover:underline">
-                        {t('common.forgotPassword')}
-                      </Link>
-                    </div>
-                    <Input
-                      id="password"
-                      type="password"
-                      autoComplete="current-password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      placeholder="••••••••"
-                    />
-                  </div>
-                  
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? t('login.loggingIn') : t('login.title')}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </form>
+                <Label htmlFor="email">{t('common.email')}</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="example@email.com"
+                />
               </div>
-
-              <div className="text-center">
-                <p className={`text-sm ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
-                  ยังไม่มีบัญชี?{' '}
-                  <Link to="/register" className="font-medium text-primary hover:underline">
-                    สมัครสมาชิก
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">{t('common.password')}</Label>
+                  <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                    {t('common.forgotPassword')}
                   </Link>
-                </p>
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="••••••••"
+                />
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      </main>
+              <Button type="submit" className="w-full rounded-sm" disabled={loading}>
+                {loading ? t('login.loggingIn') : t('login.title')}
+              </Button>
+            </form>
+          </div>
 
-      <Footer />
-    </div>
+          <p className="text-center text-sm text-[var(--text-muted)]">
+            ยังไม่มีบัญชี?{' '}
+            <Link to="/register" className="font-medium text-primary hover:underline">
+              สมัครสมาชิก
+            </Link>
+          </p>
+        </div>
+      </div>
+    </PublicShell>
   )
 }

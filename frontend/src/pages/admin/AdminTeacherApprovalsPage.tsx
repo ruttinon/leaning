@@ -8,6 +8,7 @@ import { ErrorState } from '@/components/ErrorState'
 import { confirm } from '@/store/confirm-store'
 import { toast } from '@/store/toast-store'
 import { isApiError } from '@/lib/api-error'
+import { PageIntro } from '@/components/PageIntro'
 
 export function AdminTeacherApprovalsPage() {
   const queryClient = useQueryClient()
@@ -45,10 +46,7 @@ export function AdminTeacherApprovalsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">อนุมัติครู</h1>
-        <p className="text-gray-600">ตรวจสอบและอนุมัติครูใหม่</p>
-      </div>
+      <PageIntro kicker="คิวงาน" title="อนุมัติครู" description="ตรวจสอบและอนุมัติครูใหม่" />
 
       {!teachers?.length ? (
         <Card>

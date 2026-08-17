@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { PageIntro } from '@/components/PageIntro'
 import { api } from '@/lib/api'
 
 interface ScoresData {
@@ -19,10 +20,7 @@ export function StudentScoresPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">คะแนน</h1>
-        <p className="text-gray-600">ดูคะแนนของคุณ</p>
-      </div>
+      <PageIntro kicker="ผลงาน" title="คะแนน" description="ดูคะแนนของคุณ" />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Quiz Scores */}
@@ -36,7 +34,7 @@ export function StudentScoresPage() {
             ) : (
               <div className="space-y-4">
                 {scores.quizAttempts.map((attempt: any) => (
-                  <div key={attempt.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div key={attempt.id} className="flex items-center justify-between border border-[var(--border)] p-4">
                     <div>
                       <p className="font-medium">{attempt.quiz?.title}</p>
                       <p className="text-sm text-gray-500">{attempt.quiz?.lesson?.chapter?.course?.title}</p>
@@ -64,7 +62,7 @@ export function StudentScoresPage() {
             ) : (
               <div className="space-y-4">
                 {scores.assignmentSubmissions.map((submission: any) => (
-                  <div key={submission.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div key={submission.id} className="flex items-center justify-between border border-[var(--border)] p-4">
                     <div>
                       <p className="font-medium">{submission.assignment?.title}</p>
                       <p className="text-sm text-gray-500">{submission.assignment?.lesson?.chapter?.course?.title}</p>

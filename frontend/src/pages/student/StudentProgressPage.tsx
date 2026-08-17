@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { PageIntro } from '@/components/PageIntro'
+import { EmptyState } from '@/components/EmptyState'
 import { api } from '@/lib/api'
 
 export function StudentProgressPage() {
@@ -14,17 +16,10 @@ export function StudentProgressPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">ความก้าวหน้า</h1>
-        <p className="text-gray-600">ติดตามความก้าวหน้าการเรียนของคุณ</p>
-      </div>
+      <PageIntro kicker="ติดตาม" title="ความก้าวหน้า" description="ติดตามความก้าวหน้าการเรียนของคุณ" />
 
       {!progress || progress.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6 text-center py-12">
-            <p className="text-gray-500">คุณยังไม่ได้ลงทะเบียนคอร์ส</p>
-          </CardContent>
-        </Card>
+        <EmptyState title="ยังไม่ได้ลงทะเบียนคอร์ส" description="เมื่อเริ่มเรียนแล้ว ความก้าวหน้าจะปรากฏที่นี่" />
       ) : (
         <div className="space-y-6">
           {progress.map((item: any) => (
@@ -37,11 +32,11 @@ export function StudentProgressPage() {
                   <span className="text-gray-600">
                     บทเรียนที่เสร็จ: {item.completedLessons}/{item.totalLessons}
                   </span>
-                  <span className="text-2xl font-bold text-emerald-700">{item.progress}%</span>
+                  <span className="text-3xl font-semibold text-[var(--primary)]">{item.progress}%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-4">
+                <div className="h-1 w-full bg-[var(--bg-tertiary)]">
                   <div
-                    className="bg-emerald-700 h-4 rounded-full transition-all duration-500"
+                    className="h-1 bg-[var(--primary)] transition-all duration-500"
                     style={{ width: `${item.progress}%` }}
                   />
                 </div>

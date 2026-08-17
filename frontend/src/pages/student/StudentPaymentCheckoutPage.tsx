@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { api } from '@/lib/api'
+import { PageIntro } from '@/components/PageIntro'
 import { isStripeClientConfigured, stripePromise } from '@/lib/stripe'
 import { useTranslation } from '@/lib/i18n'
 
@@ -233,15 +234,16 @@ export function StudentPaymentCheckoutPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{t('checkout.title')}</h1>
-          <p className="text-gray-600">{t('checkout.subtitle')}</p>
-        </div>
-        <Button variant="outline" onClick={() => navigate('/student/payments')}>
-          {t('checkout.backToPayments')}
-        </Button>
-      </div>
+      <PageIntro
+        kicker="ชำระเงิน"
+        title={t('checkout.title')}
+        description={t('checkout.subtitle')}
+        actions={
+          <Button variant="outline" className="rounded-sm" onClick={() => navigate('/student/payments')}>
+            {t('checkout.backToPayments')}
+          </Button>
+        }
+      />
 
       {state.notice && (
         <div className="rounded-2xl border border-blue-200 bg-emerald-50 px-4 py-3 text-sm text-blue-700">

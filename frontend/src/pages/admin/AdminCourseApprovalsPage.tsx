@@ -1,7 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { BookOpen, CheckCircle, XCircle, Clock3, Sparkles } from 'lucide-react'
+import { CheckCircle, XCircle, Clock3 } from 'lucide-react'
+import { PageIntro } from '@/components/PageIntro'
+import { Photo } from '@/components/media/Photo'
+import { resolveCover } from '@/lib/media'
 import { api } from '@/lib/api'
 import { LoadingState } from '@/components/LoadingState'
 import { ErrorState } from '@/components/ErrorState'
@@ -45,17 +48,7 @@ export function AdminCourseApprovalsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-3xl border border-slate-200 bg-gradient-to-r from-slate-900 to-slate-700 p-6 text-white">
-        <div className="flex items-center gap-3">
-          <div className="rounded-2xl bg-white/10 p-2">
-            <Sparkles className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">อนุมัติคอร์ส</h1>
-            <p className="text-sm text-slate-300">ตรวจสอบและอนุมัติคอร์สใหม่ให้กับผู้เรียน</p>
-          </div>
-        </div>
-      </div>
+      <PageIntro kicker="คิวงาน" title="อนุมัติคอร์ส" description="ตรวจสอบและอนุมัติคอร์สใหม่ให้กับผู้เรียน" />
 
       {!courses?.length ? (
         <Card>
@@ -70,9 +63,12 @@ export function AdminCourseApprovalsPage() {
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start space-x-4">
-                    <div className="rounded-lg bg-emerald-100 p-3">
-                      <BookOpen className="h-6 w-6 text-emerald-700" />
-                    </div>
+                    <Photo
+                      src={resolveCover(course.thumbnailUrl, course.id)}
+                      alt=""
+                      className="h-20 w-28 rounded-sm"
+                      zoom={false}
+                    />
                     <div>
                       <h3 className="font-semibold">{course.title}</h3>
                       <p className="text-sm text-gray-500">

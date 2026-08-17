@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Navbar } from '../../components/layout/Navbar'
-import { Footer } from '../../components/layout/Footer'
+import { AuthFrame } from '@/components/AuthFrame'
+import { photos } from '@/lib/media'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
@@ -55,23 +55,14 @@ export function RegisterStudentPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-1 flex items-center justify-center py-12 px-4 bg-gray-50">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">สมัครเป็นนักเรียน</h1>
-            <p className="text-gray-600">สร้างบัญชีเพื่อเริ่มการเรียนรู้</p>
-          </div>
-          
-          <div className="bg-white rounded-xl shadow-md p-8">
+    <AuthFrame image={photos.heroStudy} kicker="นักเรียน" title="สมัครเป็นนักเรียน">
             {error && (
-              <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-md">
+              <div className="mb-6 border border-red-200 bg-red-50 p-4 text-red-600">
                 {error}
               </div>
             )}
             
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="firstName">ชื่อ</Label>
@@ -149,23 +140,17 @@ export function RegisterStudentPage() {
                 />
               </div>
               
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full rounded-sm" disabled={isLoading}>
                 {isLoading ? 'กำลังสมัคร...' : 'สมัครสมาชิก'}
               </Button>
             </form>
             
-            <div className="mt-6 text-center">
-              <p className="text-gray-600">
+            <p className="mt-6 text-center text-sm text-[var(--text-muted)]">
                 มีบัญชีอยู่แล้ว?{' '}
-                <Link to="/login" className="text-primary hover:underline font-medium">
+                <Link to="/login" className="font-medium text-primary hover:underline">
                   เข้าสู่ระบบ
                 </Link>
-              </p>
-            </div>
-          </div>
-        </div>
-      </main>
-      <Footer />
-    </div>
+            </p>
+    </AuthFrame>
   )
 }

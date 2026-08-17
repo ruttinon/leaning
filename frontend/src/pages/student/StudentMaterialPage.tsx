@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { PdfReader } from '@/components/PdfReader'
 import { api } from '@/lib/api'
+import { PageIntro } from '@/components/PageIntro'
 import { resolveStudentFileUrl } from '@/lib/storage'
 
 interface Material {
@@ -57,10 +58,7 @@ export function StudentMaterialPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{material.title}</h1>
-        {material.description && <p className="text-gray-600">{material.description}</p>}
-      </div>
+      <PageIntro kicker="เอกสาร" title={material.title} description={material.description || undefined} />
 
       {material.type === 'pdf' && resolvedUrl ? (
         <Card>

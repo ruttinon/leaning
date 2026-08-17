@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { api } from '@/lib/api'
 import { uploadLessonMaterial } from '@/lib/storage'
-import { Plus, Trash2, Sparkles, ChevronRight, ChevronLeft, CheckCircle2 } from 'lucide-react'
+import { Plus, Trash2, ChevronRight, ChevronLeft, CheckCircle2 } from 'lucide-react'
+import { PageIntro } from '@/components/PageIntro'
 
 interface LessonDraft {
   key: string
@@ -124,24 +125,20 @@ export function QuickCreateCoursePage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div className="rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 to-purple-50 p-6">
-        <div className="mb-2 flex items-center gap-2 text-emerald-800">
-          <Sparkles className="h-5 w-5" />
-          <span className="font-semibold">สร้างคอร์สแบบง่าย</span>
-        </div>
-        <p className="text-sm text-slate-600">
-          ทำครบในหน้าเดียว — ไม่ต้องแยกสร้างบท → หัวข้อ → เอกสาร → ข้อสอบทีละหน้า
-        </p>
-        <div className="mt-4 flex gap-2 text-sm">
+      <PageIntro
+        kicker="สร้างคอร์ส"
+        title="สร้างคอร์สแบบง่าย"
+        description="ทำครบในหน้าเดียว — ไม่ต้องแยกสร้างบท หัวข้อ เอกสาร และข้อสอบทีละหน้า"
+      />
+      <div className="flex gap-2 text-sm">
           {[1, 2, 3].map((n) => (
             <span
               key={n}
-              className={`rounded-full px-3 py-1 ${step === n ? 'bg-emerald-700 text-white' : step > n ? 'bg-emerald-100 text-emerald-700' : 'bg-white text-slate-500'}`}
+              className={`px-3 py-1 ${step === n ? 'bg-[var(--primary)] text-white' : step > n ? 'bg-[var(--bg-tertiary)] text-[var(--primary)]' : 'border border-[var(--border)] text-[var(--text-muted)]'}`}
             >
               {n}. {n === 1 ? 'ข้อมูลคอร์ส' : n === 2 ? 'บทเรียน' : 'ยืนยัน'}
             </span>
           ))}
-        </div>
       </div>
 
       {error && (

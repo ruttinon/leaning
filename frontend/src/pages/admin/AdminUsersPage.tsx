@@ -9,6 +9,7 @@ import { api } from '@/lib/api'
 import { PaginationControls } from '@/components/PaginationControls'
 import { LoadingState } from '@/components/LoadingState'
 import { ErrorState } from '@/components/ErrorState'
+import { PageIntro } from '@/components/PageIntro'
 
 interface User {
   id: string
@@ -73,10 +74,7 @@ export function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">จัดการผู้ใช้</h1>
-        <p className="text-gray-600">จัดการผู้ใช้ทั้งหมดในระบบ</p>
-      </div>
+      <PageIntro kicker="ผู้ใช้" title="จัดการผู้ใช้" description="จัดการผู้ใช้ทั้งหมดในระบบ" />
 
       {!users || users.length === 0 ? (
         <Card>
@@ -94,7 +92,7 @@ export function AdminUsersPage() {
                   <div className="flex items-center gap-4">
                     <Avatar>
                       <AvatarImage src={getAvatarUrl(user) || ''} />
-                      <AvatarFallback className="bg-gradient-to-br from-primary to-green-600 text-white">
+                      <AvatarFallback className="bg-[var(--primary)] text-white">
                         {user.firstName.charAt(0)}
                         {user.lastName.charAt(0)}
                       </AvatarFallback>

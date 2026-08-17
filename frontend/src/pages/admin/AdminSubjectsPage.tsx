@@ -17,6 +17,7 @@ import { BookOpen, Plus, Edit, Trash2 } from 'lucide-react'
 import { api } from '@/lib/api'
 import { LoadingState } from '@/components/LoadingState'
 import { ErrorState } from '@/components/ErrorState'
+import { PageIntro } from '@/components/PageIntro'
 
 interface Subject {
   id: string
@@ -119,16 +120,17 @@ export function AdminSubjectsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">จัดการวิชา</h1>
-          <p className="text-gray-600">จัดการวิชาในระบบ</p>
-        </div>
-        <Button onClick={() => setIsAddOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          เพิ่มวิชาใหม่
-        </Button>
-      </div>
+      <PageIntro
+        kicker="วิชา"
+        title="จัดการวิชา"
+        description="จัดการวิชาในระบบ"
+        actions={
+          <Button className="rounded-sm" onClick={() => setIsAddOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            เพิ่มวิชาใหม่
+          </Button>
+        }
+      />
 
       {!subjects || subjects.length === 0 ? (
         <Card>

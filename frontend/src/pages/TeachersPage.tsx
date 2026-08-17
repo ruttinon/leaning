@@ -1,63 +1,55 @@
-import { Link } from 'react-router-dom';
-import { Navbar } from '../components/layout/Navbar';
-import { Footer } from '../components/layout/Footer';
-import { Users } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { api } from '../lib/api';
+import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { PublicShell } from '@/components/PublicShell'
+import { Photo } from '@/components/media/Photo'
+import { LoadingState } from '@/components/LoadingState'
+import { api } from '@/lib/api'
+import { photos, portraitFor } from '@/lib/media'
 
 interface Teacher {
-  id: string;
-  user: any;
-  bio: string;
-  qualifications?: string;
-  experience?: string;
-  specialization?: string;
-  courses?: any[];
+  id: string
+  user: any
+  bio: string
+  specialization?: string
 }
 
 export function TeachersPage() {
   const { data: teachers, isLoading, error } = useQuery<Teacher[]>({
     queryKey: ['teachers'],
     queryFn: async () => await api.get('/public/teachers'),
-  });
+  })
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar />
-      <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-10 text-center">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">ครูผู้สอนทั้งหมด</h1>
-          <p className="text-lg text-gray-600">พบครูที่มีความเชี่ยวชาญตามสาขา!</p>
-        </div>
-
-        {isLoading && <div className="text-center py-12 text-gray-600">กำลังโหลด...</div>}
-        {error && <div className="text-center py-12 text-red-600">เกิดข้อผิดพลาด: {String(error)}</div>}
+    <PublicShell>
+      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+        <p className="kicker">ครูผู้สอน</p>
+        <h1 className="mt-3 max-w-xl text-5xl">คนที่อยู่หลังบทเรียน</h1>
+        <p className="mt-4 max-w-lg text-[var(--text-secondary)]">พบครูที่มีความเชี่ยวชาญตามสาขา — เลือกจากใบหน้าและเรื่องราว ไม่ใช่ไอคอน</p>
+      </section>
+      <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+        {isLoading && <LoadingState />}
+        {error && <p className="text-[var(--danger)]">เกิดข้อผิดพลาด: {String(error)}</p>}
         {!isLoading && !error && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {teachers?.map((teacher) => (
-              <Link key={teacher.id} to={`/teachers/${teacher.id}`} className="block">
-                <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                  <div className="h-40 bg-gradient-to-br from-green-100 to-teal-100 flex items-center justify-center">
-                    <Users className="h-16 w-16 text-green-600" />
-                  </div>
-                  <div className="p-6 text-center">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                      {teacher.user?.firstName} {teacher.user?.lastName}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-3">{teacher.bio}</p>
-                    {teacher.specialization && (
-                      <div className="text-sm text-gray-500 mb-4">
-                        เชี่ยวชาญ: {teacher.specialization}
-                      </div>
-                    )}
-                  </div>
-                </div>
+              <Link key={teacher.id} to={`/teachers/${teacher.id}`} className="group block">
+                <Photo
+                  src={teacher.user?.avatarUrl || portraitFor(teacher.id)}
+                  alt={`${teacher.user?.firstName || ''} ${teacher.user?.lastName || ''}`}
+                  className="aspect-[3/4] rounded-sm"
+                />
+                <h3 className="mt-4 text-2xl group-hover:text-[var(--primary)]">
+                  {teacher.user?.firstName} {teacher.user?.lastName}
+                </h3>
+                {teacher.specialization && (
+                  <p className="text-xs uppercase tracking-[0.16em] text-[var(--text-muted)]">{teacher.specialization}</p>
+                )}
+                <p className="mt-2 line-clamp-3 text-sm leading-6 text-[var(--text-secondary)]">{teacher.bio}</p>
               </Link>
             ))}
           </div>
         )}
-      </main>
-      <Footer />
-    </div>
-  );
+      </section>
+    </PublicShell>
+  )
 }

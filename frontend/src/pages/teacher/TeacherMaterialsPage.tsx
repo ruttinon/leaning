@@ -19,6 +19,7 @@ import { ErrorState } from '@/components/ErrorState'
 import { EmptyState } from '@/components/EmptyState'
 import { TeacherLessonContext, getLessonId } from '@/components/teacher/TeacherLessonContext'
 import { TeacherResourceActions } from '@/components/teacher/TeacherResourceActions'
+import { PageIntro } from '@/components/PageIntro'
 
 interface Material {
   id: string
@@ -109,18 +110,19 @@ export function TeacherMaterialsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">{t('teacherDashboard.allMaterials')}</h1>
-          <p className="text-gray-600">{t('teacherDashboard.allMaterialsDesc')}</p>
-        </div>
-        <Link to="/teacher/courses">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            อัปโหลดในคอร์ส
-          </Button>
-        </Link>
-      </div>
+      <PageIntro
+        kicker="สตูดิโอ"
+        title={t('teacherDashboard.allMaterials')}
+        description={t('teacherDashboard.allMaterialsDesc')}
+        actions={
+          <Link to="/teacher/courses">
+            <Button className="rounded-sm">
+              <Plus className="mr-2 h-4 w-4" />
+              อัปโหลดในคอร์ส
+            </Button>
+          </Link>
+        }
+      />
 
       {!materials?.length ? (
         <EmptyState

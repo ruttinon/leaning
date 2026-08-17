@@ -15,6 +15,7 @@ import { resolveFileUrl } from '@/lib/storage'
 import { toast } from '@/store/toast-store'
 import { isApiError } from '@/lib/api-error'
 import { useTranslation } from '@/lib/i18n'
+import { PageIntro } from '@/components/PageIntro'
 
 interface Submission {
   id: string
@@ -116,10 +117,7 @@ export function TeacherSubmissionsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{t('submissions.title')}</h1>
-        <p className="text-gray-600">{t('submissions.subtitle')}</p>
-      </div>
+      <PageIntro kicker="ตรวจงาน" title={t('submissions.title')} description={t('submissions.subtitle')} />
 
       {!submissions?.length ? (
         <EmptyState
