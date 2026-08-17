@@ -172,7 +172,26 @@ npm run e2e:ui      # Playwright UI smoke
 
 2. **Access**
    - Frontend: http://localhost:8080
-   - Backend API: http://localhost:3000
+   - Backend API: http://localhost:5000
+
+### Deploy to the internet (Render)
+
+โปรเจกต์พร้อมขึ้นเว็บจาก GitHub แล้ว กดลิงก์นี้แล้วล็อกอินด้วย GitHub:
+
+**https://render.com/deploy?repo=https://github.com/ruttinon/leaning**
+
+1. กด **Apply** ให้สร้างเว็บ `edupro` กับฐานข้อมูล PostgreSQL
+2. รอ build ครั้งแรกประมาณ 5–10 นาที
+3. เปิด URL ที่ Render ให้ เช่น `https://edupro.onrender.com`
+
+บัญชีทดลองชุดเดียวกับเครื่องตัวเอง:
+- `student@example.com` / `student1234`
+- `teacher@example.com` / `teacher1234`
+- `admin@example.com` / `admin1234`
+
+ครั้งถัดไปแค่ `git push` ขึ้น `main` เว็บจะอัปเดตเอง
+
+Render ต้องผูกบัตรสำหรับฐานข้อมูล (แพ็กเกจเล็กสุด) ถ้ายังไม่พร้อม ใช้ PostgreSQL ฟรีจาก [Neon](https://neon.tech) แล้วใส่ `DATABASE_URL` ใน Environment ของเว็บบน Render แทนได้
 
 ## 📁 Project Structure
 ```

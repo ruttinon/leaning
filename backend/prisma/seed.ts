@@ -12,6 +12,14 @@ async function main() {
     return
   }
 
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: 'admin@example.com' },
+  })
+  if (existingAdmin) {
+    console.log('Demo accounts already exist, skipping seed')
+    return
+  }
+
   const adminPassword = process.env.SEED_ADMIN_PASSWORD || (isProduction ? 'ChangeMe!Admin2026' : 'admin1234')
   const teacherPassword = process.env.SEED_TEACHER_PASSWORD || (isProduction ? 'ChangeMe!Teacher2026' : 'teacher1234')
   const studentPassword = process.env.SEED_STUDENT_PASSWORD || (isProduction ? 'ChangeMe!Student2026' : 'student1234')

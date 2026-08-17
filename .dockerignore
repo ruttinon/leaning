@@ -1,0 +1,16 @@
+node_modules
+.git
+.github
+**/dist
+**/*.log
+**/.env
+**/.env.*
+!**/.env.example
+backend/uploads
+backend/prisma/*.db
+backend/backups
+frontend/test-results
+frontend/playwright-report
+frontend/vite.config.ts.timestamp*
+*.md
+docs

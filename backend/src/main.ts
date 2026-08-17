@@ -29,8 +29,18 @@ async function bootstrap() {
   });
   app.set('trust proxy', 1);
 
+  const corsOrigins = [
+    ...(process.env.CORS_ORIGIN?.split(',').map((origin) => origin.trim()) || [
+      'http://localhost:5000',
+      'http://localhost:5173',
+      'http://localhost:8080',
+    ]),
+    process.env.APP_URL,
+    process.env.RENDER_EXTERNAL_URL,
+  ].filter(Boolean) as string[]
+
   app.enableCors({
-    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:5000', 'http://localhost:5173', 'http://localhost:8080'],
+    origin: [...new Set(corsOrigins)],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
@@ -93,9 +103,11 @@ async function bootstrap() {
   });
 
   const frontendDistCandidates = [
+    join(process.cwd(), 'frontend', 'dist'),
     join(process.cwd(), '..', 'frontend', 'dist'),
     join(__dirname, '..', '..', 'frontend', 'dist'),
     join(__dirname, '..', '..', '..', 'frontend', 'dist'),
+    join(__dirname, '..', '..', '..', '..', 'frontend', 'dist'),
   ];
   const frontendDist = frontendDistCandidates.find((dir) => existsSync(join(dir, 'index.html')))
     ?? frontendDistCandidates[0];
