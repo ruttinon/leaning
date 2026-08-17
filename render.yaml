@@ -1,16 +1,13 @@
 databases:
   - name: edupro-db
-    plan: basic-256mb
+    plan: free
     postgresMajorVersion: 16
-    region: singapore
-    ipAllowList: []
 
 services:
   - type: web
     name: edupro
     runtime: docker
-    plan: starter
-    region: singapore
+    plan: free
     dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /health/live
